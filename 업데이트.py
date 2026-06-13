@@ -123,7 +123,7 @@ def fetch_vnindex():
 
 # ── 매크로 지표 ──────────────────────────────────────────────────
 def fetch_macro_signals():
-    result = {"usdvnd": None, "vix": None, "crude": None}
+    result = {"usdvnd": None, "vix": None, "crude": None, "dxy": None, "eem": None}
     try:
         val = yf.Ticker("USDVND=X").fast_info.last_price
         result["usdvnd"] = round(float(val))
@@ -140,6 +140,22 @@ def fetch_macro_signals():
         print(f"  브렌트유: ${result['crude']}")
     except Exception as e:
         print(f"  브렌트유 가져오기 실패: {e}")
+    try:
+        dxy_h = yf.Ticker("DX-Y.NYB").history(period="5d", interval="1d")
+        if not dxy_h.empty:
+            result["dxy"] = round(float(dxy_h['Close'].iloc[-1]), 2)
+            result["dxy_prev"] = round(float(dxy_h['Close'].iloc[-2]), 2) if len(dxy_h) >= 2 else result["dxy"]
+            print(f"  달러 인덱스(DXY): {result['dxy']}")
+    except Exception as e:
+        print(f"  DXY 가져오기 실패: {e}")
+    try:
+        eem_h = yf.Ticker("EEM").history(period="5d", interval="1d")
+        if not eem_h.empty:
+            result["eem"] = round(float(eem_h['Close'].iloc[-1]), 2)
+            result["eem_prev"] = round(float(eem_h['Close'].iloc[-2]), 2) if len(eem_h) >= 2 else result["eem"]
+            print(f"  신흥국 ETF(EEM): ${result['eem']}")
+    except Exception as e:
+        print(f"  EEM 가져오기 실패: {e}")
     return result
 
 def _fetch_fed_rate():
@@ -201,6 +217,7 @@ TOPICS = [
     {"key": "cpi",     "label": "베트남 CPI",          "rss": "Vietnam CPI inflation consumer price",           "api": "Vietnam inflation CPI data"},
     {"key": "semi",    "label": "반도체·제조",          "rss": "Vietnam semiconductor manufacturing Samsung Intel", "api": "Vietnam chip factory manufacturing"},
     {"key": "fed",     "label": "미국 연준",            "rss": "Federal Reserve interest rate FOMC decision",    "api": "Federal Reserve rate policy FOMC"},
+    {"key": "gdp",     "label": "베트남 GDP",           "rss": "Vietnam GDP economic growth rate quarterly",     "api": "Vietnam GDP growth economy"},
 ]
 
 def fetch_news_signals(claude_api_key, newsapi_key=None):
@@ -256,14 +273,15 @@ def fetch_news_signals(claude_api_key, newsapi_key=None):
   "china": {{"badge": "g/y/r/b", "text": "한국어 12자 이내"}},
   "cpi":   {{"badge": "g/y/r/b", "text": "한국어 12자 이내"}},
   "semi":  {{"badge": "g/y/r/b", "text": "한국어 12자 이내"}},
-  "fed":   {{"badge": "g/y/r/b", "text": "한국어 12자 이내"}}
+  "fed":   {{"badge": "g/y/r/b", "text": "한국어 12자 이내"}},
+  "gdp":   {{"badge": "g/y/r/b", "text": "한국어 12자 이내"}}
 }}
 
 badge 기준: g=호재(초록), y=중립/주의(노랑), r=악재(빨강), b=정보(파랑)"""
 
     body = json.dumps({
         "model": "claude-haiku-4-5-20251001",
-        "max_tokens": 300,
+        "max_tokens": 500,
         "messages": [{"role": "user", "content": prompt}]
     }).encode()
     req = urllib.request.Request(
@@ -613,6 +631,29 @@ def build_html(vn, cfg, api_key, updated_at, vn_analysis, indicators=None, macro
     else:
         crude_cls, crude_txt = "badge-b", "데이터 없음"
 
+    dxy = mac.get("dxy")
+    dxy_prev = mac.get("dxy_prev", dxy)
+    if dxy:
+        dxy_chg = round(dxy - dxy_prev, 2) if dxy_prev else 0
+        dxy_sign = "▲" if dxy_chg >= 0 else "▼"
+        if dxy < 99:     dxy_cls, dxy_txt = "badge-g", f"DXY {dxy} {dxy_sign}{abs(dxy_chg)} — 달러 약세(호재)"
+        elif dxy < 103:  dxy_cls, dxy_txt = "badge-b", f"DXY {dxy} {dxy_sign}{abs(dxy_chg)} — 안정"
+        elif dxy < 106:  dxy_cls, dxy_txt = "badge-y", f"DXY {dxy} {dxy_sign}{abs(dxy_chg)} — 달러 강세 주의"
+        else:            dxy_cls, dxy_txt = "badge-r", f"DXY {dxy} {dxy_sign}{abs(dxy_chg)} — 달러 급강세(악재)"
+    else:
+        dxy_cls, dxy_txt = "badge-b", "데이터 없음"
+
+    eem = mac.get("eem")
+    eem_prev = mac.get("eem_prev", eem)
+    if eem:
+        eem_chg = round((eem - eem_prev) / eem_prev * 100, 2) if eem_prev else 0
+        eem_sign = "▲" if eem_chg >= 0 else "▼"
+        if eem_chg > 1:    eem_cls, eem_txt = "badge-g", f"${eem} {eem_sign}{abs(eem_chg)}% — 신흥국 상승(호재)"
+        elif eem_chg > -1: eem_cls, eem_txt = "badge-b", f"${eem} {eem_sign}{abs(eem_chg)}% — 보합"
+        else:              eem_cls, eem_txt = "badge-r", f"${eem} {eem_sign}{abs(eem_chg)}% — 신흥국 하락(악재)"
+    else:
+        eem_cls, eem_txt = "badge-b", "데이터 없음"
+
     # ── 뉴스 신호 카드 ───────────────────────────────────────────
     auto_tag = '<span style="font-size:10px;color:var(--text3);margin-left:4px;">자동</span>'
 
@@ -634,11 +675,34 @@ def build_html(vn, cfg, api_key, updated_at, vn_analysis, indicators=None, macro
     fed_badge = fed_n.get("badge", "badge-b")
     fed_text = f"{fed_rate_val}% — {fed_n.get('text','')}" if fed_rate_val else fed_n.get("text","수집 중...")
 
+    # ── 관심 구간 표시 ──────────────────────────────────────────────
+    zone_lo = cfg.get("VNINDEX_관심구간_하단", 0)
+    zone_hi = cfg.get("VNINDEX_관심구간_상단", 0)
+    if zone_lo and zone_hi:
+        if current < zone_lo:
+            zone_cls, zone_txt = "badge-g", f"관심구간 {zone_lo:,}~{zone_hi:,}pt — 구간 하회 (매수 적극 검토)"
+        elif current <= zone_hi:
+            zone_cls, zone_txt = "badge-y", f"관심구간 {zone_lo:,}~{zone_hi:,}pt — 구간 진입 중"
+        else:
+            zone_cls, zone_txt = "badge-b", f"관심구간 {zone_lo:,}~{zone_hi:,}pt — 구간 상회 (대기)"
+        zone_row = f'<div class="signal-row"><span class="signal-name">📍 관심 구간</span><span class="badge {zone_cls}">{zone_txt}</span></div>'
+    else:
+        zone_row = ""
+
     news_card_html = f"""  <div class="card" style="margin-top:-4px;">
     <div class="card-title" style="margin-bottom:8px;">🌏 매크로 신호 <span style="font-size:11px;font-weight:400;color:var(--text3);">— 업데이트 실행 시 갱신</span></div>
+    {zone_row}
     <div class="signal-row">
       <span class="signal-name">동/달러{auto_tag} <span style="font-size:10px;color:var(--text3);">(USD/VND)</span></span>
       <span class="badge {usdvnd_cls}">{usdvnd_txt}</span>
+    </div>
+    <div class="signal-row">
+      <span class="signal-name">달러 인덱스{auto_tag} <span style="font-size:10px;color:var(--text3);">(DXY)</span></span>
+      <span class="badge {dxy_cls}">{dxy_txt}</span>
+    </div>
+    <div class="signal-row">
+      <span class="signal-name">신흥국 ETF{auto_tag} <span style="font-size:10px;color:var(--text3);">(EEM)</span></span>
+      <span class="badge {eem_cls}">{eem_txt}</span>
     </div>
     <div class="signal-row">
       <span class="signal-name">공포지수 VIX{auto_tag} <span style="font-size:10px;color:var(--text3);">(미국)</span></span>
@@ -655,6 +719,7 @@ def build_html(vn, cfg, api_key, updated_at, vn_analysis, indicators=None, macro
     {news_row("중국-베트남 관계", "china")}
     {news_row("베트남 CPI", "cpi")}
     {news_row("반도체·제조업", "semi")}
+    {news_row("베트남 GDP", "gdp")}
     <div class="signal-row">
       <span class="signal-name">미국 연준 금리{auto_tag}</span>
       <span class="badge {fed_badge}">{fed_text}</span>
@@ -665,9 +730,9 @@ def build_html(vn, cfg, api_key, updated_at, vn_analysis, indicators=None, macro
     # ── 종합 스코어카드 ──────────────────────────────────────────
     _bmap = {"badge-g": 1, "badge-y": 0, "badge-r": -1, "badge-b": 0}
     _tech_badges  = [rsi_cls, ma_cls, mom_cls, vol_cls, pos_cls]
-    _macro_badges = [usdvnd_cls, vix_cls, crude_cls]
+    _macro_badges = [usdvnd_cls, dxy_cls, eem_cls, vix_cls, crude_cls]
     _news_badges  = [nws.get(k, {}).get("badge", "badge-b")
-                     for k in ["fdi","fii","sbv","trade","china","cpi","semi","fed"]]
+                     for k in ["fdi","fii","sbv","trade","china","cpi","semi","fed","gdp"]]
 
     tech_score  = sum(_bmap.get(b, 0) * 1.5 for b in _tech_badges)
     macro_score = sum(_bmap.get(b, 0) * 1.0 for b in _macro_badges)
