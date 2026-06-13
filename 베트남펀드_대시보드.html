@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>베트남 펀드 대시보드</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #f5f5f7;
+  --card-bg: #ffffff;
+  --text: #1d1d1f;
+  --text2: #6e6e73;
+  --text3: #aeaeb2;
+  --border: rgba(0,0,0,0.1);
+  --up: #2d8a4e;
+  --down: #c0392b;
+  --warn-bg: #fff8e1;
+  --warn-text: #BA7517;
+  --buy-bg: #f0faf0;
+  --buy-text: #2d6a0a;
+  --sell-bg: #fff0f0;
+  --sell-text: #9b2020;
+  --badge-r-bg: #fde8e8; --badge-r: #c0392b;
+  --badge-g-bg: #e8fde8; --badge-g: #2d6a0a;
+  --badge-y-bg: #fdf6e8; --badge-y: #BA7517;
+  --badge-b-bg: #e8f0fe; --badge-b: #1565c0;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1c1c1e; --card-bg: #2c2c2e; --text: #f2f2f7; --text2: #aeaeb2; --text3: #636366;
+    --border: rgba(255,255,255,0.1); --up: #4cd964; --down: #ff453a;
+    --warn-bg: #2a2200; --warn-text: #ffd60a;
+    --buy-bg: #0d2200; --buy-text: #4cd964;
+    --sell-bg: #2a0000; --sell-text: #ff453a;
+    --badge-r-bg: #2a0a0a; --badge-r: #ff6b6b;
+    --badge-g-bg: #0a1a0a; --badge-g: #6fcf97;
+    --badge-y-bg: #1a1200; --badge-y: #f2c94c;
+    --badge-b-bg: #001a2a; --badge-b: #56ccf2;
+  }
+}
+body { font-family: -apple-system, 'Apple SD Gothic Neo', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+.container { max-width: 480px; margin: 0 auto; padding: 20px 16px 40px; }
+.header { margin-bottom: 24px; }
+.header h1 { font-size: 22px; font-weight: 700; }
+.header p { font-size: 13px; color: var(--text2); margin-top: 4px; }
+.section-label { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px; }
+.card { background: var(--card-bg); border-radius: 16px; padding: 16px; margin-bottom: 16px; border: 0.5px solid var(--border); }
+.card-title { font-size: 14px; font-weight: 600; margin-bottom: 14px; }
+.nifty-header { background: var(--card-bg); border-radius: 16px; padding: 16px; margin-bottom: 12px; border: 0.5px solid var(--border); }
+.nifty-name { font-size: 13px; color: var(--text2); margin-bottom: 6px; }
+.nifty-price { font-size: 36px; font-weight: 700; letter-spacing: -1px; }
+.nifty-change { font-size: 15px; font-weight: 500; margin-top: 4px; }
+.ohlc-row { display: flex; gap: 0; margin-top: 12px; border-top: 0.5px solid var(--border); padding-top: 12px; }
+.ohlc-item { flex: 1; text-align: center; }
+.ohlc-label { font-size: 11px; color: var(--text3); margin-bottom: 3px; }
+.ohlc-val { font-size: 13px; font-weight: 600; }
+.period-tabs { display: flex; gap: 4px; margin-bottom: 10px; }
+.period-tab { flex: 1; text-align: center; font-size: 12px; font-weight: 500; padding: 7px 0; border-radius: 8px; border: 0.5px solid var(--border); background: var(--bg); color: var(--text2); cursor: pointer; }
+.period-tab.active { background: var(--text); color: var(--bg); border-color: var(--text); }
+.chart-wrap { height: 230px; margin-bottom: 8px; }
+.signal-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 0.5px solid var(--border); }
+.signal-row:last-child { border-bottom: none; }
+.signal-name { font-size: 13px; color: var(--text2); }
+.badge { font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 8px; }
+.badge-r { background: var(--badge-r-bg); color: var(--badge-r); }
+.badge-g { background: var(--badge-g-bg); color: var(--badge-g); }
+.badge-y { background: var(--badge-y-bg); color: var(--badge-y); }
+.badge-b { background: var(--badge-b-bg); color: var(--badge-b); }
+.action { border-radius: 12px; padding: 13px 15px; margin-bottom: 10px; }
+.action-hold { background: var(--warn-bg); border-left: 3px solid var(--warn-text); }
+.action-buy  { background: var(--buy-bg);  border-left: 3px solid var(--buy-text); }
+.action-sell { background: var(--sell-bg); border-left: 3px solid var(--sell-text); }
+.action-title { font-size: 13px; font-weight: 600; margin-bottom: 5px; }
+.action-hold .action-title { color: var(--warn-text); }
+.action-buy  .action-title { color: var(--buy-text); }
+.action-sell .action-title { color: var(--sell-text); }
+.action-desc { font-size: 12px; color: var(--text2); line-height: 1.6; }
+.divider { border: none; border-top: 0.5px solid var(--border); margin: 20px 0; }
+table td { padding: 5px 0; border-bottom: 1px solid var(--border); }
+.up { color: var(--up); }
+.down { color: var(--down); }
+.input-row { display: flex; gap: 8px; margin-bottom: 10px; }
+.input-row input { flex: 1; font-size: 13px; padding: 10px 12px; border: 0.5px solid var(--border); border-radius: 10px; background: var(--bg); color: var(--text); outline: none; }
+.input-row input:focus { border-color: #0071e3; }
+.btn { font-size: 13px; padding: 10px 16px; border: 0.5px solid var(--border); border-radius: 10px; background: var(--card-bg); color: var(--text); cursor: pointer; white-space: nowrap; font-weight: 500; }
+.quick-btns { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+.quick-btn { font-size: 11px; padding: 6px 11px; }
+.ai-response { font-size: 13px; color: var(--text); line-height: 1.8; padding: 14px; background: var(--bg); border-radius: 10px; min-height: 60px; white-space: pre-wrap; }
+.footer { font-size: 11px; color: var(--text3); text-align: center; margin-top: 20px; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <h1>🇻🇳 베트남 펀드 대시보드</h1>
+    <p>VN-Index 기반 매수 타이밍 분석 · 매수 전 관찰 중</p>
+  </div>
+
+  <div style="background:#fff8e1;border:1px solid #BA751733;border-radius:18px;padding:18px 20px;margin-bottom:20px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <div>
+        <div style="font-size:11px;font-weight:600;color:#BA7517;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:4px;">종합 매수 신호</div>
+        <div style="font-size:28px;font-weight:700;color:#BA7517;">📌 관망</div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:11px;color:var(--text3);margin-bottom:4px;">신호 강도</div>
+        <div style="font-size:24px;font-weight:700;color:#BA7517;">44점</div>
+        <div style="font-size:10px;color:var(--text3);">/ 100점</div>
+      </div>
+    </div>
+    <div style="background:rgba(0,0,0,0.08);border-radius:6px;height:8px;overflow:hidden;margin-bottom:10px;">
+      <div style="width:44%;height:100%;border-radius:6px;background:#BA7517;transition:width 0.6s;"></div>
+    </div>
+    <div style="display:flex;gap:16px;font-size:11px;color:var(--text2);">
+      <span>기술적 <strong style="color:#BA7517;">-3.0</strong></span>
+      <span>매크로 <strong style="color:#BA7517;">+1.0</strong></span>
+      <span>뉴스 <strong style="color:#BA7517;">+0.0</strong></span>
+    </div>
+  </div>
+
+  <div class="section-label">VN-Index (호치민 지수)</div>
+  
+  <div class="nifty-header">
+    <div class="nifty-name">VN-Index</div>
+    <div class="nifty-price down">1,791.65</div>
+    <div class="nifty-change down">▼ -23.14 &nbsp;(-1.28%)</div>
+    <div class="ohlc-row">
+      <div class="ohlc-item"><div class="ohlc-label">시가</div><div class="ohlc-val">1,798.61</div></div>
+      <div class="ohlc-item"><div class="ohlc-label">고가</div><div class="ohlc-val up">1,813.57</div></div>
+      <div class="ohlc-item"><div class="ohlc-label">저가</div><div class="ohlc-val down">1,783.16</div></div>
+    </div>
+  </div>
+  <div class="period-tabs" id="vn-tabs">
+    <div class="period-tab active" onclick="switchChart('chartVN','vn','d1',this)">일</div>
+    <div class="period-tab" onclick="switchChart('chartVN','vn','d5',this)">5일</div>
+    <div class="period-tab" onclick="switchChart('chartVN','vn','d30',this)">1개월</div>
+    <div class="period-tab" onclick="switchChart('chartVN','vn','mo3',this)">3개월</div>
+    <div class="period-tab" onclick="switchChart('chartVN','vn','mo6',this)">6개월</div>
+    <div class="period-tab" onclick="switchChart('chartVN','vn','yr1',this)">1년</div>
+  </div>
+  <div class="card" style="padding:12px 12px 10px;">
+    <div class="chart-wrap"><canvas id="chartVN"></canvas></div>
+    <div style="display:flex;gap:16px;font-size:11px;color:var(--text2);margin-top:4px;">
+      <span style="display:flex;align-items:center;gap:4px;"><span style="width:12px;height:2px;background:#378ADD;display:inline-block;border-radius:1px;"></span>VN-Index</span>
+    </div>
+  </div>
+  <div class="card" style="margin-top:-4px;">
+    <div class="card-title" style="font-size:12px;color:var(--text2);font-weight:500;margin-bottom:10px;">📊 AI 차트 분석 — VN-Index</div>
+    <div style="font-size:13px;line-height:2;color:var(--text);">• <strong>현재 지수</strong>: 1,791.65, 전일 -1.28% 하락으로 약세 지속<br><br>• <strong>추세 (이평)</strong>: 5주선(1,832.09) > 13주선(1,852.94) > 26주선(1,858.36) <strong>역배열</strong>로 하락 추세 진행 중, 매도세 우위<br><br>• <strong>모멘텀</strong>: RSI 59.4(중립~약간 약세), 4주 모멘텀 -5.0%으로 단기 상승력 약화 상태<br><br>• <strong>변동성</strong>: 주간 ±2.2% 변동으로 <strong>중간 수준의 변동성</strong>, 시장 불확실성 존재<br><br>• <strong>위치</strong>: 52주 고점 대비 <strong>-9.9% 하락</strong>(1,988.82), 저점 대비 <strong>+37.1% 회복</strong>(1,307.08) 중간 구간<br><br>• <strong>매수 타이밍</strong>: <strong>아직 이른 시점</strong> — 이평 역배열과 음의 모멘텀이 해소될 때까지 대기, 1,750~1,770 수준 추가 하락 시 분할 진입 고려<br><br>• <strong>한 줄 결론</strong>: 하락 추세가 진행 중이므로 <strong>추세 반전 신호를 기다린 후 진입</strong>하는 것이 안전합니다.</div>
+  </div>
+
+  <hr class="divider">
+
+  <div class="section-label">주요 이벤트 일정</div>
+  <div class="card" style="margin-bottom:16px;">
+    <table style="width:100%;border-collapse:collapse;font-size:13px;">
+      <tbody style="line-height:2.2;"><tr><td style="color:var(--text2);">07-01</td><td>베트남 반기 GDP 발표</td><td style="text-align:right;color:var(--warn-text);font-weight:500;">D-18</td></tr><tr><td style="color:var(--text2);">09-17</td><td>FOMC 금리결정</td><td style="text-align:right;color:var(--text3);">D-96</td></tr></tbody>
+    </table>
+  </div>
+  <hr class="divider" style="margin-top:0;">
+
+  <div class="section-label">매수 계획</div>
+    <div class="card">
+    <div class="card-title" style="margin-bottom:10px;">💰 투자 계획</div>
+    <table style="width:100%;border-collapse:collapse;font-size:13px;">
+      <thead>
+        <tr style="color:var(--text2);font-size:11px;border-bottom:1px solid var(--border);">
+          <th style="text-align:left;padding:5px 0;font-weight:500;">단계</th>
+          <th style="text-align:right;padding:5px 0;font-weight:500;">금액</th>
+          <th style="text-align:right;padding:5px 0;font-weight:500;">비고</th>
+        </tr>
+      </thead>
+      <tbody style="line-height:2.2;"><tr>
+          <td style="color:var(--text2);">1차 매수</td>
+          <td style="text-align:right;font-weight:600;">2,000만원</td>
+          <td style="text-align:right;color:var(--text3);">현재가 1,791.65pt 기준</td>
+        </tr><tr>
+          <td style="color:var(--text2);">2차 분할매수</td>
+          <td style="text-align:right;font-weight:600;">1,000만원</td>
+          <td style="text-align:right;color:var(--text3);">현재가 1,791.65pt 기준</td>
+        </tr><tr>
+          <td style="color:var(--text2);">3차 분할매수</td>
+          <td style="text-align:right;font-weight:600;">1,000만원</td>
+          <td style="text-align:right;color:var(--text3);">현재가 1,791.65pt 기준</td>
+        </tr>
+        <tr style="border-top:1px solid var(--border);font-weight:600;">
+          <td>합계</td>
+          <td style="text-align:right;">4,000만원</td>
+          <td></td>
+        </tr>
+      </tbody>
+    </table>
+    <div style="margin-top:12px;padding:10px;background:var(--bg);border-radius:8px;font-size:12px;">
+      <div style="color:var(--text2);margin-bottom:4px;">현재 VN-Index 1,791.65pt 기준 손절선</div>
+      <div style="font-size:16px;font-weight:700;color:var(--down);">1,612.49pt <span style="font-size:12px;font-weight:400;color:var(--text3);">(-10%)</span></div>
+    </div>
+  </div>
+    <div class="card">
+    <div class="card-title" style="margin-bottom:10px;">🎯 목표수익 시뮬레이션</div>
+    <table style="width:100%;border-collapse:collapse;font-size:13px;">
+      <thead>
+        <tr style="color:var(--text2);font-size:11px;border-bottom:1px solid var(--border);">
+          <th style="text-align:left;padding:5px 0;font-weight:500;">목표 수익률</th>
+          <th style="text-align:right;padding:5px 0;font-weight:500;">필요 VN-Index</th>
+          <th style="text-align:right;padding:5px 0;font-weight:500;">수익금</th>
+        </tr>
+      </thead>
+      <tbody style="line-height:2.2;"><tr>
+          <td>+10%</td>
+          <td style="text-align:right;font-weight:600;">1,970.82</td>
+          <td style="text-align:right;color:var(--up);">+200.0만원</td>
+        </tr><tr>
+          <td>+20%</td>
+          <td style="text-align:right;font-weight:600;">2,149.98</td>
+          <td style="text-align:right;color:var(--up);">+400.0만원</td>
+        </tr><tr>
+          <td>+30%</td>
+          <td style="text-align:right;font-weight:600;">2,329.14</td>
+          <td style="text-align:right;color:var(--up);">+600.0만원</td>
+        </tr><tr>
+          <td>+50%</td>
+          <td style="text-align:right;font-weight:600;">2,687.48</td>
+          <td style="text-align:right;color:var(--up);">+1000.0만원</td>
+        </tr></tbody>
+    </table>
+    <div style="margin-top:8px;font-size:11px;color:var(--text3);">* 현재 VN-Index 1,791.65pt 기준 / 2,000만원 1차 매수 가정</div>
+  </div>
+
+  <hr class="divider">
+
+  <div class="section-label">매매 신호</div>
+  <div class="card">
+    <div class="card-title" style="margin-bottom:8px;">📡 기술적 지표 (자동)</div>
+    <div class="signal-row"><span class="signal-name">RSI (14주)</span><span class="badge badge-b">RSI 59.4 — 중립</span></div><div class="signal-row"><span class="signal-name">이평선 배열</span><span class="badge badge-r">역배열(하락)</span></div><div class="signal-row"><span class="signal-name">단기 모멘텀</span><span class="badge badge-r">▼ 5.0% (4주 변화)</span></div><div class="signal-row"><span class="signal-name">변동성</span><span class="badge badge-r">주간 ±2.2% — 고변동</span></div><div class="signal-row"><span class="signal-name">52주 가격 위치</span><span class="badge badge-g">52주 고점 대비 -9.9% / 저점 대비 +37.1%</span></div>
+  </div>
+    <div class="card" style="margin-top:-4px;">
+    <div class="card-title" style="margin-bottom:8px;">🌏 매크로 신호 <span style="font-size:11px;font-weight:400;color:var(--text3);">— 열 때마다 자동 업데이트</span></div>
+    <div class="signal-row">
+      <span class="signal-name">동/달러<span style="font-size:10px;color:var(--text3);margin-left:4px;">자동</span> <span style="font-size:10px;color:var(--text3);">(USD/VND)</span></span>
+      <span class="badge badge-y">₫26,250 — 동 약세</span>
+    </div>
+    <div class="signal-row">
+      <span class="signal-name">공포지수 VIX<span style="font-size:10px;color:var(--text3);margin-left:4px;">자동</span> <span style="font-size:10px;color:var(--text3);">(미국)</span></span>
+      <span class="badge badge-g">US VIX 17.68 — 안정</span>
+    </div>
+    <div class="signal-row">
+      <span class="signal-name">브렌트유<span style="font-size:10px;color:var(--text3);margin-left:4px;">자동</span></span>
+      <span class="badge badge-y">$87.3 보통</span>
+    </div>
+    <div class="signal-row" title=" FDI inflows as a share of GDP Vietnam 2012-2023 |  Asia’s recipe for winning inflows and impact |  FDI surges in Vietnam as Q1 capital climbs 43 per cent on-year"><span class="signal-name">베트남 FDI 유입<span style="font-size:10px;color:var(--text3);margin-left:4px;">자동</span></span><span class="badge badge-b">분석 중</span></div>
+    <div class="signal-row" title=" Vietnam is booming, but foreign cash is fleeing from stocks |  Vietnam ETF: 10 Stocks Investors Should Get To Know |  Vietnam Eases Foreign Access to Equities: What the New Rules Mean for Global Investors"><span class="signal-name">외국인 자금 흐름<span style="font-size:10px;color:var(--text3);margin-left:4px;">자동</span></span><span class="badge badge-b">분석 중</span></div>
+    <div class="signal-row" title=" Vietnam's central bank to publish FX purchase, reserve data from 2027 |  Central bank steps up inspections as some banks raise deposit rates |  New governor pushes for lower interest rates to support growth"><span class="signal-name">SBV 금리<span style="font-size:10px;color:var(--text3);margin-left:4px;">자동</span></span><span class="badge badge-b">분석 중</span></div>
+    <div class="signal-row" title=" US Forced Labor Ruling Does Not Reflect Vietnam’s Efforts, Govt Says |  Vietnam does not have a policy of creating excess capacity, PM tells U.S. trade rep |  Tracking Trump’s Trade Deals"><span class="signal-name">미-베트남 무역<span style="font-size:10px;color:var(--text3);margin-left:4px;">자동</span></span><span class="badge badge-b">분석 중</span></div>
+    <div class="signal-row" title=" A Winner in Early Trump Tariffs, Vietnam Thrives in Trade War 2.0 |  An update on the great reallocation in US supply chain trade |  Inside China’s Rerouted Supply Chains"><span class="signal-name">중국-베트남 관계<span style="font-size:10px;color:var(--text3);margin-left:4px;">자동</span></span><span class="badge badge-b">분석 중</span></div>
+    <div class="signal-row" title=" Average inflation rate in Vietnam from 1980 to 2031 |  Vietnam Dong Under Pressure: Inflation and Trade Headwinds Intensify – Commerzbank |  Việt Nam’s 2025 CPI rises 3.31%, within National Assembly’s target"><span class="signal-name">베트남 CPI<span style="font-size:10px;color:var(--text3);margin-left:4px;">자동</span></span><span class="badge badge-b">분석 중</span></div>
+    <div class="signal-row" title=" Trump opens for Vietnam the chip door he locked on China |  Intel to continue expanding investment in Vietnam: exec |  Vietnam shifts up semiconductor value chain as global chip makers seek “China+1” resilience"><span class="signal-name">반도체·제조업<span style="font-size:10px;color:var(--text3);margin-left:4px;">자동</span></span><span class="badge badge-b">분석 중</span></div>
+    <div class="signal-row">
+      <span class="signal-name">미국 연준 금리<span style="font-size:10px;color:var(--text3);margin-left:4px;">자동</span></span>
+      <span class="badge badge-b">분석 중</span>
+    </div>
+    <div style="margin-top:10px;font-size:11px;color:var(--text3);">* 뉴스 항목은 마우스를 올리면 원문 헤드라인을 볼 수 있어요</div>
+  </div>
+
+  <hr class="divider">
+
+  <div class="section-label">매수 타이밍 가이드</div>
+  
+  <div class="action action-hold">
+    <div class="action-title">📌 지금 — 우호적 신호와 약세 기술지표의 충돌</div>
+    <div class="action-desc">VN-Index는 52주 저점 대비 +37.1%의 강한 반등장에 있으나, RSI 역배열과 4주 모멘텀 -5.0%는 단기 조정 위험을 시사하므로 하락 확인 후 매수하는 것이 안전합니다.</div>
+  </div>
+  <div class="action action-buy">
+    <div class="action-title">🟢 1차 매수 조건 (2,000만원)</div>
+    <div class="action-desc">VN-Index가 1,750pt(현재 대비 -2.3%) 이하로 하락하여 RSI 50 이하에서 반등 신호 확인 시 매수하세요.</div>
+  </div>
+  <div class="action action-buy">
+    <div class="action-title">🟢 2차 매수 조건 (2,000만원)</div>
+    <div class="action-desc">1차 매수 후 반기 GDP 발표(D-18) 통과 후 1,700pt 이하에서 외국인 자금 유입(판단 b 개선) 확인되면 추가 매수하세요.</div>
+  </div>
+  <div class="action action-sell">
+    <div class="action-title">🔴 손절 조건</div>
+    <div class="action-desc">VN-Index가 1,612.49pt(매수가 대비 -10%) 아래로 하락하거나 VIX 20 이상 + 외국인 자금 지속 이탈 시 즉시 손절하세요.</div>
+  </div>
+
+  <hr class="divider">
+
+  <div class="section-label">AI 매수 판단 질문</div>
+  <div class="card">
+    <div class="card-title">지금 상황 물어보기</div>
+    <div class="input-row">
+      <input type="text" id="ai-q" placeholder="예: 지금 매수 타이밍인가요?">
+      <button class="btn" onclick="askAI()">분석 ↗</button>
+    </div>
+    <div class="quick-btns">
+      <button class="btn quick-btn" onclick="setQ('지금 1차 매수 타이밍인가요?')">1차 매수?</button>
+      <button class="btn quick-btn" onclick="setQ('VN-Index 하락 원인이 뭔가요?')">하락 이유</button>
+      <button class="btn quick-btn" onclick="setQ('이번 주 베트남 시장 핵심 이슈가 뭔가요?')">이번 주 이슈</button>
+    </div>
+    <div class="ai-response" id="ai-resp">질문을 입력하거나 위 버튼을 눌러보세요.</div>
+  </div>
+
+  <div class="footer">마지막 업데이트: 2026.06.13 19:45</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const isDark = matchMedia('(prefers-color-scheme: dark)').matches;
+const tC = isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.4)';
+const gC = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)';
+
+function calcMA(prices, n) {
+  return prices.map((_, i) => {
+    if (i < n - 1) return null;
+    const slice = prices.slice(i - n + 1, i + 1);
+    return +(slice.reduce((a, b) => a + b, 0) / n).toFixed(2);
+  });
+}
+
+const MA_CONFIG = {
+  d1:  [{n:5, color:'#FF6B6B',label:'MA5'}, {n:20,color:'#FFA500',label:'MA20'}],
+  d5:  [{n:3, color:'#FF6B6B',label:'MA3'}, {n:5, color:'#FFA500',label:'MA5'}],
+  d30: [{n:5, color:'#FF6B6B',label:'MA5'}, {n:10,color:'#FFA500',label:'MA10'}],
+  mo3: [{n:4, color:'#FF6B6B',label:'MA4주'},{n:8, color:'#FFA500',label:'MA8주'}],
+  mo6: [{n:5, color:'#FF6B6B',label:'MA5주'},{n:13,color:'#FFA500',label:'MA13주'}],
+  yr1: [{n:5, color:'#FF6B6B',label:'MA5주'},{n:13,color:'#FFA500',label:'MA13주'},{n:26,color:'#9B59B6',label:'MA26주'}],
+};
+
+function makeDatasets(prices, periodKey, name, sl) {
+  const n = prices.length;
+  const maCfg = MA_CONFIG[periodKey] || MA_CONFIG.yr1;
+  const maDatasets = maCfg.filter(p => p.n < n).map(p => ({
+    label: p.label, data: calcMA(prices, p.n),
+    borderColor: p.color, borderWidth: 1.2,
+    pointRadius: 0, fill: false, tension: 0.3, spanGaps: false
+  }));
+  return [
+    { label: name || 'VN-Index', data: prices, borderColor: '#EA1F26',
+       backgroundColor: 'rgba(234,31,38,0.06)', borderWidth: 2,
+       pointRadius: 0, pointHoverRadius: 4, fill: true, tension: 0.3 },
+    ...maDatasets
+  ];
+}
+
+function initChart(canvasId, pdata, initKey) {
+  return new Chart(document.getElementById(canvasId), {
+    type: 'line',
+    data: { labels: pdata[initKey].labels, datasets: makeDatasets(pdata[initKey].prices, initKey, pdata.name, pdata.sl) },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: true, position: 'top', labels: { color: tC, font: { size: 10 }, boxWidth: 20, padding: 8 } },
+        tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': ' + (ctx.parsed.y ? ctx.parsed.y.toLocaleString() : '-') } }
+      },
+      scales: {
+        x: { ticks: { color: tC, font: { size: 10 }, maxRotation: 0, autoSkip: true, maxTicksLimit: 8 }, grid: { color: gC } },
+        y: { ticks: { color: tC, font: { size: 10 }, callback: v => v.toLocaleString() }, grid: { color: gC } }
+      }
+    }
+  });
+}
+
+function switchChart(canvasId, prefix, key, el) {
+  document.querySelectorAll(`#${prefix}-tabs .period-tab`).forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  const c = window._charts[canvasId];
+  c.inst.data.labels = c.data[key].labels;
+  c.inst.data.datasets = makeDatasets(c.data[key].prices, key, c.data.name, c.data.sl);
+  c.inst.update();
+}
+
+const API_KEY = "";
+function setQ(q) { document.getElementById('ai-q').value = q; }
+
+async function askAI() {
+  const q = document.getElementById('ai-q').value.trim();
+  if (!q) return;
+  if (!API_KEY) {
+    document.getElementById('ai-resp').textContent = '설정.json 파일에 anthropic_api_key를 입력해주세요.';
+    return;
+  }
+  const box = document.getElementById('ai-resp');
+  box.textContent = '분석 중...';
+
+  const ctx = `당신은 10년차 베트남 펀드 매니저입니다.
+현재 상황: 베트남 VN-Index 펀드 매수 전 관찰 중 (아직 미매수)
+투자 계획: 1차 2,000만원, 추가 2,000만원 분할, 손절 -10%
+
+[실시간 시장 데이터 — 2026.06.13 19:45 기준]
+- VN-Index: 1,791.65 (-1.28%)
+- USD/VND: 26,250동 / US VIX: 17.68 / 브렌트유: $87.3
+- FDI: 분석 중 / 외국인: 분석 중
+- SBV 금리: 분석 중 / 미국 연준: 분석 중
+- 미-베트남 무역: 분석 중 / CPI: 분석 중
+
+3~5문장, 한국어, 마지막에 "이 답변은 참고용입니다" 짧게 명시.`;
+
+  try {
+    const r = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': API_KEY,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 600,
+        system: ctx,
+        messages: [{ role: 'user', content: q }]
+      })
+    });
+    const d = await r.json();
+    box.textContent = d.content?.[0]?.text ?? '응답 없음';
+  } catch(e) {
+    box.textContent = '오류가 발생했어요. 다시 시도해주세요.';
+  }
+}
+
+document.getElementById('ai-q').addEventListener('keydown', e => { if (e.key === 'Enter') askAI(); });
+
+window._charts = {};
+const PDATA_chartVN = {"name": "VN-Index", "sl": null, "d1": {"labels": ["09:00", "09:05", "09:10", "09:15", "09:20", "09:25", "09:30", "09:35", "09:40", "09:45", "09:50", "09:55", "10:00", "10:05", "10:10", "10:15", "10:20", "10:25", "10:30", "10:35", "10:40", "10:45", "10:50", "10:55", "11:00", "11:05", "11:10", "11:15", "11:20", "11:25", "11:30", "11:35", "11:40", "11:45", "11:50", "11:55", "12:00", "12:05", "12:10", "12:15", "12:20", "12:25", "12:30", "12:35", "12:40", "12:45", "12:50", "12:55", "13:00", "13:05", "13:10", "13:15", "13:20", "13:25", "13:30", "13:35", "13:40", "13:45", "13:50", "13:55", "14:00", "14:05", "14:10", "14:15", "14:20", "14:25", "14:30", "14:35", "14:40", "14:45", "14:50", "14:55"], "prices": [1806.27, 1810.68, 1813.08, 1810.13, 1808.9, 1804.54, 1805.41, 1807.45, 1805.61, 1804.9, 1804.45, 1803.18, 1804.15, 1804.05, 1807.48, 1807.65, 1806.18, 1805.16, 1804.12, 1804.25, 1803.29, 1802.66, 1803.52, 1803.43, 1802.4, 1802.15, 1802.67, 1802.26, 1802.87, 1803.02, 1803.19, 1803.19, 1803.19, 1803.19, 1803.19, 1803.19, 1803.19, 1803.19, 1803.19, 1803.19, 1803.19, 1803.19, 1803.19, 1803.19, 1803.19, 1803.19, 1803.19, 1803.19, 1801.19, 1803.61, 1802.03, 1802.99, 1803.12, 1803.06, 1804.92, 1806.5, 1805.6, 1805.03, 1804.18, 1803.8, 1800.59, 1802.47, 1797.9, 1794.5, 1794.05, 1790.98, 1790.24, 1790.89, 1792.42, 1791.65, 1791.65, 1791.65]}, "d5": {"labels": ["6/8", "6/9", "6/10", "6/11", "6/12"], "prices": [1786.62, 1781.59, 1791.65, 1814.79, 1791.65]}, "d30": {"labels": ["5/13", "5/14", "5/15", "5/18", "5/19", "5/20", "5/21", "5/22", "5/26", "5/27", "5/28", "5/29", "6/1", "6/2", "6/3", "6/4", "6/5", "6/8", "6/9", "6/10", "6/11", "6/12"], "prices": [1936.51, 1960.65, 1930.48, 1942.55, 1922.43, 1942.55, 1909.35, 1886.21, 1898.28, 1885.21, 1879.17, 1881.18, 1855.03, 1823.84, 1812.78, 1835.91, 1809.76, 1786.62, 1781.59, 1791.65, 1814.79, 1791.65]}, "mo3": {"labels": ["3/9", "3/16", "3/23", "3/30", "4/6", "4/13", "4/20", "4/27", "5/4", "5/11", "5/18", "5/25", "6/1", "6/8"], "prices": [1680.99, 1652.82, 1682.0, 1757.45, 1830.88, 1915.39, 1902.31, 1920.42, 1988.82, 1930.48, 1886.21, 1881.18, 1809.76, 1791.65]}, "mo6": {"labels": ["12/8", "12/15", "12/22", "12/29", "1/5", "1/12", "1/19", "1/26", "2/2", "2/9", "2/16", "2/23", "3/2", "3/9", "3/16", "3/23", "3/30", "4/6", "4/13", "4/20", "4/27", "5/4", "5/11", "5/18", "5/25", "6/1", "6/8", "6/12"], "prices": [1755.82, 1846.17, 1847.18, 1922.43, 1939.53, 1984.8, 1953.61, 1918.4, 1813.78, 1900.3, 1940.54, 1919.41, 1755.43, 1680.99, 1652.82, 1682.0, 1757.45, 1830.88, 1915.39, 1902.31, 1920.42, 1988.82, 1930.48, 1886.21, 1881.18, 1809.76, 1791.65, 1791.65]}, "yr1": {"labels": ["6/9", "6/16", "6/23", "6/30", "7/7", "7/14", "7/21", "7/28", "8/4", "8/11", "8/18", "8/25", "9/1", "9/8", "9/15", "9/22", "9/29", "10/6", "10/13", "10/20", "10/27", "11/3", "11/10", "11/17", "11/24", "12/1", "12/8", "12/15", "12/22", "12/29", "1/5", "1/12", "1/19", "1/26", "2/2", "2/9", "2/16", "2/23", "3/2", "3/9", "3/16", "3/23", "3/30", "4/6", "4/13", "4/20", "4/27", "5/4", "5/11", "5/18", "5/25", "6/1", "6/8", "6/12"], "prices": [1307.08, 1340.21, 1378.36, 1401.45, 1527.94, 1564.08, 1653.43, 1601.22, 1724.7, 1777.91, 1742.77, 1836.14, 1804.01, 1804.01, 1774.9, 1761.85, 1759.84, 1905.4, 1927.49, 1828.1, 1749.8, 1694.58, 1765.86, 1778.91, 1841.15, 1872.28, 1755.82, 1846.17, 1847.18, 1922.43, 1939.53, 1984.8, 1953.61, 1918.4, 1813.78, 1900.3, 1940.54, 1919.41, 1755.43, 1680.99, 1652.82, 1682.0, 1757.45, 1830.88, 1915.39, 1902.31, 1920.42, 1988.82, 1930.48, 1886.21, 1881.18, 1809.76, 1791.65, 1791.65]}};
+window._charts['chartVN'] = {inst: initChart('chartVN', PDATA_chartVN, 'd1'), data: PDATA_chartVN};
+</script>
+</body>
+</html>

@@ -1,0 +1,4 @@
+설정.json
+__pycache__/
+*.pyc
+.DS_Store
