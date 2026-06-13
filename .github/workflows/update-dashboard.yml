@@ -51,14 +51,6 @@ jobs:
         with:
           path: '.'
 
-      - name: HTML 파일 GitHub에 저장
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add 베트남펀드_대시보드.html index.html
-          git diff --staged --quiet || git commit -m "베트남 대시보드 자동 업데이트 $(date +'%Y-%m-%d %H:%M')"
-          git push
-
   deploy:
     needs: update
     runs-on: ubuntu-latest
