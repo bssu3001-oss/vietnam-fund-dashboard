@@ -912,7 +912,7 @@ def build_html(vn, cfg, api_key, updated_at, vn_analysis, indicators=None, macro
   </div>
   <hr class="divider" style="margin-top:0;">"""
 
-    api_key_js = '""'  # 키는 HTML에 삽입하지 않음 (보안)
+    api_key_js = json.dumps(api_key)
 
     # AI Q&A 컨텍스트에 들어갈 뉴스 텍스트 미리 계산
     _n_fdi   = nws.get('fdi',   {}).get('text', '정보없음')
