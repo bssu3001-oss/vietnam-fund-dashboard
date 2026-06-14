@@ -750,35 +750,35 @@ def build_html(vn, cfg, api_key, updated_at, vn_analysis, indicators=None, macro
     {zone_row}
     <div class="signal-row">
       <span class="signal-name">VNM ETF{auto_tag} <span style="font-size:10px;color:var(--text3);">(뉴욕상장 베트남 대표)</span></span>
-      <span class="badge {vn30_cls}">{vn30_txt}</span>
+      <span class="badge {vn30_cls}" id="badge-vnm">{vn30_txt}</span>
     </div>
     <div class="signal-row">
       <span class="signal-name">동/달러{auto_tag} <span style="font-size:10px;color:var(--text3);">(USD/VND)</span></span>
-      <span class="badge {usdvnd_cls}">{usdvnd_txt}</span>
+      <span class="badge {usdvnd_cls}" id="badge-usdvnd">{usdvnd_txt}</span>
     </div>
     <div class="signal-row">
       <span class="signal-name">위안화{auto_tag} <span style="font-size:10px;color:var(--text3);">(USD/CNY)</span></span>
-      <span class="badge {usdcny_cls}">{usdcny_txt}</span>
+      <span class="badge {usdcny_cls}" id="badge-usdcny">{usdcny_txt}</span>
     </div>
     <div class="signal-row">
       <span class="signal-name">달러 인덱스{auto_tag} <span style="font-size:10px;color:var(--text3);">(DXY)</span></span>
-      <span class="badge {dxy_cls}">{dxy_txt}</span>
+      <span class="badge {dxy_cls}" id="badge-dxy">{dxy_txt}</span>
     </div>
     <div class="signal-row">
       <span class="signal-name">신흥국 ETF{auto_tag} <span style="font-size:10px;color:var(--text3);">(EEM)</span></span>
-      <span class="badge {eem_cls}">{eem_txt}</span>
+      <span class="badge {eem_cls}" id="badge-eem">{eem_txt}</span>
     </div>
     <div class="signal-row">
       <span class="signal-name">공포지수 VIX{auto_tag} <span style="font-size:10px;color:var(--text3);">(미국)</span></span>
-      <span class="badge {vix_cls}">{vix_txt}</span>
+      <span class="badge {vix_cls}" id="badge-vix">{vix_txt}</span>
     </div>
     <div class="signal-row">
       <span class="signal-name">브렌트유{auto_tag} <span style="font-size:10px;color:var(--text3);">(PetroVN 수혜)</span></span>
-      <span class="badge {crude_cls}">{crude_txt}</span>
+      <span class="badge {crude_cls}" id="badge-crude">{crude_txt}</span>
     </div>
     <div class="signal-row">
       <span class="signal-name">금 가격{auto_tag} <span style="font-size:10px;color:var(--text3);">(소비심리·헷지)</span></span>
-      <span class="badge {gold_cls}">{gold_txt}</span>
+      <span class="badge {gold_cls}" id="badge-gold">{gold_txt}</span>
     </div>
     {news_row("베트남 FDI 유입", "fdi")}
     {news_row("외국인 자금 흐름", "fii")}
@@ -991,39 +991,39 @@ def build_html(vn, cfg, api_key, updated_at, vn_analysis, indicators=None, macro
         now_type = ag.get("now", {}).get("type", "hold")
         now_cls  = {"hold": "action-hold", "buy": "action-buy", "sell": "action-sell"}.get(now_type, "action-hold")
         action_guide_html = f"""
-  <div class="action {now_cls}">
-    <div class="action-title">{ag['now']['title']}</div>
-    <div class="action-desc">{ag['now']['desc']}</div>
+  <div class="action {now_cls}" id="ag-now">
+    <div class="action-title" id="ag-now-title">{ag['now']['title']}</div>
+    <div class="action-desc" id="ag-now-desc">{ag['now']['desc']}</div>
   </div>
-  <div class="action action-buy">
-    <div class="action-title">{ag['buy1']['title']}</div>
-    <div class="action-desc">{ag['buy1']['desc']}</div>
+  <div class="action action-buy" id="ag-buy1">
+    <div class="action-title" id="ag-buy1-title">{ag['buy1']['title']}</div>
+    <div class="action-desc" id="ag-buy1-desc">{ag['buy1']['desc']}</div>
   </div>
-  <div class="action action-buy">
-    <div class="action-title">{ag['buy2']['title']}</div>
-    <div class="action-desc">{ag['buy2']['desc']}</div>
+  <div class="action action-buy" id="ag-buy2">
+    <div class="action-title" id="ag-buy2-title">{ag['buy2']['title']}</div>
+    <div class="action-desc" id="ag-buy2-desc">{ag['buy2']['desc']}</div>
   </div>
-  <div class="action action-sell">
-    <div class="action-title">{ag['sell']['title']}</div>
-    <div class="action-desc">{ag['sell']['desc']}</div>
+  <div class="action action-sell" id="ag-sell">
+    <div class="action-title" id="ag-sell-title">{ag['sell']['title']}</div>
+    <div class="action-desc" id="ag-sell-desc">{ag['sell']['desc']}</div>
   </div>"""
     else:
         action_guide_html = f"""
-  <div class="action action-hold">
-    <div class="action-title">📌 지금 — 관망 중</div>
-    <div class="action-desc">데이터 수집 중입니다. 다시 열어주세요.</div>
+  <div class="action action-hold" id="ag-now">
+    <div class="action-title" id="ag-now-title">📌 지금 — 관망 중</div>
+    <div class="action-desc" id="ag-now-desc">데이터 수집 중입니다. 다시 열어주세요.</div>
   </div>
-  <div class="action action-buy">
-    <div class="action-title">🟢 1차 매수 조건</div>
-    <div class="action-desc">RSI 과매도 + 이평 정배열 전환 시 → {invest:,}만원 투입</div>
+  <div class="action action-buy" id="ag-buy1">
+    <div class="action-title" id="ag-buy1-title">🟢 1차 매수 조건</div>
+    <div class="action-desc" id="ag-buy1-desc">RSI 과매도 + 이평 정배열 전환 시 → {invest:,}만원 투입</div>
   </div>
-  <div class="action action-buy">
-    <div class="action-title">🟢 2차 분할 매수 조건</div>
-    <div class="action-desc">1차 매수 후 추가 하락 시 분할로 → {add1:,}만원 씩</div>
+  <div class="action action-buy" id="ag-buy2">
+    <div class="action-title" id="ag-buy2-title">🟢 2차 분할 매수 조건</div>
+    <div class="action-desc" id="ag-buy2-desc">1차 매수 후 추가 하락 시 분할로 → {add1:,}만원 씩</div>
   </div>
-  <div class="action action-sell">
-    <div class="action-title">🔴 손절 조건</div>
-    <div class="action-desc">매수가 대비 -{sl_pct}% 이탈 시 → 전량 손절 검토</div>
+  <div class="action action-sell" id="ag-sell">
+    <div class="action-title" id="ag-sell-title">🔴 손절 조건</div>
+    <div class="action-desc" id="ag-sell-desc">매수가 대비 -{sl_pct}% 이탈 시 → 전량 손절 검토</div>
   </div>"""
 
     # ── 이벤트 일정 ──────────────────────────────────────────────
@@ -1205,6 +1205,16 @@ table td {{ padding: 5px 0; border-bottom: 1px solid var(--border); }}
   <div class="section-label">AI 매수 판단 질문</div>
   <div class="card">
     <div class="card-title">지금 상황 물어보기</div>
+    <div id="td-key-setup" style="margin-bottom:10px;background:#f8f9fa;border-radius:10px;padding:12px;">
+      <div id="td-key-connected" style="display:none;font-size:12px;color:var(--text2);">✅ TwelveData 실시간 연동 중 &nbsp;<button class="btn" style="font-size:11px;padding:4px 10px;" onclick="document.getElementById('td-key-connected').style.display='none';document.getElementById('td-key-input-row').style.display='flex';">🔑 키 변경</button></div>
+      <div id="td-key-input-row" style="display:none;flex-direction:column;gap:6px;">
+        <div style="font-size:12px;color:var(--text2);">📡 실시간 시세 연동을 위해 <b>TwelveData API 키</b>가 필요해요 (<a href="https://twelvedata.com" target="_blank">twelvedata.com</a> 무료 가입)</div>
+        <div class="input-row">
+          <input type="password" id="td-key-input" placeholder="TwelveData API 키 입력" style="flex:1;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-size:13px;background:var(--card-bg);color:var(--text);">
+          <button class="btn" onclick="saveTDKey()">저장</button>
+        </div>
+      </div>
+    </div>
     <div id="key-setup" style="margin-bottom:10px;display:none;">
       <div style="font-size:12px;color:var(--text3);margin-bottom:6px;">Anthropic API 키를 입력하면 저장됩니다 (이 기기에만)</div>
       <div class="input-row">
@@ -1312,9 +1322,102 @@ function toggleKeySetup() {{
   const el = document.getElementById('key-setup');
   el.style.display = el.style.display === 'none' ? 'block' : 'none';
 }}
-window.addEventListener('DOMContentLoaded', function() {{
-  if (!getKey()) document.getElementById('key-setup').style.display = 'block';
-}});
+function getTDKey() {{ return localStorage.getItem('twelvedata_api_key') || ''; }}
+function saveTDKey() {{
+  const k = document.getElementById('td-key-input').value.trim();
+  if (!k) return;
+  localStorage.setItem('twelvedata_api_key', k);
+  document.getElementById('td-key-input').value = '';
+  document.getElementById('td-key-connected').style.display = 'block';
+  document.getElementById('td-key-input-row').style.display = 'none';
+  fetchLiveData().then(updateActionGuide);
+}}
+function initTDKeyUI() {{
+  const connected = document.getElementById('td-key-connected');
+  const inputRow = document.getElementById('td-key-input-row');
+  if (!connected || !inputRow) return;
+  if (getTDKey()) {{
+    connected.style.display = 'block';
+    inputRow.style.display = 'none';
+  }} else {{
+    connected.style.display = 'none';
+    inputRow.style.display = 'flex';
+  }}
+}}
+async function fetchTDData(symbols) {{
+  const key = getTDKey();
+  if (!key) return {{}};
+  const url = `https://api.twelvedata.com/quote?symbol=${{encodeURIComponent(symbols.join(','))}}&apikey=${{key}}&dp=2`;
+  const r = await fetch(url);
+  if (!r.ok) return {{}};
+  const data = await r.json();
+  const result = {{}};
+  for (const sym of symbols) {{
+    const item = symbols.length === 1 ? data : data[sym];
+    if (item && !item.code) {{
+      result[sym] = {{ price: parseFloat(item.close), prev: parseFloat(item.previous_close), pct: parseFloat(item.percent_change) }};
+    }}
+  }}
+  return result;
+}}
+function setBadge(id, text, cls) {{
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = text;
+  el.className = 'badge ' + cls;
+}}
+async function fetchLiveData() {{
+  const td = await fetchTDData(['VNM','USD/VND','USD/CNY','DXY','EEM','VIX','BCO/USD','XAU/USD']).catch(() => ({{}}));
+  const fmt = (v, d=2) => v != null ? v.toLocaleString('ko-KR', {{maximumFractionDigits: d}}) : '-';
+  const arrow = pct => pct >= 0 ? '▲' : '▼';
+  if (td['VNM']) {{ const v=td['VNM']; const c=v.pct>=0?'badge-g':'badge-r'; setBadge('badge-vnm',`$${{fmt(v.price)}} ${{arrow(v.pct)}}${{Math.abs(v.pct).toFixed(2)}}% — ${{v.pct>=0?'상승':'하락'}}`,c); }}
+  if (td['USD/VND']) {{ const v=td['USD/VND']; const c=v.price>26500?'badge-r':v.price>25500?'badge-y':v.price>24500?'badge-b':'badge-g'; const l=v.price>26500?'동 급락':v.price>25500?'동 약세':v.price>24500?'안정':'동 강세'; setBadge('badge-usdvnd',`₫${{fmt(v.price,0)}} — ${{l}}`,c); }}
+  if (td['USD/CNY']) {{ const v=td['USD/CNY']; const c=v.price<7.1?'badge-g':v.price<7.3?'badge-y':'badge-r'; const l=v.price<7.1?'위안 안정':v.price<7.3?'위안 약세':'위안 급약세'; setBadge('badge-usdcny',`¥${{fmt(v.price)}} — ${{l}}`,c); }}
+  if (td['DXY']) {{ const v=td['DXY']; const c=v.price>105?'badge-r':v.price>100?'badge-y':'badge-b'; setBadge('badge-dxy',`DXY ${{fmt(v.price)}} ${{arrow(v.pct)}}${{Math.abs(v.pct).toFixed(2)}} — ${{v.price>105?'달러 강세':v.price>100?'달러 강세 주의':'안정'}}`,c); }}
+  if (td['EEM']) {{ const v=td['EEM']; const c=v.pct>=0.5?'badge-g':v.pct>=-0.5?'badge-b':'badge-r'; setBadge('badge-eem',`$${{fmt(v.price)}} ${{arrow(v.pct)}}${{Math.abs(v.pct).toFixed(2)}}% — ${{v.pct>=0.5?'상승':v.pct>=-0.5?'보합':'하락'}}`,c); }}
+  if (td['VIX']) {{ const v=td['VIX']; const c=v.price>25?'badge-r':v.price>18?'badge-y':'badge-g'; setBadge('badge-vix',`US VIX ${{fmt(v.price,1)}} — ${{v.price>25?'공포':v.price>18?'불안':'안정'}}`,c); }}
+  if (td['BCO/USD']) {{ const v=td['BCO/USD']; const c=v.price>90?'badge-r':v.price>80?'badge-y':'badge-g'; setBadge('badge-crude',`$${{fmt(v.price,1)}} ${{v.price>90?'고유가':v.price>80?'보통':'저유가'}}`,c); }}
+  if (td['XAU/USD']) {{ const v=td['XAU/USD']; const c=v.pct>1?'badge-r':v.pct>0?'badge-y':'badge-g'; setBadge('badge-gold',`$${{fmt(v.price,0)}} ${{arrow(v.pct)}}${{Math.abs(v.pct).toFixed(1)}}% — ${{v.pct>1?'위험회피 심리 강함':'안정'}}`,c); }}
+  return td;
+}}
+async function updateActionGuide() {{
+  const API_KEY = getKey();
+  if (!API_KEY) return;
+  const td = await fetchLiveData().catch(() => ({{}}));
+  const fmt = (sym, d=2) => td[sym] ? td[sym].price.toLocaleString('ko-KR',{{maximumFractionDigits:d}}) : '-';
+  const pct  = sym => td[sym] ? `${{td[sym].pct>=0?'▲':'▼'}}${{Math.abs(td[sym].pct).toFixed(2)}}%` : '';
+  const ctx = `당신은 10년차 베트남 펀드 매니저입니다.
+현재 상황: 베트남 VN-Index 펀드 매수 전 관찰 중 (아직 미매수)
+투자 계획: 1차 {invest:,}만원, 추가 {add:,}만원 분할, 손절 -{sl_pct}%
+
+[실시간 시장 데이터]
+- VNM ETF: $${{fmt('VNM')}} (${{pct('VNM')}})
+- USD/VND: ₫${{fmt('USD/VND',0)}} / USD/CNY: ¥${{fmt('USD/CNY')}}
+- DXY: ${{fmt('DXY')}} / EEM: $${{fmt('EEM')}} (${{pct('EEM')}})
+- US VIX: ${{fmt('VIX',1)}} / 브렌트유: $${{fmt('BCO/USD',1)}} / 금: $${{fmt('XAU/USD',0)}}`;
+  const prompt = `위 실시간 데이터를 바탕으로 지금 시점의 액션 가이드를 JSON으로 작성해주세요.
+반드시 아래 형식만 출력하세요 (다른 텍스트 없이):
+{{"now_title":"📌 지금 — [한 줄 현황]","now_desc":"[현재 상황 2문장]","buy1_title":"🟢 1차 매수 조건","buy1_desc":"[1차 매수 조건 2문장]","buy2_title":"🟢 2차 매수 조건","buy2_desc":"[2차 매수 조건 2문장]","sell_title":"🔴 손절 조건","sell_desc":"[손절 조건 1~2문장]"}}`;
+  try {{
+    const r = await fetch('https://api.anthropic.com/v1/messages', {{
+      method: 'POST',
+      headers: {{ 'x-api-key': API_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json', 'anthropic-dangerous-direct-browser-access': 'true' }},
+      body: JSON.stringify({{ model: 'claude-haiku-4-5-20251001', max_tokens: 600, system: ctx, messages: [{{ role: 'user', content: prompt }}] }})
+    }});
+    const d = await r.json();
+    const text = d.content?.[0]?.text || '';
+    const match = text.match(/\{{[\s\S]*\}}/);
+    if (!match) return;
+    const ag = JSON.parse(match[0]);
+    if (ag.now_title)  {{ document.getElementById('ag-now-title').textContent  = ag.now_title;  document.getElementById('ag-now-desc').textContent  = ag.now_desc; }}
+    if (ag.buy1_title) {{ document.getElementById('ag-buy1-title').textContent = ag.buy1_title; document.getElementById('ag-buy1-desc').textContent = ag.buy1_desc; }}
+    if (ag.buy2_title) {{ document.getElementById('ag-buy2-title').textContent = ag.buy2_title; document.getElementById('ag-buy2-desc').textContent = ag.buy2_desc; }}
+    if (ag.sell_title) {{ document.getElementById('ag-sell-title').textContent = ag.sell_title; document.getElementById('ag-sell-desc').textContent = ag.sell_desc; }}
+  }} catch(e) {{}}
+}}
+if (!getKey()) document.getElementById('key-setup').style.display = 'block';
+initTDKeyUI();
+if (getTDKey()) fetchLiveData().then(updateActionGuide);
 
 function setQ(q) {{ document.getElementById('ai-q').value = q; }}
 
