@@ -1,0 +1,32 @@
+name: 베트남펀드 알림 체크 (15분마다)
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+jobs:
+  alert:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Python 설정
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 패키지 설치
+        run: pip install yfinance -q
+
+      - name: 설정 파일 생성
+        env:
+          CONFIG_JSON: ${{ secrets.CONFIG_JSON }}
+        run: echo "$CONFIG_JSON" > 설정.json
+
+      - name: 카카오 알림 발송
+        env:
+          KAKAO_REST_API_KEY: ${{ secrets.KAKAO_REST_API_KEY }}
+          KAKAO_REFRESH_TOKEN: ${{ secrets.KAKAO_REFRESH_TOKEN }}
+          KAKAO_CLIENT_SECRET: ${{ secrets.KAKAO_CLIENT_SECRET }}
+        run: python 알림체크.py
