@@ -1391,10 +1391,10 @@ async function fetchLiveData() {{
   if (td['XAU/USD']) {{ const v=td['XAU/USD']; const c=v.pct>1?'badge-r':v.pct>0?'badge-y':'badge-g'; setBadge('badge-gold',`$${{fmt(v.price,0)}} ${{arrow(v.pct)}}${{Math.abs(v.pct).toFixed(1)}}% — ${{v.pct>1?'위험회피 심리 강함':'안정'}}`,c); }}
   return td;
 }}
-async function updateActionGuide() {{
+async function updateActionGuide(td) {{
   const API_KEY = getKey();
   if (!API_KEY) return;
-  const td = await fetchLiveData().catch(() => ({{}}));
+  if (!td) td = await fetchLiveData().catch(() => ({{}}));
   const fmt = (sym, d=2) => td[sym] ? td[sym].price.toLocaleString('ko-KR',{{maximumFractionDigits:d}}) : '-';
   const pct  = sym => td[sym] ? `${{td[sym].pct>=0?'▲':'▼'}}${{Math.abs(td[sym].pct).toFixed(2)}}%` : '';
   const ctx = `당신은 10년차 베트남 펀드 매니저입니다.
@@ -1428,7 +1428,7 @@ async function updateActionGuide() {{
 }}
 if (!getKey()) document.getElementById('key-setup').style.display = 'block';
 initTDKeyUI();
-fetchLiveData();
+fetchLiveData().then(updateActionGuide);
 
 function setQ(q) {{ document.getElementById('ai-q').value = q; }}
 
