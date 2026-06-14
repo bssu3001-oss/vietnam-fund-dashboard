@@ -1090,9 +1090,12 @@ table td {{ padding: 5px 0; border-bottom: 1px solid var(--border); }}
 <body>
 <div class="container">
 
-  <div class="header">
-    <h1>🇻🇳 베트남 펀드 대시보드</h1>
-    <p>VN-Index 기반 매수 타이밍 분석 · 매수 전 관찰 중</p>
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+    <div class="header" style="margin-bottom:0;">
+      <h1>🇻🇳 베트남 펀드 대시보드</h1>
+      <p>VN-Index 기반 매수 타이밍 분석 · 매수 전 관찰 중</p>
+    </div>
+    <button onclick="location.reload(true)" style="margin-top:4px;padding:7px 18px;border-radius:20px;border:0.5px solid var(--border);background:var(--card-bg);color:var(--text);font-size:13px;font-weight:500;cursor:pointer;flex-shrink:0;">🔄 새로고침</button>
   </div>
 
   {scorecard_html}
