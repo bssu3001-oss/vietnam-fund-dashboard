@@ -588,8 +588,9 @@ def build_html(vn, cfg, api_key, updated_at, vn_analysis, indicators=None, macro
     vn_periods_js = make_periods_js(vn, "VN-Index")
 
     # ── 기술적 신호 ──────────────────────────────────────────────
-    def sig_row(name, badge_cls, text):
-        return f'<div class="signal-row"><span class="signal-name">{name}</span><span class="badge {badge_cls}">{text}</span></div>'
+    def sig_row(name, badge_cls, text, badge_id=""):
+        id_attr = f' id="{badge_id}"' if badge_id else ''
+        return f'<div class="signal-row"><span class="signal-name">{name}</span><span class="badge {badge_cls}"{id_attr} data-sg="tech">{text}</span></div>'
 
     rsi = ind.get("rsi", 50)
     if rsi <= 30:   rsi_cls, rsi_txt = "badge-g", f"RSI {rsi} — 과매도 (매수 기회)"
@@ -1351,23 +1352,7 @@ const PDATA_chartVN = {vn_periods_js};
 window._charts['chartVN'] = {{inst: initChart('chartVN', PDATA_chartVN, 'd1'), data: PDATA_chartVN}};
 
 // 페이지 열릴 때 신호 설명 자동 세팅
-(function() {{
-  const descMap = {{
-    '강매수':    '기술·매크로·뉴스 신호가 모두 긍정적입니다. 분할 매수를 적극 고려할 수 있는 시점입니다.',
-    '매수 검토': '신호 일부가 긍정적으로 전환되고 있습니다. 소규모 선진입 또는 추가 매수를 준비하세요.',
-    '관망':      '아직 진입하기 이른 시점입니다. 추세 반전 신호를 확인한 뒤 매수를 고려하세요.',
-    '조심':      '부정적 신호가 우세합니다. 신규 진입은 자제하고, 보유 중이라면 리스크를 점검하세요.',
-    '진입 자제': '복수의 위험 신호가 켜져 있습니다. 비중 축소 또는 현금 보유를 우선 고려하세요.',
-  }};
-  const emojiEl = document.getElementById('sc-emoji');
-  const descEl  = document.getElementById('sc-desc');
-  if (emojiEl && descEl) {{
-    const label = emojiEl.textContent.replace(/[^가-힣a-zA-Z ]/gu, '').trim();
-    for (const [key, text] of Object.entries(descMap)) {{
-      if (label.includes(key)) {{ descEl.textContent = text; break; }}
-    }}
-  }}
-}})();
+// 종합 투자 신호 설명은 업데이트.py 실행 시 실제 지표 기반으로 자동 생성됩니다.
 </script>
 </body>
 </html>"""
@@ -1406,6 +1391,10 @@ def main():
 
     out_path = os.path.join(os.path.dirname(__file__), '베트남펀드_대시보드.html')
     with open(out_path, 'w', encoding='utf-8') as f:
+        f.write(html)
+
+    idx_path = os.path.join(os.path.dirname(__file__), 'index.html')
+    with open(idx_path, 'w', encoding='utf-8') as f:
         f.write(html)
 
     print(f"\n대시보드 업데이트 완료!")
