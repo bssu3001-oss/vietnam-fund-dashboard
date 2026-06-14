@@ -1418,7 +1418,7 @@ async function updateActionGuide() {{
 }}
 if (!getKey()) document.getElementById('key-setup').style.display = 'block';
 initTDKeyUI();
-if (getTDKey()) fetchLiveData().then(updateActionGuide);
+if (getTDKey()) fetchLiveData();
 
 function setQ(q) {{ document.getElementById('ai-q').value = q; }}
 
