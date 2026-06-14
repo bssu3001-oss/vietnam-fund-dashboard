@@ -2,10 +2,9 @@ name: 베트남 대시보드 자동 업데이트
 
 on:
   schedule:
-    # 한국시간 평일 오전 9시 (UTC 00:00)
-    - cron: '0 0 * * 1-5'
-    # 한국시간 평일 오후 6시 (UTC 09:00)
-    - cron: '0 9 * * 1-5'
+    - cron: '0 0 * * 1-5'    # 평일 오전 9시 KST
+    - cron: '0 5 * * 1-5'    # 평일 오후 2시 KST
+    - cron: '30 10 * * 1-5'  # 평일 오후 7시 30분 KST
   workflow_dispatch:  # 수동 실행도 가능
 
 concurrency:
@@ -41,15 +40,10 @@ jobs:
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           NEWSAPI_KEY: ${{ secrets.NEWSAPI_KEY }}
-        run: python 업데이트.py
-
-      - name: 카카오 알림 발송
-        env:
           KAKAO_REST_API_KEY: ${{ secrets.KAKAO_REST_API_KEY }}
           KAKAO_REFRESH_TOKEN: ${{ secrets.KAKAO_REFRESH_TOKEN }}
           KAKAO_CLIENT_SECRET: ${{ secrets.KAKAO_CLIENT_SECRET }}
-        run: python 알림체크.py
-        continue-on-error: true
+        run: python 업데이트.py
 
       - name: index.html 복사
         run: cp 베트남펀드_대시보드.html index.html

@@ -11,6 +11,7 @@ import os
 import sys
 import subprocess
 import urllib.request
+import urllib.parse
 from datetime import datetime
 
 def install(pkg):
@@ -1486,6 +1487,159 @@ window._charts['chartVN'] = {{inst: initChart('chartVN', PDATA_chartVN, 'd1'), d
 </html>"""
     return html
 
+# ── 카카오 알림 ──────────────────────────────────────────────────
+
+def kakao_refresh_access_token(rest_api_key, refresh_token, client_secret=None):
+    params = {
+        "grant_type": "refresh_token",
+        "client_id": rest_api_key,
+        "refresh_token": refresh_token,
+    }
+    if client_secret:
+        params["client_secret"] = client_secret
+    data = urllib.parse.urlencode(params).encode()
+    req = urllib.request.Request(
+        "https://kauth.kakao.com/oauth/token",
+        data=data,
+        headers={"Content-Type": "application/x-www-form-urlencoded"},
+    )
+    with urllib.request.urlopen(req, timeout=10) as r:
+        result = json.loads(r.read())
+    if "access_token" not in result:
+        raise RuntimeError(f"토큰 갱신 실패: {result}")
+    return result["access_token"]
+
+
+def kakao_send(access_token, text):
+    template = json.dumps({
+        "object_type": "text",
+        "text": text,
+        "link": {"web_url": "", "mobile_web_url": ""},
+    }, ensure_ascii=False)
+    data = urllib.parse.urlencode({"template_object": template}).encode()
+    req = urllib.request.Request(
+        "https://kapi.kakao.com/v2/api/talk/memo/default/send",
+        data=data,
+        headers={
+            "Authorization": f"Bearer {access_token}",
+            "Content-Type": "application/x-www-form-urlencoded",
+        },
+    )
+    with urllib.request.urlopen(req, timeout=10) as r:
+        result = json.loads(r.read())
+    if result.get("result_code") != 0:
+        raise RuntimeError(f"메시지 전송 실패: {result}")
+    print("✅ 카카오 알림 전송 완료")
+
+
+def generate_ai_commentary(vn, indicators, macro, cfg, api_key):
+    if not api_key:
+        return ""
+    from datetime import timezone, timedelta
+    KST = timezone(timedelta(hours=9))
+    now_str = datetime.now(KST).strftime("%H:%M")
+    ind = indicators or {}
+    mac = macro or {}
+    buy_price = cfg.get("매수단가", 0)
+    current = vn['current']
+    pnl = (current - buy_price) / buy_price * 100 if buy_price else 0
+    prompt = f"""당신은 베트남 펀드 투자 어시스턴트입니다.
+아래 현재 데이터를 보고, 투자자가 알아야 할 특이사항이나 흐름 변화가 있으면 2~3문장으로 한국어로 코멘트해주세요.
+특이사항이 전혀 없으면 "특이사항 없음"이라고만 답하세요.
+
+[현재 데이터]
+- VN-Index: {current:.0f} ({vn['change_pct']:+}%)
+- 매수단가: {buy_price:.0f} / 손익: {pnl:+.1f}%
+- RSI(14주): {ind.get('rsi', '?')}
+- 이평 배열: {ind.get('ma_signal', '?')}
+- 4주 모멘텀: {ind.get('momentum', 0):+.1f}%
+- DXY: {mac.get('dxy', '?')}
+- 미국 VIX: {mac.get('vix', '?')}
+
+반드시 짧게, 핵심만 말해주세요."""
+    body = json.dumps({
+        "model": "claude-haiku-4-5-20251001",
+        "max_tokens": 300,
+        "messages": [{"role": "user", "content": prompt}]
+    }).encode()
+    try:
+        req = urllib.request.Request(
+            "https://api.anthropic.com/v1/messages",
+            data=body,
+            headers={"Content-Type": "application/json",
+                     "x-api-key": api_key,
+                     "anthropic-version": "2023-06-01"},
+            method="POST"
+        )
+        with urllib.request.urlopen(req, timeout=30) as r:
+            result = json.loads(r.read())
+        comment = result["content"][0]["text"].strip()
+        if "특이사항 없음" in comment:
+            return ""
+        msg = (f"📊 베트남펀드 {now_str}\n"
+               f"VN-Index {current:.0f} ({vn['change_pct']:+}%)\n"
+               f"매수단가 {buy_price:.0f} / 손익 {pnl:+.1f}%\n"
+               f"💬 {comment}")
+        return msg
+    except Exception as e:
+        print(f"AI 코멘트 생성 실패: {e}")
+        return ""
+
+
+def check_action_guide_achievement(vn, indicators, macro, cfg, action_guide, api_key):
+    if not api_key or not action_guide:
+        return ""
+    ind = indicators or {}
+    mac = macro or {}
+    buy_price = cfg.get("매수단가", 0)
+    current = vn['current']
+    pnl = (current - buy_price) / buy_price * 100 if buy_price else 0
+    ag = action_guide
+    prompt = f"""당신은 베트남 펀드 투자 어시스턴트입니다.
+아래 [현재 데이터]와 [액션가이드]를 비교해서, 달성된 조건이 있으면 어떤 조건인지 한 문장으로 알려주세요.
+달성된 조건이 없으면 "없음"이라고만 답하세요.
+
+[현재 데이터]
+- VN-Index: {current:.0f} ({vn['change_pct']:+}%)
+- 매수단가: {buy_price:.0f} / 손익: {pnl:+.1f}%
+- RSI(14주): {ind.get('rsi', '?')}
+- 이평 배열: {ind.get('ma_signal', '?')}
+- DXY: {mac.get('dxy', '?')}
+- 미국 VIX: {mac.get('vix', '?')}
+
+[액션가이드]
+- 현재 상태: {ag.get('now', {}).get('desc', '')}
+- 1차 매수 조건: {ag.get('buy1', {}).get('desc', '')}
+- 2차 매수 조건: {ag.get('buy2', {}).get('desc', '')}
+- 손절 조건: {ag.get('sell', {}).get('desc', '')}
+
+달성된 조건만 간단히 알려주세요."""
+    body = json.dumps({
+        "model": "claude-haiku-4-5-20251001",
+        "max_tokens": 200,
+        "messages": [{"role": "user", "content": prompt}]
+    }).encode()
+    try:
+        req = urllib.request.Request(
+            "https://api.anthropic.com/v1/messages",
+            data=body,
+            headers={"Content-Type": "application/json",
+                     "x-api-key": api_key,
+                     "anthropic-version": "2023-06-01"},
+            method="POST"
+        )
+        with urllib.request.urlopen(req, timeout=30) as r:
+            result = json.loads(r.read())
+        answer = result["content"][0]["text"].strip()
+        if "없음" in answer:
+            return ""
+        msg = f"🎯 [베트남펀드] 액션가이드 조건 달성!\n{answer}\n대시보드에서 확인하세요."
+        return msg
+    except Exception as e:
+        print(f"달성 체크 실패: {e}")
+        return ""
+
+
 # ── 메인 ──────────────────────────────────────────────────────────
 def main():
     cfg = load_config()
@@ -1527,6 +1681,30 @@ def main():
 
     print(f"\n대시보드 업데이트 완료!")
     print(f"파일 위치: {out_path}")
+
+    # ── 카카오 알림 발송 ──
+    rest_api_key = os.environ.get("KAKAO_REST_API_KEY", "").strip()
+    refresh_token = os.environ.get("KAKAO_REFRESH_TOKEN", "").strip()
+    client_secret = os.environ.get("KAKAO_CLIENT_SECRET", "").strip()
+
+    if rest_api_key and refresh_token:
+        try:
+            access_token = kakao_refresh_access_token(rest_api_key, refresh_token, client_secret or None)
+
+            commentary = generate_ai_commentary(vn, vn_ind, macro, cfg, api_key)
+            if commentary:
+                kakao_send(access_token, commentary)
+                print("✅ AI 코멘트 발송 완료")
+
+            achievement = check_action_guide_achievement(vn, vn_ind, macro, cfg, action_guide, api_key)
+            if achievement:
+                kakao_send(access_token, achievement)
+                print("✅ 액션가이드 달성 알림 발송 완료")
+
+        except Exception as e:
+            print(f"카카오 알림 오류: {e}")
+    else:
+        print("⚠️ KAKAO 환경변수 없음 — 알림 건너뜀")
 
     import webbrowser
     webbrowser.open(f'file://{out_path}')

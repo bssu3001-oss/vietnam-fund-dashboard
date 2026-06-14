@@ -3,6 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>베트남 펀드 대시보드</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -93,9 +96,12 @@ table td { padding: 5px 0; border-bottom: 1px solid var(--border); }
 <body>
 <div class="container">
 
-  <div class="header">
-    <h1>🇻🇳 베트남 펀드 대시보드</h1>
-    <p>VN-Index 기반 매수 타이밍 분석 · 매수 전 관찰 중</p>
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+    <div class="header" style="margin-bottom:0;">
+      <h1>🇻🇳 베트남 펀드 대시보드</h1>
+      <p>VN-Index 기반 매수 타이밍 분석 · 매수 전 관찰 중</p>
+    </div>
+    <button onclick="location.reload(true)" style="margin-top:4px;padding:7px 18px;border-radius:20px;border:0.5px solid var(--border);background:var(--card-bg);color:var(--text);font-size:13px;font-weight:500;cursor:pointer;flex-shrink:0;">🔄 새로고침</button>
   </div>
 
   <div style="background:#fff8e1;border:1px solid #BA751733;border-radius:18px;padding:18px 20px;margin-bottom:20px;">
@@ -106,19 +112,19 @@ table td { padding: 5px 0; border-bottom: 1px solid var(--border); }
       </div>
       <div style="text-align:right;">
         <div style="font-size:11px;color:var(--text3);margin-bottom:4px;">신호 강도</div>
-        <div id="sc-pct" style="font-size:24px;font-weight:700;color:#BA7517;">44점</div>
+        <div id="sc-pct" style="font-size:24px;font-weight:700;color:#BA7517;">50점</div>
         <div style="font-size:10px;color:var(--text3);">/ 100점</div>
       </div>
     </div>
     <div style="background:rgba(0,0,0,0.08);border-radius:6px;height:8px;overflow:hidden;margin-bottom:10px;">
-      <div id="sc-bar" style="width:44%;height:100%;border-radius:6px;background:#BA7517;transition:width 0.6s;"></div>
+      <div id="sc-bar" style="width:50%;height:100%;border-radius:6px;background:#BA7517;transition:width 0.6s;"></div>
     </div>
     <div style="display:flex;gap:16px;font-size:11px;color:var(--text2);">
       <span>기술적 <strong id="sc-tech" style="color:#BA7517;">-3.0</strong></span>
       <span>매크로 <strong id="sc-macro" style="color:#BA7517;">+1.0</strong></span>
-      <span>뉴스 <strong id="sc-news" style="color:#BA7517;">+0.0</strong></span>
+      <span>뉴스 <strong id="sc-news" style="color:#BA7517;">+2.4</strong></span>
     </div>
-    <div id="sc-desc" style="margin-top:10px;font-size:12px;color:var(--text2);line-height:1.6;padding:10px 12px;background:rgba(0,0,0,0.04);border-radius:10px;">RSI 중립, 이평선 혼조 상태로 기술적 추세가 아직 약합니다. 이평선 정배열 전환 또는 RSI 반등을 확인한 뒤 진입을 고려하세요.</div>
+    <div id="sc-desc" style="margin-top:10px;font-size:12px;color:var(--text2);line-height:1.6;padding:10px 12px;background:rgba(0,0,0,0.04);border-radius:10px;">✅ FDI 유입(1월-5월 34.9% 증가, 강한 투자 흐름), GDP 호조 긍정적이나, ⚠️ 이평선 역배열(하락), 모멘텀 -5.0%, 외국인 순매도(주식 외국인 자금 이탈, 규제 완화도 효과 제한) 부담이 남아 있습니다. 이평선 정배열 전환 또는 외국인 순매수 전환을 확인한 뒤 진입을 고려하세요.</div>
   </div>
 
   <div class="section-label">VN-Index (호치민 지수)</div>
@@ -149,7 +155,7 @@ table td { padding: 5px 0; border-bottom: 1px solid var(--border); }
   </div>
   <div class="card" style="margin-top:-4px;">
     <div class="card-title" style="font-size:12px;color:var(--text2);font-weight:500;margin-bottom:10px;">📊 AI 차트 분석 — VN-Index</div>
-    <div style="font-size:13px;line-height:2;color:var(--text);">분석 생성 실패: HTTP Error 401: Unauthorized</div>
+    <div style="font-size:13px;line-height:2;color:var(--text);">• <strong>현재 지수</strong>: 1,791.65로 전일 대비 -1.28% 하락, 약한 약세 진행 중<br><br>• <strong>추세 (이평)</strong>: 5주 > 13주 > 26주 역배열로 하락 추세 확립, <strong>매도세 우위</strong><br><br>• <strong>모멘텀</strong>: RSI 59.4는 중립 수준이나 4주 모멘텀 -5.0%로 <strong>단기 약세 심화</strong><br><br>• <strong>변동성</strong>: 주간 ±2.2% 변동성으로 중간 수준의 시장 출렁임 지속<br><br>• <strong>위치</strong>: 52주 고점 대비 -9.9% 하락했으나, 52주 저점 대비 +37.1% 회복 상태 유지<br><br>• <strong>매수 타이밍</strong>: 이평선 정렬 개선과 RSI 50 이하 신호 대기 추천, <strong>지금은 매수 유보</strong><br><br>• <strong>한 줄 결론</strong>: 하락 추세가 명확하고 단기 모멘텀이 약한 상태로, 추가 하락 후 저점 근처(1,750~1,770)에서 매수 진입을 노려보세요.</div>
   </div>
 
   <hr class="divider">
@@ -157,7 +163,7 @@ table td { padding: 5px 0; border-bottom: 1px solid var(--border); }
   <div class="section-label">주요 이벤트 일정</div>
   <div class="card" style="margin-bottom:16px;">
     <table style="width:100%;border-collapse:collapse;font-size:13px;">
-      <tbody style="line-height:2.2;"><tr><td style="color:var(--text2);">07-01</td><td>베트남 반기 GDP 발표</td><td style="text-align:right;color:var(--warn-text);font-weight:500;">D-18</td></tr><tr><td style="color:var(--text2);">09-17</td><td>FOMC 금리결정</td><td style="text-align:right;color:var(--text3);">D-96</td></tr></tbody>
+      <tbody style="line-height:2.2;"><tr><td style="color:var(--text2);">07-01</td><td>베트남 반기 GDP 발표</td><td style="text-align:right;color:var(--warn-text);font-weight:500;">D-17</td></tr><tr><td style="color:var(--text2);">09-17</td><td>FOMC 금리결정</td><td style="text-align:right;color:var(--text3);">D-95</td></tr></tbody>
     </table>
   </div>
   <hr class="divider" style="margin-top:0;">
@@ -234,42 +240,58 @@ table td { padding: 5px 0; border-bottom: 1px solid var(--border); }
   <div class="section-label">매매 신호</div>
   <div class="card">
     <div class="card-title" style="margin-bottom:8px;">📡 기술적 지표 (자동)</div>
-    <div class="signal-row"><span class="signal-name">RSI (14주)</span><span class="badge badge-b">RSI 59.4 — 중립</span></div><div class="signal-row"><span class="signal-name">이평선 배열</span><span class="badge badge-r">역배열(하락)</span></div><div class="signal-row"><span class="signal-name">단기 모멘텀</span><span class="badge badge-r">▼ 5.0% (4주 변화)</span></div><div class="signal-row"><span class="signal-name">변동성</span><span class="badge badge-r">주간 ±2.2% — 고변동</span></div><div class="signal-row"><span class="signal-name">52주 가격 위치</span><span class="badge badge-g">52주 고점 대비 -9.9% / 저점 대비 +37.1%</span></div>
+    <div class="signal-row"><span class="signal-name">RSI (14주)</span><span class="badge badge-b" data-sg="tech">RSI 59.4 — 중립</span></div><div class="signal-row"><span class="signal-name">이평선 배열</span><span class="badge badge-r" data-sg="tech">역배열(하락)</span></div><div class="signal-row"><span class="signal-name">단기 모멘텀</span><span class="badge badge-r" data-sg="tech">▼ 5.0% (4주 변화)</span></div><div class="signal-row"><span class="signal-name">변동성</span><span class="badge badge-r" data-sg="tech">주간 ±2.2% — 고변동</span></div><div class="signal-row"><span class="signal-name">52주 가격 위치</span><span class="badge badge-g" data-sg="tech">52주 고점 대비 -9.9% / 저점 대비 +37.1%</span></div>
   </div>
     <div class="card" style="margin-top:-4px;">
     <div class="card-title" style="margin-bottom:8px;">🌏 매크로 신호 <span style="font-size:11px;font-weight:400;color:var(--text3);">— 업데이트 실행 시 갱신</span></div>
     
     <div class="signal-row">
+      <span class="signal-name">VNM ETF<span style="font-size:10px;color:var(--text3);margin-left:4px;">자동</span> <span style="font-size:10px;color:var(--text3);">(뉴욕상장 베트남 대표)</span></span>
+      <span class="badge badge-r" id="badge-vnm">$17.81 ▼1.27% — 하락</span>
+    </div>
+    <div class="signal-row">
       <span class="signal-name">동/달러<span style="font-size:10px;color:var(--text3);margin-left:4px;">자동</span> <span style="font-size:10px;color:var(--text3);">(USD/VND)</span></span>
-      <span class="badge badge-y">₫26,250 — 동 약세</span>
+      <span class="badge badge-y" id="badge-usdvnd">₫26,250 — 동 약세</span>
+    </div>
+    <div class="signal-row">
+      <span class="signal-name">위안화<span style="font-size:10px;color:var(--text3);margin-left:4px;">자동</span> <span style="font-size:10px;color:var(--text3);">(USD/CNY)</span></span>
+      <span class="badge badge-g" id="badge-usdcny">¥6.76 — 위안 안정</span>
     </div>
     <div class="signal-row">
       <span class="signal-name">달러 인덱스<span style="font-size:10px;color:var(--text3);margin-left:4px;">자동</span> <span style="font-size:10px;color:var(--text3);">(DXY)</span></span>
-      <span class="badge badge-b">DXY 99.75 ▼0.11 — 안정</span>
+      <span class="badge badge-b" id="badge-dxy">DXY 99.75 ▼0.11 — 안정</span>
     </div>
     <div class="signal-row">
       <span class="signal-name">신흥국 ETF<span style="font-size:10px;color:var(--text3);margin-left:4px;">자동</span> <span style="font-size:10px;color:var(--text3);">(EEM)</span></span>
-      <span class="badge badge-b">$67.88 ▲0.56% — 보합</span>
+      <span class="badge badge-b" id="badge-eem">$67.88 ▲0.56% — 보합</span>
     </div>
     <div class="signal-row">
       <span class="signal-name">공포지수 VIX<span style="font-size:10px;color:var(--text3);margin-left:4px;">자동</span> <span style="font-size:10px;color:var(--text3);">(미국)</span></span>
-      <span class="badge badge-g">US VIX 17.68 — 안정</span>
+      <span class="badge badge-g" id="badge-vix">US VIX 17.68 — 안정</span>
     </div>
     <div class="signal-row">
-      <span class="signal-name">브렌트유<span style="font-size:10px;color:var(--text3);margin-left:4px;">자동</span></span>
-      <span class="badge badge-y">$87.3 보통</span>
+      <span class="signal-name">브렌트유<span style="font-size:10px;color:var(--text3);margin-left:4px;">자동</span> <span style="font-size:10px;color:var(--text3);">(PetroVN 수혜)</span></span>
+      <span class="badge badge-y" id="badge-crude">$87.3 보통</span>
     </div>
-    <div class="signal-row" title=" FDI inflows as a share of GDP Vietnam 2012-2023 |  Asia’s recipe for winning inflows and impact |  FDI surges in Vietnam as Q1 capital climbs 43 per cent on-year"><span class="signal-name">베트남 FDI 유입<span style="font-size:10px;color:var(--text3);margin-left:4px;">자동</span></span><span class="badge badge-b">분석 중</span></div>
-    <div class="signal-row" title=" Vietnam is booming, but foreign cash is fleeing from stocks |  Vietnam ETF: 10 Stocks Investors Should Get To Know |  Vietnam Eases Foreign Access to Equities: What the New Rules Mean for Global Investors"><span class="signal-name">외국인 자금 흐름<span style="font-size:10px;color:var(--text3);margin-left:4px;">자동</span></span><span class="badge badge-b">분석 중</span></div>
-    <div class="signal-row" title=" Vietnam's central bank to publish FX purchase, reserve data from 2027 |  Central bank steps up inspections as some banks raise deposit rates |  New governor pushes for lower interest rates to support growth"><span class="signal-name">SBV 금리<span style="font-size:10px;color:var(--text3);margin-left:4px;">자동</span></span><span class="badge badge-b">분석 중</span></div>
-    <div class="signal-row" title=" US Forced Labor Ruling Does Not Reflect Vietnam’s Efforts, Govt Says |  Vietnam does not have a policy of creating excess capacity, PM tells U.S. trade rep |  US opens probe into Vietnam's IP enforcement amid trade tensions"><span class="signal-name">미-베트남 무역<span style="font-size:10px;color:var(--text3);margin-left:4px;">자동</span></span><span class="badge badge-b">분석 중</span></div>
-    <div class="signal-row" title=" A Winner in Early Trump Tariffs, Vietnam Thrives in Trade War 2.0 |  Vietnam–China Relations on the Ground: From Strategic Rhetoric to Railways, Border Gates, and Supply Chains |  Vietnam"><span class="signal-name">중국-베트남 관계<span style="font-size:10px;color:var(--text3);margin-left:4px;">자동</span></span><span class="badge badge-b">분석 중</span></div>
-    <div class="signal-row" title=" Average inflation rate in Vietnam from 1980 to 2031 |  Vietnam Dong Under Pressure: Inflation and Trade Headwinds Intensify – Commerzbank |  Việt Nam’s 2025 CPI rises 3.31%, within National Assembly’s target"><span class="signal-name">베트남 CPI<span style="font-size:10px;color:var(--text3);margin-left:4px;">자동</span></span><span class="badge badge-b">분석 중</span></div>
-    <div class="signal-row" title=" Trump opens for Vietnam the chip door he locked on China |  Vietnam shifts up semiconductor value chain as global chip makers seek “China+1” resilience |  Vietnam’s semiconductor leap: turning vision into global leadership"><span class="signal-name">반도체·제조업<span style="font-size:10px;color:var(--text3);margin-left:4px;">자동</span></span><span class="badge badge-b">분석 중</span></div>
-    <div class="signal-row" title=" GDP growth rate in Vietnam 2020-2023, by quarter |  Vietnam Manufacturing Tracker: As of June 2026 |  Southeast Asia quarterly economic review: A strong year-end rebound"><span class="signal-name">베트남 GDP<span style="font-size:10px;color:var(--text3);margin-left:4px;">자동</span></span><span class="badge badge-b">분석 중</span></div>
+    <div class="signal-row">
+      <span class="signal-name">금 가격<span style="font-size:10px;color:var(--text3);margin-left:4px;">자동</span> <span style="font-size:10px;color:var(--text3);">(소비심리·헷지)</span></span>
+      <span class="badge badge-y" id="badge-gold">$4,239 ▲3.6% — 위험회피 심리 강함</span>
+    </div>
+    <div class="signal-row" title=" FDI inflows as a share of GDP Vietnam 2012-2023 |  Asia’s recipe for winning inflows and impact |  FDI surges in Vietnam as Q1 capital climbs 43 per cent on-year"><span class="signal-name">베트남 FDI 유입<span style="font-size:10px;color:var(--text3);margin-left:4px;">자동</span></span><span class="badge badge-g">1월-5월 34.9% 증가, 강한 투자 흐름</span></div>
+    <div class="signal-row" title=" Vietnam is booming, but foreign cash is fleeing from stocks |  Vietnam ETF: 10 Stocks Investors Should Get To Know |  Vietnam Eases Foreign Access to Equities: What the New Rules Mean for Global Investors"><span class="signal-name">외국인 자금 흐름<span style="font-size:10px;color:var(--text3);margin-left:4px;">자동</span></span><span class="badge badge-r">주식 외국인 자금 이탈, 규제 완화도 효과 제한</span></div>
+    <div class="signal-row" title=" Vietnam central bank blows whistle on rising interest rate race |  Central bank steps up inspections as some banks raise deposit rates |  New governor pushes for lower interest rates to support growth"><span class="signal-name">SBV 금리<span style="font-size:10px;color:var(--text3);margin-left:4px;">자동</span></span><span class="badge badge-y">금리 인상 경쟁 심화, 성장 지원 고민</span></div>
+    <div class="signal-row">
+      <span class="signal-name">베트남 10년 국채 <span style="font-size:10px;color:var(--text3);margin-left:4px;">수동</span> <span style="font-size:10px;color:var(--text3);">(외국인 자금)</span></span>
+      <span class="badge badge-g">3.85% — 안정</span>
+    </div>
+    <div class="signal-row" title=" Tracking Trump’s Trade Deals |  Trump tariff chaos: What does 15% levy mean for trade deals the US signed? |  US Supreme Court Blocks Trump’s Tariffs: Implications for Vietnam–US Trade and Businesses"><span class="signal-name">미-베트남 무역<span style="font-size:10px;color:var(--text3);margin-left:4px;">자동</span></span><span class="badge badge-y">미국 관세 불확실성, 법원 차단도 있음</span></div>
+    <div class="signal-row" title=" A Winner in Early Trump Tariffs, Vietnam Thrives in Trade War 2.0 |  An update on the great reallocation in US supply chain trade |  Inside China’s Rerouted Supply Chains"><span class="signal-name">중국-베트남 관계<span style="font-size:10px;color:var(--text3);margin-left:4px;">자동</span></span><span class="badge badge-g">공급망 전환 수혜, 중국 관세 회피처 역할</span></div>
+    <div class="signal-row" title=" Vietnam Dong Under Pressure: Inflation and Trade Headwinds Intensify – Commerzbank |  Vietnam’s inflation climbs amid strong foreign investment surge |  Việt Nam’s 2025 CPI rises 3.31%, within National Assembly’s target"><span class="signal-name">베트남 CPI<span style="font-size:10px;color:var(--text3);margin-left:4px;">자동</span></span><span class="badge badge-y">인플레 상승 압력, 통화 관리 필요</span></div>
+    <div class="signal-row" title=" Trump opens for Vietnam the chip door he locked on China |  Vietnam shifts up semiconductor value chain as global chip makers seek “China+1” resilience |  Vietnam’s semiconductor leap: turning vision into global leadership"><span class="signal-name">반도체·제조업<span style="font-size:10px;color:var(--text3);margin-left:4px;">자동</span></span><span class="badge badge-g">미국 반도체 문호 개방, 산업 고도화 기회</span></div>
+    <div class="signal-row" title=" GDP growth rate in Vietnam 2020-2023, by quarter |  Southeast Asia quarterly economic review: A strong year-end rebound |  Vietnam Manufacturing Tracker: As of June 2026"><span class="signal-name">베트남 GDP<span style="font-size:10px;color:var(--text3);margin-left:4px;">자동</span></span><span class="badge badge-g">분기별 안정적 성장, 연말 강한 반등</span></div>
     <div class="signal-row">
       <span class="signal-name">미국 연준 금리<span style="font-size:10px;color:var(--text3);margin-left:4px;">자동</span></span>
-      <span class="badge badge-b">분석 중</span>
+      <span class="badge badge-b">6월 금리 결정, 글로벌 영향 주시 필요</span>
     </div>
     <div style="margin-top:10px;font-size:11px;color:var(--text3);">* 뉴스 항목은 마우스를 올리면 원문 헤드라인을 볼 수 있어요</div>
   </div>
@@ -278,21 +300,21 @@ table td { padding: 5px 0; border-bottom: 1px solid var(--border); }
 
   <div class="section-label">매수 타이밍 가이드</div>
   
-  <div class="action action-hold">
-    <div class="action-title">📌 지금 — 관망 중</div>
-    <div class="action-desc">데이터 수집 중입니다. 다시 열어주세요.</div>
+  <div class="action action-hold" id="ag-now">
+    <div class="action-title" id="ag-now-title">📌 지금 — 매수 신호 대기 중</div>
+    <div class="action-desc" id="ag-now-desc">기술적으로 하락 이평 배열과 모멘텀 약세(-5.0%)가 지배적이나, FDI 강세(+34.9%)와 52주 저점 대비 +37.1% 회복으로 장기 바닥이 형성되고 있는 상황입니다.</div>
   </div>
-  <div class="action action-buy">
-    <div class="action-title">🟢 1차 매수 조건</div>
-    <div class="action-desc">RSI 과매도 + 이평 정배열 전환 시 → 2,000만원 투입</div>
+  <div class="action action-buy" id="ag-buy1">
+    <div class="action-title" id="ag-buy1-title">🟢 1차 매수 조건</div>
+    <div class="action-desc" id="ag-buy1-desc">VN-Index가 1,750pt 이하로 조정되면서 RSI가 45 이하로 내려올 때 2,000만원을 분할 매수하여 평단가 확보를 노립니다.</div>
   </div>
-  <div class="action action-buy">
-    <div class="action-title">🟢 2차 분할 매수 조건</div>
-    <div class="action-desc">1차 매수 후 추가 하락 시 분할로 → 1,000만원 씩</div>
+  <div class="action action-buy" id="ag-buy2">
+    <div class="action-title" id="ag-buy2-title">🟢 2차 매수 조건</div>
+    <div class="action-desc" id="ag-buy2-desc">1차 매수 이후 손절선(1,612.49pt) 근처인 1,630~1,650pt대에서 외국인 자금 복귀 신호 또는 SBV 금리 인하 기조 전환이 나타나면 추가 2,000만원을 매수합니다.</div>
   </div>
-  <div class="action action-sell">
-    <div class="action-title">🔴 손절 조건</div>
-    <div class="action-desc">매수가 대비 -10% 이탈 시 → 전량 손절 검토</div>
+  <div class="action action-sell" id="ag-sell">
+    <div class="action-title" id="ag-sell-title">🔴 손절 조건</div>
+    <div class="action-desc" id="ag-sell-desc">VN-Index가 1,612.49pt 아래로 내려가거나, 매수 평단가 대비 -10% 손실이 실현되면 즉시 손절 매도를 실행합니다.</div>
   </div>
 
   <hr class="divider">
@@ -300,6 +322,20 @@ table td { padding: 5px 0; border-bottom: 1px solid var(--border); }
   <div class="section-label">AI 매수 판단 질문</div>
   <div class="card">
     <div class="card-title">지금 상황 물어보기</div>
+    <div id="td-key-setup" style="margin-bottom:10px;display:none;background:#f8f9fa;border-radius:10px;padding:12px;">
+      <div style="font-size:12px;color:var(--text2);margin-bottom:8px;">📡 실시간 시세 연동을 위해 <b>TwelveData API 키</b>가 필요해요 (<a href="https://twelvedata.com" target="_blank">twelvedata.com</a> 무료 가입)</div>
+      <div class="input-row">
+        <input type="password" id="td-key-input" placeholder="TwelveData API 키 입력" style="flex:1;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-size:13px;background:var(--card-bg);color:var(--text);">
+        <button class="btn" onclick="saveTDKey()">저장</button>
+      </div>
+    </div>
+    <div id="key-setup" style="margin-bottom:10px;display:none;">
+      <div style="font-size:12px;color:var(--text3);margin-bottom:6px;">Anthropic API 키를 입력하면 저장됩니다 (이 기기에만)</div>
+      <div class="input-row">
+        <input type="password" id="api-key-input" placeholder="sk-ant-...">
+        <button class="btn" onclick="saveKey()">저장</button>
+      </div>
+    </div>
     <div class="input-row">
       <input type="text" id="ai-q" placeholder="예: 지금 매수 타이밍인가요?">
       <button class="btn" onclick="askAI()">분석 ↗</button>
@@ -308,11 +344,16 @@ table td { padding: 5px 0; border-bottom: 1px solid var(--border); }
       <button class="btn quick-btn" onclick="setQ('지금 1차 매수 타이밍인가요?')">1차 매수?</button>
       <button class="btn quick-btn" onclick="setQ('VN-Index 하락 원인이 뭔가요?')">하락 이유</button>
       <button class="btn quick-btn" onclick="setQ('이번 주 베트남 시장 핵심 이슈가 뭔가요?')">이번 주 이슈</button>
+      <button class="btn quick-btn" onclick="toggleKeySetup()">🔑 키 변경</button>
     </div>
     <div class="ai-response" id="ai-resp">질문을 입력하거나 위 버튼을 눌러보세요.</div>
   </div>
 
-  <div class="footer">마지막 업데이트: 2026.06.13 12:20</div>
+  <div class="footer">
+    마지막 업데이트: 2026.06.14 19:09
+    <br><br>
+    <button onclick="location.reload(true)" style="margin-top:4px;padding:8px 24px;border-radius:20px;border:0.5px solid var(--border);background:var(--card-bg);color:var(--text);font-size:13px;font-weight:500;cursor:pointer;">🔄 새로고침</button>
+  </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
@@ -382,14 +423,115 @@ function switchChart(canvasId, prefix, key, el) {
   c.inst.update();
 }
 
-const API_KEY = atob("c2stYW50LWFwaTAzLTFmMGRrNzA5eHo2WW8wUFBYbmYteTNmUDhjNzVBZGtZYWg1Z1k2RjhPbDA5TE1jWThPMWdIZVZ3UDY1YXJhc2RMTEwtOXVyTHpqZXlocG4xRmlSRUVRLVY5eFVOZ0FB");
+function getKey() { return localStorage.getItem('anthropic_api_key') || ''; }
+function saveKey() {
+  const k = document.getElementById('api-key-input').value.trim();
+  if (!k) return;
+  localStorage.setItem('anthropic_api_key', k);
+  document.getElementById('api-key-input').value = '';
+  document.getElementById('key-setup').style.display = 'none';
+  document.getElementById('ai-resp').textContent = 'API 키가 저장됐어요. 질문을 입력해보세요.';
+}
+function toggleKeySetup() {
+  const el = document.getElementById('key-setup');
+  el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+function getTDKey() { return localStorage.getItem('twelvedata_api_key') || ''; }
+function saveTDKey() {
+  const k = document.getElementById('td-key-input').value.trim();
+  if (!k) return;
+  localStorage.setItem('twelvedata_api_key', k);
+  document.getElementById('td-key-input').value = '';
+  document.getElementById('td-key-setup').style.display = 'none';
+  fetchLiveData().then(updateActionGuide);
+}
+async function fetchTDData(symbols) {
+  const key = getTDKey();
+  if (!key) return {};
+  const url = `https://api.twelvedata.com/quote?symbol=${encodeURIComponent(symbols.join(','))}&apikey=${key}&dp=2`;
+  const r = await fetch(url);
+  if (!r.ok) return {};
+  const data = await r.json();
+  const result = {};
+  for (const sym of symbols) {
+    const item = symbols.length === 1 ? data : data[sym];
+    if (item && !item.code) {
+      result[sym] = { price: parseFloat(item.close), prev: parseFloat(item.previous_close), pct: parseFloat(item.percent_change) };
+    }
+  }
+  return result;
+}
+function setBadge(id, text, cls) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = text;
+  el.className = 'badge ' + cls;
+}
+async function fetchLiveData() {
+  const td = await fetchTDData(['VNM','USD/VND','USD/CNY','DXY','EEM','VIX','BCO/USD','XAU/USD']).catch(() => ({}));
+  const fmt = (v, d=2) => v != null ? v.toLocaleString('ko-KR', {maximumFractionDigits: d}) : '-';
+  const arrow = pct => pct >= 0 ? '▲' : '▼';
+  if (td['VNM']) { const v=td['VNM']; const c=v.pct>=0?'badge-g':'badge-r'; setBadge('badge-vnm',`$${fmt(v.price)} ${arrow(v.pct)}${Math.abs(v.pct).toFixed(2)}% — ${v.pct>=0?'상승':'하락'}`,c); }
+  if (td['USD/VND']) { const v=td['USD/VND']; const c=v.price>26500?'badge-r':v.price>25500?'badge-y':v.price>24500?'badge-b':'badge-g'; const l=v.price>26500?'동 급락':v.price>25500?'동 약세':v.price>24500?'안정':'동 강세'; setBadge('badge-usdvnd',`₫${fmt(v.price,0)} — ${l}`,c); }
+  if (td['USD/CNY']) { const v=td['USD/CNY']; const c=v.price<7.1?'badge-g':v.price<7.3?'badge-y':'badge-r'; const l=v.price<7.1?'위안 안정':v.price<7.3?'위안 약세':'위안 급약세'; setBadge('badge-usdcny',`¥${fmt(v.price)} — ${l}`,c); }
+  if (td['DXY']) { const v=td['DXY']; const c=v.price>105?'badge-r':v.price>100?'badge-y':'badge-b'; setBadge('badge-dxy',`DXY ${fmt(v.price)} ${arrow(v.pct)}${Math.abs(v.pct).toFixed(2)} — ${v.price>105?'달러 강세':v.price>100?'달러 강세 주의':'안정'}`,c); }
+  if (td['EEM']) { const v=td['EEM']; const c=v.pct>=0.5?'badge-g':v.pct>=-0.5?'badge-b':'badge-r'; setBadge('badge-eem',`$${fmt(v.price)} ${arrow(v.pct)}${Math.abs(v.pct).toFixed(2)}% — ${v.pct>=0.5?'상승':v.pct>=-0.5?'보합':'하락'}`,c); }
+  if (td['VIX']) { const v=td['VIX']; const c=v.price>25?'badge-r':v.price>18?'badge-y':'badge-g'; setBadge('badge-vix',`US VIX ${fmt(v.price,1)} — ${v.price>25?'공포':v.price>18?'불안':'안정'}`,c); }
+  if (td['BCO/USD']) { const v=td['BCO/USD']; const c=v.price>90?'badge-r':v.price>80?'badge-y':'badge-g'; setBadge('badge-crude',`$${fmt(v.price,1)} ${v.price>90?'고유가':v.price>80?'보통':'저유가'}`,c); }
+  if (td['XAU/USD']) { const v=td['XAU/USD']; const c=v.pct>1?'badge-r':v.pct>0?'badge-y':'badge-g'; setBadge('badge-gold',`$${fmt(v.price,0)} ${arrow(v.pct)}${Math.abs(v.pct).toFixed(1)}% — ${v.pct>1?'위험회피 심리 강함':'안정'}`,c); }
+  return td;
+}
+async function updateActionGuide() {
+  const API_KEY = getKey();
+  if (!API_KEY) return;
+  const td = await fetchLiveData().catch(() => ({}));
+  const fmt = (sym, d=2) => td[sym] ? td[sym].price.toLocaleString('ko-KR',{maximumFractionDigits:d}) : '-';
+  const pct  = sym => td[sym] ? `${td[sym].pct>=0?'▲':'▼'}${Math.abs(td[sym].pct).toFixed(2)}%` : '';
+  const ctx = `당신은 10년차 베트남 펀드 매니저입니다.
+현재 상황: 베트남 VN-Index 펀드 매수 전 관찰 중 (아직 미매수)
+투자 계획: 1차 2,000만원, 추가 2,000만원 분할, 손절 -10%
+
+[실시간 시장 데이터]
+- VNM ETF: $${fmt('VNM')} (${pct('VNM')})
+- USD/VND: ₫${fmt('USD/VND',0)} / USD/CNY: ¥${fmt('USD/CNY')}
+- DXY: ${fmt('DXY')} / EEM: $${fmt('EEM')} (${pct('EEM')})
+- US VIX: ${fmt('VIX',1)} / 브렌트유: $${fmt('BCO/USD',1)} / 금: $${fmt('XAU/USD',0)}`;
+  const prompt = `위 실시간 데이터를 바탕으로 지금 시점의 액션 가이드를 JSON으로 작성해주세요.
+반드시 아래 형식만 출력하세요 (다른 텍스트 없이):
+{"now_title":"📌 지금 — [한 줄 현황]","now_desc":"[현재 상황 2문장]","buy1_title":"🟢 1차 매수 조건","buy1_desc":"[1차 매수 조건 2문장]","buy2_title":"🟢 2차 매수 조건","buy2_desc":"[2차 매수 조건 2문장]","sell_title":"🔴 손절 조건","sell_desc":"[손절 조건 1~2문장]"}`;
+  try {
+    const r = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'x-api-key': API_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json', 'anthropic-dangerous-direct-browser-access': 'true' },
+      body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 600, system: ctx, messages: [{ role: 'user', content: prompt }] })
+    });
+    const d = await r.json();
+    const text = d.content?.[0]?.text || '';
+    const match = text.match(/\{[\s\S]*\}/);
+    if (!match) return;
+    const ag = JSON.parse(match[0]);
+    if (ag.now_title)  { document.getElementById('ag-now-title').textContent  = ag.now_title;  document.getElementById('ag-now-desc').textContent  = ag.now_desc; }
+    if (ag.buy1_title) { document.getElementById('ag-buy1-title').textContent = ag.buy1_title; document.getElementById('ag-buy1-desc').textContent = ag.buy1_desc; }
+    if (ag.buy2_title) { document.getElementById('ag-buy2-title').textContent = ag.buy2_title; document.getElementById('ag-buy2-desc').textContent = ag.buy2_desc; }
+    if (ag.sell_title) { document.getElementById('ag-sell-title').textContent = ag.sell_title; document.getElementById('ag-sell-desc').textContent = ag.sell_desc; }
+  } catch(e) {}
+}
+window.addEventListener('DOMContentLoaded', function() {
+  if (!getKey()) document.getElementById('key-setup').style.display = 'block';
+  const tdSetup = document.getElementById('td-key-setup');
+  if (tdSetup) tdSetup.style.display = getTDKey() ? 'none' : 'block';
+  if (getTDKey()) fetchLiveData().then(updateActionGuide);
+});
+
 function setQ(q) { document.getElementById('ai-q').value = q; }
 
 async function askAI() {
   const q = document.getElementById('ai-q').value.trim();
   if (!q) return;
+  const API_KEY = getKey();
   if (!API_KEY) {
-    document.getElementById('ai-resp').textContent = '설정.json 파일에 anthropic_api_key를 입력해주세요.';
+    document.getElementById('key-setup').style.display = 'block';
+    document.getElementById('ai-resp').textContent = 'API 키를 먼저 입력해주세요.';
     return;
   }
   const box = document.getElementById('ai-resp');
@@ -399,12 +541,12 @@ async function askAI() {
 현재 상황: 베트남 VN-Index 펀드 매수 전 관찰 중 (아직 미매수)
 투자 계획: 1차 2,000만원, 추가 2,000만원 분할, 손절 -10%
 
-[실시간 시장 데이터 — 2026.06.13 12:20 기준]
+[실시간 시장 데이터 — 2026.06.14 19:09 기준]
 - VN-Index: 1,791.65 (-1.28%)
 - USD/VND: 26,250동 / US VIX: 17.68 / 브렌트유: $87.3
-- FDI: 분석 중 / 외국인: 분석 중
-- SBV 금리: 분석 중 / 미국 연준: 분석 중
-- 미-베트남 무역: 분석 중 / CPI: 분석 중
+- FDI: 1월-5월 34.9% 증가, 강한 투자 흐름 / 외국인: 주식 외국인 자금 이탈, 규제 완화도 효과 제한
+- SBV 금리: 금리 인상 경쟁 심화, 성장 지원 고민 / 미국 연준: 6월 금리 결정, 글로벌 영향 주시 필요
+- 미-베트남 무역: 미국 관세 불확실성, 법원 차단도 있음 / CPI: 인플레 상승 압력, 통화 관리 필요
 
 3~5문장, 한국어, 마지막에 "이 답변은 참고용입니다" 짧게 명시.`;
 
@@ -425,9 +567,13 @@ async function askAI() {
       })
     });
     const d = await r.json();
-    box.textContent = d.content?.[0]?.text ?? '응답 없음';
+    if (d.content?.[0]?.text) {
+      box.textContent = d.content[0].text;
+    } else {
+      box.textContent = '오류: ' + JSON.stringify(d.error || d);
+    }
   } catch(e) {
-    box.textContent = '오류가 발생했어요. 다시 시도해주세요.';
+    box.textContent = '네트워크 오류: ' + e.message;
   }
 }
 
@@ -437,23 +583,8 @@ window._charts = {};
 const PDATA_chartVN = {"name": "VN-Index", "sl": null, "d1": {"labels": ["09:00", "09:05", "09:10", "09:15", "09:20", "09:25", "09:30", "09:35", "09:40", "09:45", "09:50", "09:55", "10:00", "10:05", "10:10", "10:15", "10:20", "10:25", "10:30", "10:35", "10:40", "10:45", "10:50", "10:55", "11:00", "11:05", "11:10", "11:15", "11:20", "11:25", "11:30", "11:35", "11:40", "11:45", "11:50", "11:55", "12:00", "12:05", "12:10", "12:15", "12:20", "12:25", "12:30", "12:35", "12:40", "12:45", "12:50", "12:55", "13:00", "13:05", "13:10", "13:15", "13:20", "13:25", "13:30", "13:35", "13:40", "13:45", "13:50", "13:55", "14:00", "14:05", "14:10", "14:15", "14:20", "14:25", "14:30", "14:35", "14:40", "14:45", "14:50", "14:55"], "prices": [1806.27, 1810.68, 1813.08, 1810.13, 1808.9, 1804.54, 1805.41, 1807.45, 1805.61, 1804.9, 1804.45, 1803.18, 1804.15, 1804.05, 1807.48, 1807.65, 1806.18, 1805.16, 1804.12, 1804.25, 1803.29, 1802.66, 1803.52, 1803.43, 1802.4, 1802.15, 1802.67, 1802.26, 1802.87, 1803.02, 1803.19, 1803.19, 1803.19, 1803.19, 1803.19, 1803.19, 1803.19, 1803.19, 1803.19, 1803.19, 1803.19, 1803.19, 1803.19, 1803.19, 1803.19, 1803.19, 1803.19, 1803.19, 1801.19, 1803.61, 1802.03, 1802.99, 1803.12, 1803.06, 1804.92, 1806.5, 1805.6, 1805.03, 1804.18, 1803.8, 1800.59, 1802.47, 1797.9, 1794.5, 1794.05, 1790.98, 1790.24, 1790.89, 1792.42, 1791.65, 1791.65, 1791.65]}, "d5": {"labels": ["6/8", "6/9", "6/10", "6/11", "6/12"], "prices": [1786.62, 1781.59, 1791.65, 1814.79, 1791.65]}, "d30": {"labels": ["5/13", "5/14", "5/15", "5/18", "5/19", "5/20", "5/21", "5/22", "5/26", "5/27", "5/28", "5/29", "6/1", "6/2", "6/3", "6/4", "6/5", "6/8", "6/9", "6/10", "6/11", "6/12"], "prices": [1936.51, 1960.65, 1930.48, 1942.55, 1922.43, 1942.55, 1909.35, 1886.21, 1898.28, 1885.21, 1879.17, 1881.18, 1855.03, 1823.84, 1812.78, 1835.91, 1809.76, 1786.62, 1781.59, 1791.65, 1814.79, 1791.65]}, "mo3": {"labels": ["3/9", "3/16", "3/23", "3/30", "4/6", "4/13", "4/20", "4/27", "5/4", "5/11", "5/18", "5/25", "6/1", "6/8"], "prices": [1680.99, 1652.82, 1682.0, 1757.45, 1830.88, 1915.39, 1902.31, 1920.42, 1988.82, 1930.48, 1886.21, 1881.18, 1809.76, 1791.65]}, "mo6": {"labels": ["12/8", "12/15", "12/22", "12/29", "1/5", "1/12", "1/19", "1/26", "2/2", "2/9", "2/16", "2/23", "3/2", "3/9", "3/16", "3/23", "3/30", "4/6", "4/13", "4/20", "4/27", "5/4", "5/11", "5/18", "5/25", "6/1", "6/8", "6/12"], "prices": [1755.82, 1846.17, 1847.18, 1922.43, 1939.53, 1984.8, 1953.61, 1918.4, 1813.78, 1900.3, 1940.54, 1919.41, 1755.43, 1680.99, 1652.82, 1682.0, 1757.45, 1830.88, 1915.39, 1902.31, 1920.42, 1988.82, 1930.48, 1886.21, 1881.18, 1809.76, 1791.65, 1791.65]}, "yr1": {"labels": ["6/9", "6/16", "6/23", "6/30", "7/7", "7/14", "7/21", "7/28", "8/4", "8/11", "8/18", "8/25", "9/1", "9/8", "9/15", "9/22", "9/29", "10/6", "10/13", "10/20", "10/27", "11/3", "11/10", "11/17", "11/24", "12/1", "12/8", "12/15", "12/22", "12/29", "1/5", "1/12", "1/19", "1/26", "2/2", "2/9", "2/16", "2/23", "3/2", "3/9", "3/16", "3/23", "3/30", "4/6", "4/13", "4/20", "4/27", "5/4", "5/11", "5/18", "5/25", "6/1", "6/8", "6/12"], "prices": [1307.08, 1340.21, 1378.36, 1401.45, 1527.94, 1564.08, 1653.43, 1601.22, 1724.7, 1777.91, 1742.77, 1836.14, 1804.01, 1804.01, 1774.9, 1761.85, 1759.84, 1905.4, 1927.49, 1828.1, 1749.8, 1694.58, 1765.86, 1778.91, 1841.15, 1872.28, 1755.82, 1846.17, 1847.18, 1922.43, 1939.53, 1984.8, 1953.61, 1918.4, 1813.78, 1900.3, 1940.54, 1919.41, 1755.43, 1680.99, 1652.82, 1682.0, 1757.45, 1830.88, 1915.39, 1902.31, 1920.42, 1988.82, 1930.48, 1886.21, 1881.18, 1809.76, 1791.65, 1791.65]}};
 window._charts['chartVN'] = {inst: initChart('chartVN', PDATA_chartVN, 'd1'), data: PDATA_chartVN};
 
-(function() {
-  const descMap = {
-    '강매수':    '기술·매크로·뉴스 신호가 모두 긍정적입니다. 분할 매수를 적극 고려할 수 있는 시점입니다.',
-    '매수 검토': '신호 일부가 긍정적으로 전환되고 있습니다. 소규모 선진입 또는 추가 매수를 준비하세요.',
-    '관망':      '아직 진입하기 이른 시점입니다. 추세 반전 신호를 확인한 뒤 매수를 고려하세요.',
-    '조심':      '부정적 신호가 우세합니다. 신규 진입은 자제하고, 보유 중이라면 리스크를 점검하세요.',
-    '진입 자제': '복수의 위험 신호가 켜져 있습니다. 비중 축소 또는 현금 보유를 우선 고려하세요.',
-  };
-  const emojiEl = document.getElementById('sc-emoji');
-  const descEl  = document.getElementById('sc-desc');
-  if (emojiEl && descEl) {
-    const label = emojiEl.textContent.replace(/[^가-힣a-zA-Z ]/gu, '').trim();
-    for (const [key, text] of Object.entries(descMap)) {
-      if (label.includes(key)) { descEl.textContent = text; break; }
-    }
-  }
-})();
+// 페이지 열릴 때 신호 설명 자동 세팅
+// 종합 투자 신호 설명은 업데이트.py 실행 시 실제 지표 기반으로 자동 생성됩니다.
 </script>
 </body>
 </html>
