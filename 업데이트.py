@@ -1331,34 +1331,44 @@ function saveTDKey() {{
   document.getElementById('td-key-input').value = '';
   document.getElementById('td-key-connected').style.display = 'block';
   document.getElementById('td-key-input-row').style.display = 'none';
-  fetchLiveData().then(updateActionGuide);
 }}
 function initTDKeyUI() {{
   const connected = document.getElementById('td-key-connected');
   const inputRow = document.getElementById('td-key-input-row');
   if (!connected || !inputRow) return;
-  if (getTDKey()) {{
-    connected.style.display = 'block';
-    inputRow.style.display = 'none';
-  }} else {{
-    connected.style.display = 'none';
-    inputRow.style.display = 'flex';
-  }}
+  connected.style.display = 'block';
+  inputRow.style.display = 'none';
+}}
+async function fetchYahooProxy(ticker) {{
+  try {{
+    const target = encodeURIComponent(`https://query2.finance.yahoo.com/v8/finance/chart/${{ticker}}?interval=1d&range=1d`);
+    const r = await fetch(`https://corsproxy.io/?${{target}}`);
+    if (!r.ok) return null;
+    const j = await r.json();
+    const meta = j.chart.result[0].meta;
+    const price = meta.regularMarketPrice;
+    const prev = meta.chartPreviousClose || meta.previousClose || price;
+    return {{ price, prev, pct: prev ? (price - prev) / prev * 100 : 0 }};
+  }} catch(e) {{ return null; }}
 }}
 async function fetchTDData(symbols) {{
-  const key = getTDKey();
-  if (!key) return {{}};
-  const url = `https://api.twelvedata.com/quote?symbol=${{encodeURIComponent(symbols.join(','))}}&apikey=${{key}}&dp=2`;
-  const r = await fetch(url);
-  if (!r.ok) return {{}};
-  const data = await r.json();
+  const tickers = {{
+    'VNM':     'VNM',
+    'USD/VND': 'USDVND%3DX',
+    'USD/CNY': 'USDCNY%3DX',
+    'DXY':     'DX-Y.NYB',
+    'EEM':     'EEM',
+    'VIX':     '%5EVIX',
+    'BCO/USD': 'BZ%3DF',
+    'XAU/USD': 'GC%3DF',
+  }};
   const result = {{}};
-  for (const sym of symbols) {{
-    const item = symbols.length === 1 ? data : data[sym];
-    if (item && !item.code) {{
-      result[sym] = {{ price: parseFloat(item.close), prev: parseFloat(item.previous_close), pct: parseFloat(item.percent_change) }};
-    }}
-  }}
+  await Promise.all(symbols.map(async sym => {{
+    const yf = tickers[sym];
+    if (!yf) return;
+    const d = await fetchYahooProxy(yf);
+    if (d) result[sym] = d;
+  }}));
   return result;
 }}
 function setBadge(id, text, cls) {{
@@ -1418,7 +1428,7 @@ async function updateActionGuide() {{
 }}
 if (!getKey()) document.getElementById('key-setup').style.display = 'block';
 initTDKeyUI();
-if (getTDKey()) fetchLiveData();
+fetchLiveData();
 
 function setQ(q) {{ document.getElementById('ai-q').value = q; }}
 
