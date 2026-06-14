@@ -8,9 +8,35 @@ import json
 import os
 import urllib.request
 import urllib.parse
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 
 import yfinance as yf
+
+KST = timezone(timedelta(hours=9))
+STATE_FILE = os.path.join(os.path.dirname(__file__), "알림상태.json")
+
+
+def load_state():
+    try:
+        with open(STATE_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return {}
+
+
+def save_state(state):
+    with open(STATE_FILE, "w", encoding="utf-8") as f:
+        json.dump(state, f, ensure_ascii=False, indent=2)
+
+
+def already_sent(state, today, alert_key):
+    return alert_key in state.get(today, [])
+
+
+def mark_sent(state, today, alert_key):
+    state.setdefault(today, [])
+    if alert_key not in state[today]:
+        state[today].append(alert_key)
 
 
 def kakao_refresh_access_token(rest_api_key, refresh_token, client_secret=None):
@@ -233,6 +259,9 @@ def main():
         print("⚠️  KAKAO 환경변수 없음 — 알림 건너뜀")
         return
 
+    today = datetime.now(KST).strftime("%Y-%m-%d")
+    state = load_state()
+
     print("카카오 토큰 갱신 중...")
     access_token = kakao_refresh_access_token(rest_api_key, refresh_token, client_secret or None)
 
@@ -249,9 +278,19 @@ def main():
     priority = {"손절": 0, "매수핵심": 1, "매도": 2, "이벤트당일": 3, "이벤트예고": 4, "매수참고": 5}
     alerts.sort(key=lambda a: priority.get(a["type"], 99))
 
+    sent_any = False
     for alert in alerts:
+        key = alert["type"]
+        if already_sent(state, today, key):
+            print(f"  ⏭ 오늘 이미 보낸 알림 스킵: {key}")
+            continue
         kakao_send(access_token, alert["msg"])
+        mark_sent(state, today, key)
+        sent_any = True
         print(f"  → {alert['type']}: {alert['msg'][:40]}...")
+
+    if sent_any:
+        save_state(state)
 
 
 if __name__ == "__main__":

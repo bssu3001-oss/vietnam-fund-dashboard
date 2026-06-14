@@ -19,6 +19,13 @@ jobs:
       - name: 패키지 설치
         run: pip install yfinance -q
 
+      - name: 알림 상태 캐시 복원
+        uses: actions/cache@v4
+        with:
+          path: 알림상태.json
+          key: vietnam-fund-alert-state-${{ github.run_id }}
+          restore-keys: vietnam-fund-alert-state-
+
       - name: 설정 파일 생성
         env:
           CONFIG_JSON: ${{ secrets.CONFIG_JSON }}
