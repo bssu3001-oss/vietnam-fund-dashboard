@@ -19,11 +19,14 @@ jobs:
       - name: 패키지 설치
         run: pip install yfinance -q
 
+      - name: 오늘 날짜 설정
+        run: echo "TODAY=$(TZ=Asia/Seoul date +%Y-%m-%d)" >> $GITHUB_ENV
+
       - name: 알림 상태 캐시 복원
         uses: actions/cache@v4
         with:
           path: 알림상태.json
-          key: vietnam-fund-alert-state-${{ github.run_id }}
+          key: vietnam-fund-alert-state-${{ env.TODAY }}
           restore-keys: vietnam-fund-alert-state-
 
       - name: 설정 파일 생성
