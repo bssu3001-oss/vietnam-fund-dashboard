@@ -123,13 +123,29 @@ def fetch_vnindex():
 
 # ── 매크로 지표 ──────────────────────────────────────────────────
 def fetch_macro_signals():
-    result = {"usdvnd": None, "vix": None, "crude": None, "dxy": None, "eem": None}
+    result = {"usdvnd": None, "vix": None, "crude": None, "dxy": None, "eem": None,
+              "vn30": None, "usdcny": None, "gold": None}
     try:
         val = yf.Ticker("USDVND=X").fast_info.last_price
         result["usdvnd"] = round(float(val))
         print(f"  USD/VND: {result['usdvnd']:,}")
     except Exception as e:
         print(f"  USD/VND 가져오기 실패: {e}")
+    try:
+        vnm_h = yf.Ticker("VNM").history(period="5d", interval="1d")
+        if not vnm_h.empty:
+            result["vn30"] = round(float(vnm_h['Close'].iloc[-1]), 2)
+            result["vn30_prev"] = round(float(vnm_h['Close'].iloc[-2]), 2) if len(vnm_h) >= 2 else result["vn30"]
+            print(f"  VNM ETF: ${result['vn30']}")
+    except Exception as e:
+        print(f"  VNM ETF 가져오기 실패: {e}")
+    try:
+        cny_h = yf.Ticker("USDCNY=X").history(period="5d", interval="1d")
+        if not cny_h.empty:
+            result["usdcny"] = round(float(cny_h['Close'].iloc[-1]), 2)
+            print(f"  USD/CNY(위안화): {result['usdcny']}")
+    except Exception as e:
+        print(f"  USD/CNY 가져오기 실패: {e}")
     try:
         result["vix"] = round(yf.Ticker("^VIX").fast_info.last_price, 2)
         print(f"  VIX(미국): {result['vix']}")
@@ -140,6 +156,14 @@ def fetch_macro_signals():
         print(f"  브렌트유: ${result['crude']}")
     except Exception as e:
         print(f"  브렌트유 가져오기 실패: {e}")
+    try:
+        gold_h = yf.Ticker("GC=F").history(period="5d", interval="1d")
+        if not gold_h.empty:
+            result["gold"] = round(float(gold_h['Close'].iloc[-1]), 0)
+            result["gold_prev"] = round(float(gold_h['Close'].iloc[-2]), 0) if len(gold_h) >= 2 else result["gold"]
+            print(f"  금: ${result['gold']}")
+    except Exception as e:
+        print(f"  금 가져오기 실패: {e}")
     try:
         dxy_h = yf.Ticker("DX-Y.NYB").history(period="5d", interval="1d")
         if not dxy_h.empty:
@@ -599,6 +623,37 @@ def build_html(vn, cfg, api_key, updated_at, vn_analysis, indicators=None, macro
     )
 
     # ── 매크로 신호 ──────────────────────────────────────────────
+    vn30 = mac.get("vn30")
+    vn30_prev = mac.get("vn30_prev", vn30)
+    if vn30:
+        vn30_chg = round(vn30 - vn30_prev, 2) if vn30_prev else 0
+        vn30_pct = round(vn30_chg / vn30_prev * 100, 2) if vn30_prev else 0
+        vn30_sign = "▲" if vn30_chg >= 0 else "▼"
+        vn30_cls = "badge-g" if vn30_chg >= 0 else "badge-r"
+        vn30_txt = f"${vn30} {vn30_sign}{abs(vn30_pct)}% — {'상승' if vn30_chg>=0 else '하락'}"
+    else:
+        vn30_cls, vn30_txt = "badge-b", "데이터 없음"
+
+    usdcny = mac.get("usdcny")
+    if usdcny:
+        if usdcny > 7.3:   usdcny_cls, usdcny_txt = "badge-r", f"¥{usdcny} — 위안 급약세, 경쟁 압박"
+        elif usdcny > 7.0: usdcny_cls, usdcny_txt = "badge-y", f"¥{usdcny} — 위안 약세, 수출 경쟁"
+        else:              usdcny_cls, usdcny_txt = "badge-g", f"¥{usdcny} — 위안 안정"
+    else:
+        usdcny_cls, usdcny_txt = "badge-b", "데이터 없음"
+
+    gold = mac.get("gold")
+    gold_prev = mac.get("gold_prev", gold)
+    if gold:
+        gold_chg_pct = round((gold - gold_prev) / gold_prev * 100, 1) if gold_prev else 0
+        gold_sign = "▲" if gold_chg_pct >= 0 else "▼"
+        if gold > 3200:   gold_cls, gold_lbl = "badge-y", "위험회피 심리 강함"
+        elif gold > 2500: gold_cls, gold_lbl = "badge-b", "안정"
+        else:             gold_cls, gold_lbl = "badge-g", "안정"
+        gold_txt = f"${int(gold):,} {gold_sign}{abs(gold_chg_pct)}% — {gold_lbl}"
+    else:
+        gold_cls, gold_txt = "badge-b", "데이터 없음"
+
     usdvnd = mac.get("usdvnd")
     if usdvnd:
         if usdvnd < 24000:
@@ -693,8 +748,16 @@ def build_html(vn, cfg, api_key, updated_at, vn_analysis, indicators=None, macro
     <div class="card-title" style="margin-bottom:8px;">🌏 매크로 신호 <span style="font-size:11px;font-weight:400;color:var(--text3);">— 업데이트 실행 시 갱신</span></div>
     {zone_row}
     <div class="signal-row">
+      <span class="signal-name">VNM ETF{auto_tag} <span style="font-size:10px;color:var(--text3);">(뉴욕상장 베트남 대표)</span></span>
+      <span class="badge {vn30_cls}">{vn30_txt}</span>
+    </div>
+    <div class="signal-row">
       <span class="signal-name">동/달러{auto_tag} <span style="font-size:10px;color:var(--text3);">(USD/VND)</span></span>
       <span class="badge {usdvnd_cls}">{usdvnd_txt}</span>
+    </div>
+    <div class="signal-row">
+      <span class="signal-name">위안화{auto_tag} <span style="font-size:10px;color:var(--text3);">(USD/CNY)</span></span>
+      <span class="badge {usdcny_cls}">{usdcny_txt}</span>
     </div>
     <div class="signal-row">
       <span class="signal-name">달러 인덱스{auto_tag} <span style="font-size:10px;color:var(--text3);">(DXY)</span></span>
@@ -709,12 +772,20 @@ def build_html(vn, cfg, api_key, updated_at, vn_analysis, indicators=None, macro
       <span class="badge {vix_cls}">{vix_txt}</span>
     </div>
     <div class="signal-row">
-      <span class="signal-name">브렌트유{auto_tag}</span>
+      <span class="signal-name">브렌트유{auto_tag} <span style="font-size:10px;color:var(--text3);">(PetroVN 수혜)</span></span>
       <span class="badge {crude_cls}">{crude_txt}</span>
+    </div>
+    <div class="signal-row">
+      <span class="signal-name">금 가격{auto_tag} <span style="font-size:10px;color:var(--text3);">(소비심리·헷지)</span></span>
+      <span class="badge {gold_cls}">{gold_txt}</span>
     </div>
     {news_row("베트남 FDI 유입", "fdi")}
     {news_row("외국인 자금 흐름", "fii")}
     {news_row("SBV 금리", "sbv")}
+    <div class="signal-row">
+      <span class="signal-name">베트남 10년 국채 <span style="font-size:10px;color:var(--text3);margin-left:4px;">수동</span> <span style="font-size:10px;color:var(--text3);">(외국인 자금)</span></span>
+      <span class="badge badge-g">3.85% — 안정</span>
+    </div>
     {news_row("미-베트남 무역", "trade")}
     {news_row("중국-베트남 관계", "china")}
     {news_row("베트남 CPI", "cpi")}
@@ -730,7 +801,7 @@ def build_html(vn, cfg, api_key, updated_at, vn_analysis, indicators=None, macro
     # ── 종합 스코어카드 ──────────────────────────────────────────
     _bmap = {"badge-g": 1, "badge-y": 0, "badge-r": -1, "badge-b": 0}
     _tech_badges  = [rsi_cls, ma_cls, mom_cls, vol_cls, pos_cls]
-    _macro_badges = [usdvnd_cls, dxy_cls, eem_cls, vix_cls, crude_cls]
+    _macro_badges = [vn30_cls, usdvnd_cls, usdcny_cls, dxy_cls, eem_cls, vix_cls, crude_cls, gold_cls]
     _news_badges  = [nws.get(k, {}).get("badge", "badge-b")
                      for k in ["fdi","fii","sbv","trade","china","cpi","semi","fed","gdp"]]
 
@@ -912,10 +983,6 @@ def build_html(vn, cfg, api_key, updated_at, vn_analysis, indicators=None, macro
   </div>
   <hr class="divider" style="margin-top:0;">"""
 
-    import base64
-    _enc = base64.b64encode(api_key.encode()).decode() if api_key else ""
-    api_key_js = f'atob("{_enc}")'
-
     # AI Q&A 컨텍스트에 들어갈 뉴스 텍스트 미리 계산
     _n_fdi   = nws.get('fdi',   {}).get('text', '정보없음')
     _n_fii   = nws.get('fii',   {}).get('text', '정보없음')
@@ -930,6 +997,9 @@ def build_html(vn, cfg, api_key, updated_at, vn_analysis, indicators=None, macro
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>베트남 펀드 대시보드</title>
 <style>
 * {{ box-sizing: border-box; margin: 0; padding: 0; }}
@@ -1057,6 +1127,13 @@ table td {{ padding: 5px 0; border-bottom: 1px solid var(--border); }}
   <div class="section-label">AI 매수 판단 질문</div>
   <div class="card">
     <div class="card-title">지금 상황 물어보기</div>
+    <div id="key-setup" style="margin-bottom:10px;display:none;">
+      <div style="font-size:12px;color:var(--text3);margin-bottom:6px;">Anthropic API 키를 입력하면 저장됩니다 (이 기기에만)</div>
+      <div class="input-row">
+        <input type="password" id="api-key-input" placeholder="sk-ant-...">
+        <button class="btn" onclick="saveKey()">저장</button>
+      </div>
+    </div>
     <div class="input-row">
       <input type="text" id="ai-q" placeholder="예: 지금 매수 타이밍인가요?">
       <button class="btn" onclick="askAI()">분석 ↗</button>
@@ -1065,6 +1142,7 @@ table td {{ padding: 5px 0; border-bottom: 1px solid var(--border); }}
       <button class="btn quick-btn" onclick="setQ('지금 1차 매수 타이밍인가요?')">1차 매수?</button>
       <button class="btn quick-btn" onclick="setQ('VN-Index 하락 원인이 뭔가요?')">하락 이유</button>
       <button class="btn quick-btn" onclick="setQ('이번 주 베트남 시장 핵심 이슈가 뭔가요?')">이번 주 이슈</button>
+      <button class="btn quick-btn" onclick="toggleKeySetup()">🔑 키 변경</button>
     </div>
     <div class="ai-response" id="ai-resp">질문을 입력하거나 위 버튼을 눌러보세요.</div>
   </div>
@@ -1139,14 +1217,32 @@ function switchChart(canvasId, prefix, key, el) {{
   c.inst.update();
 }}
 
-const API_KEY = {api_key_js};
+function getKey() {{ return localStorage.getItem('anthropic_api_key') || ''; }}
+function saveKey() {{
+  const k = document.getElementById('api-key-input').value.trim();
+  if (!k) return;
+  localStorage.setItem('anthropic_api_key', k);
+  document.getElementById('api-key-input').value = '';
+  document.getElementById('key-setup').style.display = 'none';
+  document.getElementById('ai-resp').textContent = 'API 키가 저장됐어요. 질문을 입력해보세요.';
+}}
+function toggleKeySetup() {{
+  const el = document.getElementById('key-setup');
+  el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}}
+window.addEventListener('DOMContentLoaded', function() {{
+  if (!getKey()) document.getElementById('key-setup').style.display = 'block';
+}});
+
 function setQ(q) {{ document.getElementById('ai-q').value = q; }}
 
 async function askAI() {{
   const q = document.getElementById('ai-q').value.trim();
   if (!q) return;
+  const API_KEY = getKey();
   if (!API_KEY) {{
-    document.getElementById('ai-resp').textContent = '설정.json 파일에 anthropic_api_key를 입력해주세요.';
+    document.getElementById('key-setup').style.display = 'block';
+    document.getElementById('ai-resp').textContent = 'API 키를 먼저 입력해주세요.';
     return;
   }}
   const box = document.getElementById('ai-resp');
@@ -1182,9 +1278,13 @@ async function askAI() {{
       }})
     }});
     const d = await r.json();
-    box.textContent = d.content?.[0]?.text ?? '응답 없음';
+    if (d.content?.[0]?.text) {{
+      box.textContent = d.content[0].text;
+    }} else {{
+      box.textContent = '오류: ' + JSON.stringify(d.error || d);
+    }}
   }} catch(e) {{
-    box.textContent = '오류가 발생했어요. 다시 시도해주세요.';
+    box.textContent = '네트워크 오류: ' + e.message;
   }}
 }}
 
@@ -1201,9 +1301,11 @@ window._charts['chartVN'] = {{inst: initChart('chartVN', PDATA_chartVN, 'd1'), d
 # ── 메인 ──────────────────────────────────────────────────────────
 def main():
     cfg = load_config()
-    api_key = os.environ.get("ANTHROPIC_API_KEY") or cfg.get("anthropic_api_key", "")
+    api_key = (os.environ.get("ANTHROPIC_API_KEY") or cfg.get("anthropic_api_key", "")).strip()
     newsapi_key = os.environ.get("NEWSAPI_KEY") or cfg.get("newsapi_key", "")
-    updated_at = datetime.now().strftime("%Y.%m.%d %H:%M")
+    from datetime import timezone, timedelta
+    KST = timezone(timedelta(hours=9))
+    updated_at = datetime.now(KST).strftime("%Y.%m.%d %H:%M")
 
     vn = fetch_vnindex()
     print(f"VN-Index 현재: {vn['current']:,} ({'+' if vn['change_pct']>=0 else ''}{vn['change_pct']}%)")
