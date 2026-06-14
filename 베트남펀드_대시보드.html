@@ -476,7 +476,7 @@ async function fetchTDData(symbols) {
 }
 async function fetchYahooProxy(ticker) {
   try {
-    const target = encodeURIComponent(`https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?interval=1d&range=1d`);
+    const target = encodeURIComponent(`https://query2.finance.yahoo.com/v8/finance/chart/${ticker}?interval=1d&range=1d`);
     const r = await fetch(`https://corsproxy.io/?${target}`);
     if (!r.ok) return null;
     const j = await r.json();
