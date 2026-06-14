@@ -295,23 +295,26 @@ table td { padding: 5px 0; border-bottom: 1px solid var(--border); }
 
   <hr class="divider">
 
-  <div class="section-label">매수 타이밍 가이드</div>
-  
-  <div class="action action-hold">
-    <div class="action-title">📌 지금 — 조정 국면, 진입 전 신호 대기</div>
-    <div class="action-desc">RSI 59.4 및 역배열 이평, 외국인 이탈 신호로 단기 약세 지속 중이며, 반기 GDP 발표 전 변동성 관찰 필요.</div>
+  <div class="section-label" style="display:flex;align-items:center;gap:6px;">
+    매수 타이밍 가이드
+    <span id="ag-status" style="font-size:10px;color:var(--text3);font-weight:400;"></span>
   </div>
-  <div class="action action-buy">
-    <div class="action-title">🟢 1차 매수 조건 (2,000만원)</div>
-    <div class="action-desc">VN-Index 1,750pt 하락 + RSI 50 이하 + 4주 모멘텀 -7% 이상 진입 시, 2,000만원 첫 진입으로 평단가 기초 구축.</div>
+
+  <div class="action action-hold" id="ag-now">
+    <div class="action-title" id="ag-now-title">📌 지금 — 조정 국면, 진입 전 신호 대기</div>
+    <div class="action-desc" id="ag-now-desc">RSI 59.4 및 역배열 이평, 외국인 이탈 신호로 단기 약세 지속 중이며, 반기 GDP 발표 전 변동성 관찰 필요.</div>
   </div>
-  <div class="action action-buy">
-    <div class="action-title">🟢 2차 매수 조건 (2,000만원)</div>
-    <div class="action-desc">반기 GDP 발표 후 긍정 신호 + FDI 지속 증가 + VN-Index 1,700pt 이하 + RSI 40-50대 구간에서 추가 2,000만원 분할 진입.</div>
+  <div class="action action-buy" id="ag-buy1">
+    <div class="action-title" id="ag-buy1-title">🟢 1차 매수 조건 (2,000만원)</div>
+    <div class="action-desc" id="ag-buy1-desc">VN-Index 1,750pt 하락 + RSI 50 이하 + 4주 모멘텀 -7% 이상 진입 시, 2,000만원 첫 진입으로 평단가 기초 구축.</div>
   </div>
-  <div class="action action-sell">
-    <div class="action-title">🔴 손절 조건</div>
-    <div class="action-desc">VN-Index 1,612.49pt 이하 돌파 시 즉시 손절 (미 금리 인상 재개 + CPI 상승 + 외국인 대량 이탈 신호 동시 진행 시).</div>
+  <div class="action action-buy" id="ag-buy2">
+    <div class="action-title" id="ag-buy2-title">🟢 2차 매수 조건 (2,000만원)</div>
+    <div class="action-desc" id="ag-buy2-desc">반기 GDP 발표 후 긍정 신호 + FDI 지속 증가 + VN-Index 1,700pt 이하 + RSI 40-50대 구간에서 추가 2,000만원 분할 진입.</div>
+  </div>
+  <div class="action action-sell" id="ag-sell">
+    <div class="action-title" id="ag-sell-title">🔴 손절 조건</div>
+    <div class="action-desc" id="ag-sell-desc">VN-Index 1,612.49pt 이하 돌파 시 즉시 손절 (미 금리 인상 재개 + CPI 상승 + 외국인 대량 이탈 신호 동시 진행 시).</div>
   </div>
 
   <hr class="divider">
@@ -413,6 +416,32 @@ function switchChart(canvasId, prefix, key, el) {
   c.inst.update();
 }
 
+let _liveData = {};
+
+async function fetchLiveQuote(ticker) {
+  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?interval=1d&range=1d`;
+  const r = await fetch(url);
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  const j = await r.json();
+  const meta = j.chart.result[0].meta;
+  return {
+    price: meta.regularMarketPrice,
+    prev:  meta.chartPreviousClose || meta.previousClose,
+  };
+}
+
+async function fetchLiveData() {
+  const results = await Promise.allSettled([
+    fetchLiveQuote('^VNINDEX'),
+    fetchLiveQuote('USDVND=X'),
+    fetchLiveQuote('^VIX'),
+    fetchLiveQuote('BZ=F'),
+    fetchLiveQuote('DX-Y.NYB'),
+  ]);
+  const [vnindex, usdvnd, usvix, crude, dxy] = results.map(r => r.status === 'fulfilled' ? r.value : null);
+  _liveData = { vnindex, usdvnd, usvix, crude, dxy };
+}
+
 function getKey() { return localStorage.getItem('anthropic_api_key') || ''; }
 function saveKey() {
   const k = document.getElementById('api-key-input').value.trim();
@@ -428,7 +457,70 @@ function toggleKeySetup() {
 }
 window.addEventListener('DOMContentLoaded', function() {
   if (!getKey()) document.getElementById('key-setup').style.display = 'block';
+  else fetchLiveData().then(updateActionGuide);
 });
+
+async function updateActionGuide() {
+  const API_KEY = getKey();
+  if (!API_KEY) return;
+  const status = document.getElementById('ag-status');
+  if (status) status.textContent = '⟳ AI 분석 중...';
+
+  const fmt = (q, digits=0) => q ? q.price.toLocaleString('ko-KR', {maximumFractionDigits: digits}) : '-';
+  const pct = q => q ? `${q.price >= q.prev ? '▲' : '▼'}${Math.abs((q.price - q.prev)/q.prev*100).toFixed(2)}%` : '';
+
+  const ctx = `당신은 10년차 베트남 펀드 매니저입니다.
+현재 상황: 베트남 VN-Index 펀드 매수 전 관찰 중 (아직 미매수)
+투자 계획: 1차 2,000만원, 추가 2,000만원 분할, 손절 -10%
+손절선: VN-Index 1,612pt
+
+[실시간 시장 데이터]
+- VN-Index: ${fmt(_liveData.vnindex)} (${pct(_liveData.vnindex)})
+- USD/VND: ${fmt(_liveData.usdvnd)} / US VIX: ${fmt(_liveData.usvix, 1)} / 브렌트유: $${fmt(_liveData.crude, 1)}
+- DXY: ${fmt(_liveData.dxy, 2)}`;
+
+  const prompt = `위 데이터를 바탕으로 지금 시점의 액션 가이드를 작성해주세요.
+아래 JSON 형식으로만 응답하세요. 다른 텍스트 없이 JSON만:
+{
+  "now_title": "📌 지금 — (한 줄 현황 요약)",
+  "now_desc": "(현재 상황 판단과 이유, 2~3문장)",
+  "buy1_desc": "(1차 매수 조건: 구체적 수치와 근거)",
+  "buy2_desc": "(2차 매수 조건: 구체적 수치와 근거)",
+  "sell_desc": "(손절 조건: 구체적 기준과 근거)"
+}`;
+
+  try {
+    const r = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': API_KEY,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 600,
+        system: ctx,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    const d = await r.json();
+    const text = d.content?.[0]?.text || '';
+    const match = text.match(/\{[\s\S]*\}/);
+    if (match) {
+      const ag = JSON.parse(match[0]);
+      if (ag.now_title) document.getElementById('ag-now-title').textContent = ag.now_title;
+      if (ag.now_desc)  document.getElementById('ag-now-desc').textContent  = ag.now_desc;
+      if (ag.buy1_desc) document.getElementById('ag-buy1-desc').textContent = ag.buy1_desc;
+      if (ag.buy2_desc) document.getElementById('ag-buy2-desc').textContent = ag.buy2_desc;
+      if (ag.sell_desc) document.getElementById('ag-sell-desc').textContent = ag.sell_desc;
+      if (status) status.textContent = 'AI 업데이트 완료';
+    }
+  } catch(e) {
+    if (status) status.textContent = '';
+  }
+}
 
 function setQ(q) { document.getElementById('ai-q').value = q; }
 

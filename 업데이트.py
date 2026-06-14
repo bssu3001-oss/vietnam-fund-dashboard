@@ -814,13 +814,6 @@ def build_html(vn, cfg, api_key, updated_at, vn_analysis, indicators=None, macro
     score_pct = int((total_score + max_score) / (2 * max_score) * 100)
     score_pct = max(0, min(100, score_pct))
 
-    sc_desc_map = {
-        "강매수":    "기술·매크로·뉴스 신호가 모두 긍정적입니다. 분할 매수를 적극 고려할 수 있는 시점입니다.",
-        "매수 검토": "신호 일부가 긍정적으로 전환되고 있습니다. 소규모 선진입 또는 추가 매수를 준비하세요.",
-        "관망":      "아직 진입하기 이른 시점입니다. 추세 반전 신호를 확인한 뒤 매수를 고려하세요.",
-        "조심":      "부정적 신호가 우세합니다. 신규 진입은 자제하고, 보유 중이라면 리스크를 점검하세요.",
-        "진입 자제": "복수의 위험 신호가 켜져 있습니다. 비중 축소 또는 현금 보유를 우선 고려하세요.",
-    }
     if total_score >= max_score * 0.5:
         sc_label, sc_color, sc_bg, sc_emoji = "강매수", "#2d6a0a", "#e8fde8", "🔥"
     elif total_score >= max_score * 0.15:
@@ -831,7 +824,54 @@ def build_html(vn, cfg, api_key, updated_at, vn_analysis, indicators=None, macro
         sc_label, sc_color, sc_bg, sc_emoji = "조심", "#c0392b", "#fff0f0", "⚠️"
     else:
         sc_label, sc_color, sc_bg, sc_emoji = "진입 자제", "#9b2020", "#fde8e8", "🔴"
-    sc_desc = sc_desc_map.get(sc_label, "")
+
+    # 실제 수치 기반 구체적 설명 생성
+    _usdvnd     = mac.get("usdvnd")
+    _fdi_badge  = nws.get("fdi",  {}).get("badge", "badge-b")
+    _fii_badge  = nws.get("fii",  {}).get("badge", "badge-b")
+    _cpi_badge  = nws.get("cpi",  {}).get("badge", "badge-b")
+    _semi_badge = nws.get("semi", {}).get("badge", "badge-b")
+    _gdp_badge  = nws.get("gdp",  {}).get("badge", "badge-b")
+    _fii_txt    = nws.get("fii",  {}).get("text", "")
+
+    if sc_label == "강매수":
+        sc_desc = (
+            f"기술·매크로·뉴스 신호가 전반적으로 긍정적입니다. "
+            f"RSI {rsi}로 과열 없이 상승 여력이 있으며, 이평선 {ma_sig} 상태입니다. "
+            + (f"USD/VND {_usdvnd:,}동으로 동화 안정 구간이어서 외국인 수익률에 유리합니다. " if _usdvnd and _usdvnd < 25500 else "")
+            + "지금은 분할 매수를 적극 고려할 수 있는 시점입니다."
+        )
+    elif sc_label == "매수 검토":
+        sc_desc = (
+            f"RSI {rsi}로 중립 수준이며, 이평선 {ma_sig} 상태입니다. "
+            f"4주 모멘텀 {mom:+}%로 " + ("반등 흐름이 나타나고 있습니다. " if mom > 0 else "약세이나 바닥권 접근 중입니다. ")
+            + (_fii_txt + ". " if _fii_txt else "")
+            + "전체 신호가 완전히 갖춰지기 전까지 소규모 선진입으로 접근하세요."
+        )
+    elif sc_label == "관망":
+        bad_parts = []
+        if ma_cls == "badge-r": bad_parts.append(f"이평선 역배열({ma_sig})")
+        elif ma_cls == "badge-y": bad_parts.append(f"이평선 혼조({ma_sig})")
+        if mom_cls == "badge-r": bad_parts.append(f"모멘텀 약세({mom:+}%)")
+        if _usdvnd and _usdvnd >= 26500: bad_parts.append(f"동화 급락(₫{_usdvnd:,})")
+        if _cpi_badge == "badge-r": bad_parts.append("물가 상승 압력")
+        sc_desc = (
+            f"RSI {rsi}, 이평선 {ma_sig}으로 기술적 추세가 아직 약합니다. "
+            + (f"{', '.join(bad_parts[:2])} 신호가 부담입니다. " if bad_parts else "")
+            + "이평선 정배열 전환 또는 RSI 반등을 확인한 뒤 진입을 고려하세요."
+        )
+    elif sc_label == "조심":
+        sc_desc = (
+            f"부정 신호가 우세합니다. RSI {rsi}, 이평선 {ma_sig}, 4주 모멘텀 {mom:+}%로 기술적 약세입니다. "
+            + (f"USD/VND {_usdvnd:,}동으로 동화 약세가 지속되고 있어 외국인 자금 이탈 압력이 높습니다. " if _usdvnd and _usdvnd >= 26500 else "")
+            + "신규 진입은 자제하고 보유 중이라면 손절선을 재점검하세요."
+        )
+    else:
+        sc_desc = (
+            f"복수의 위험 신호가 동시에 켜져 있습니다. RSI {rsi}, 이평선 {ma_sig}, 모멘텀 {mom:+}%로 하락 추세가 뚜렷합니다. "
+            + (f"동화(₫{_usdvnd:,}) 급락으로 외국인 자금 이탈이 가속화될 수 있습니다. " if _usdvnd and _usdvnd >= 27000 else "")
+            + "비중 축소 또는 현금 보유를 우선 고려하고 추세 반전 확인 후 재진입하세요."
+        )
 
     scorecard_html = f"""<div style="background:{sc_bg};border:1px solid {sc_color}33;border-radius:18px;padding:18px 20px;margin-bottom:20px;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
