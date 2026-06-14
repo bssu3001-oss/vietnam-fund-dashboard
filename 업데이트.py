@@ -828,49 +828,74 @@ def build_html(vn, cfg, api_key, updated_at, vn_analysis, indicators=None, macro
 
     # 실제 수치 기반 구체적 설명 생성
     _usdvnd     = mac.get("usdvnd")
+    _dxy        = mac.get("dxy")
+    _vix        = mac.get("vix")
+    _crude      = mac.get("crude")
     _fdi_badge  = nws.get("fdi",  {}).get("badge", "badge-b")
     _fii_badge  = nws.get("fii",  {}).get("badge", "badge-b")
     _cpi_badge  = nws.get("cpi",  {}).get("badge", "badge-b")
     _semi_badge = nws.get("semi", {}).get("badge", "badge-b")
     _gdp_badge  = nws.get("gdp",  {}).get("badge", "badge-b")
+    _trade_badge= nws.get("trade",{}).get("badge", "badge-b")
     _fii_txt    = nws.get("fii",  {}).get("text", "")
+    _fdi_txt    = nws.get("fdi",  {}).get("text", "")
+
+    # 긍정/부정 요인 수집
+    good_parts = []
+    bad_parts  = []
+    if rsi_cls == "badge-g":  good_parts.append(f"RSI {rsi}(중립~강세)")
+    elif rsi_cls == "badge-r": bad_parts.append(f"RSI {rsi}(과매도 또는 약세)")
+    if ma_cls == "badge-g":   good_parts.append(f"이평선 {ma_sig}")
+    elif ma_cls == "badge-r": bad_parts.append(f"이평선 {ma_sig}")
+    elif ma_cls == "badge-y": bad_parts.append(f"이평선 혼조")
+    if mom_cls == "badge-g":  good_parts.append(f"모멘텀 {mom:+}%")
+    elif mom_cls == "badge-r": bad_parts.append(f"모멘텀 {mom:+}%")
+    if _fii_badge == "badge-g": good_parts.append(f"외국인 순매수({_fii_txt})")
+    elif _fii_badge == "badge-r": bad_parts.append(f"외국인 순매도({_fii_txt})")
+    if _fdi_badge == "badge-g": good_parts.append(f"FDI 유입({_fdi_txt})")
+    elif _fdi_badge == "badge-r": bad_parts.append(f"FDI 감소")
+    if _usdvnd and _usdvnd < 25500: good_parts.append(f"동화 안정(₫{_usdvnd:,})")
+    elif _usdvnd and _usdvnd >= 26500: bad_parts.append(f"동화 급락(₫{_usdvnd:,})")
+    if _cpi_badge == "badge-g":  good_parts.append("물가 안정")
+    elif _cpi_badge == "badge-r": bad_parts.append("물가 상승 압력")
+    if _gdp_badge == "badge-g":  good_parts.append("GDP 호조")
+    if _semi_badge == "badge-g": good_parts.append("반도체·제조업 수혜")
+    elif _semi_badge == "badge-r": bad_parts.append("제조업 수주 둔화")
+    if _trade_badge == "badge-g": good_parts.append("미-베트남 무역 호조")
+    elif _trade_badge == "badge-r": bad_parts.append("무역 리스크")
+    if _vix and _vix >= 25: bad_parts.append(f"글로벌 공포지수 VIX {_vix}")
+    if _crude and _crude >= 90: bad_parts.append(f"고유가(${_crude})")
 
     if sc_label == "강매수":
         sc_desc = (
             f"기술·매크로·뉴스 신호가 전반적으로 긍정적입니다. "
-            f"RSI {rsi}로 과열 없이 상승 여력이 있으며, 이평선 {ma_sig} 상태입니다. "
-            + (f"USD/VND {_usdvnd:,}동으로 동화 안정 구간이어서 외국인 수익률에 유리합니다. " if _usdvnd and _usdvnd < 25500 else "")
+            + (f"✅ {', '.join(good_parts[:4])} 신호가 동시에 켜진 강한 매수 구간입니다. " if good_parts else "")
             + "지금은 분할 매수를 적극 고려할 수 있는 시점입니다."
         )
     elif sc_label == "매수 검토":
         sc_desc = (
-            f"RSI {rsi}로 중립 수준이며, 이평선 {ma_sig} 상태입니다. "
-            f"4주 모멘텀 {mom:+}%로 " + ("반등 흐름이 나타나고 있습니다. " if mom > 0 else "약세이나 바닥권 접근 중입니다. ")
-            + (_fii_txt + ". " if _fii_txt else "")
-            + "전체 신호가 완전히 갖춰지기 전까지 소규모 선진입으로 접근하세요."
+            f"기술적 흐름이 개선 중입니다. "
+            + (f"✅ {', '.join(good_parts[:3])}. " if good_parts else "")
+            + (f"⚠️ {', '.join(bad_parts[:2])} 리스크 잔존. " if bad_parts else "")
+            + "소규모 선진입 후 신호 강화 시 추가 매수로 대응하세요."
         )
     elif sc_label == "관망":
-        bad_parts = []
-        if ma_cls == "badge-r": bad_parts.append(f"이평선 역배열({ma_sig})")
-        elif ma_cls == "badge-y": bad_parts.append(f"이평선 혼조({ma_sig})")
-        if mom_cls == "badge-r": bad_parts.append(f"모멘텀 약세({mom:+}%)")
-        if _usdvnd and _usdvnd >= 26500: bad_parts.append(f"동화 급락(₫{_usdvnd:,})")
-        if _cpi_badge == "badge-r": bad_parts.append("물가 상승 압력")
         sc_desc = (
-            f"RSI {rsi}, 이평선 {ma_sig}으로 기술적 추세가 아직 약합니다. "
-            + (f"{', '.join(bad_parts[:2])} 신호가 부담입니다. " if bad_parts else "")
-            + "이평선 정배열 전환 또는 RSI 반등을 확인한 뒤 진입을 고려하세요."
+            (f"✅ {', '.join(good_parts[:2])} 긍정적이나, " if good_parts else "신호가 혼재합니다. ")
+            + (f"⚠️ {', '.join(bad_parts[:3])} 부담이 남아 있습니다. " if bad_parts else "")
+            + "이평선 정배열 전환 또는 외국인 순매수 전환을 확인한 뒤 진입을 고려하세요."
         )
     elif sc_label == "조심":
         sc_desc = (
-            f"부정 신호가 우세합니다. RSI {rsi}, 이평선 {ma_sig}, 4주 모멘텀 {mom:+}%로 기술적 약세입니다. "
-            + (f"USD/VND {_usdvnd:,}동으로 동화 약세가 지속되고 있어 외국인 자금 이탈 압력이 높습니다. " if _usdvnd and _usdvnd >= 26500 else "")
+            f"부정 신호가 우세합니다. "
+            + (f"⚠️ {', '.join(bad_parts[:4])} 상태입니다. " if bad_parts else "")
+            + (f"(긍정 요인: {', '.join(good_parts[:2])}) " if good_parts else "")
             + "신규 진입은 자제하고 보유 중이라면 손절선을 재점검하세요."
         )
     else:
         sc_desc = (
-            f"복수의 위험 신호가 동시에 켜져 있습니다. RSI {rsi}, 이평선 {ma_sig}, 모멘텀 {mom:+}%로 하락 추세가 뚜렷합니다. "
-            + (f"동화(₫{_usdvnd:,}) 급락으로 외국인 자금 이탈이 가속화될 수 있습니다. " if _usdvnd and _usdvnd >= 27000 else "")
+            f"복수의 위험 신호가 동시에 켜져 있습니다. "
+            + (f"⚠️ {', '.join(bad_parts)} 모두 부정적입니다. " if bad_parts else "")
             + "비중 축소 또는 현금 보유를 우선 고려하고 추세 반전 확인 후 재진입하세요."
         )
 
