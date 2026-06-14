@@ -317,6 +317,14 @@ table td { padding: 5px 0; border-bottom: 1px solid var(--border); }
     <div class="action-desc" id="ag-sell-desc">VN-Index 1,612.49pt 이하 돌파 시 즉시 손절 (미 금리 인상 재개 + CPI 상승 + 외국인 대량 이탈 신호 동시 진행 시).</div>
   </div>
 
+  <div id="td-key-setup" style="display:none;background:#f8f9fa;border-radius:10px;padding:12px;margin-top:10px;">
+    <div style="font-size:12px;color:var(--text2);margin-bottom:6px;">📡 실시간 시세 연동을 위해 <b>TwelveData API 키</b>가 필요해요 (<a href="https://twelvedata.com" target="_blank" style="color:var(--info-text)">twelvedata.com</a> 무료 가입)</div>
+    <div style="display:flex;gap:8px;">
+      <input type="password" id="td-key-input" placeholder="TwelveData API 키 입력" style="flex:1;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-size:13px;background:var(--card);color:var(--text1);">
+      <button onclick="saveTDKey()" style="padding:8px 14px;background:var(--info-text);color:white;border:none;border-radius:8px;font-size:13px;cursor:pointer;">저장</button>
+    </div>
+  </div>
+
   <hr class="divider">
 
   <div class="section-label">AI 매수 판단 질문</div>
@@ -418,28 +426,42 @@ function switchChart(canvasId, prefix, key, el) {
 
 let _liveData = {};
 
-async function fetchLiveQuote(ticker) {
-  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?interval=1d&range=1d`;
+function getTDKey() { return localStorage.getItem('twelvedata_api_key') || ''; }
+function saveTDKey() {
+  const k = document.getElementById('td-key-input')?.value.trim();
+  if (!k) return;
+  localStorage.setItem('twelvedata_api_key', k);
+  document.getElementById('td-key-input').value = '';
+  document.getElementById('td-key-setup').style.display = 'none';
+  fetchLiveData().then(updateActionGuide);
+}
+
+async function fetchTDData(symbols) {
+  const key = getTDKey();
+  if (!key) return {};
+  const url = `https://api.twelvedata.com/quote?symbol=${encodeURIComponent(symbols.join(','))}&apikey=${key}&dp=2`;
   const r = await fetch(url);
-  if (!r.ok) throw new Error('HTTP ' + r.status);
-  const j = await r.json();
-  const meta = j.chart.result[0].meta;
-  return {
-    price: meta.regularMarketPrice,
-    prev:  meta.chartPreviousClose || meta.previousClose,
-  };
+  if (!r.ok) return {};
+  const data = await r.json();
+  const result = {};
+  for (const sym of symbols) {
+    const item = symbols.length === 1 ? data : data[sym];
+    if (item && !item.code) {
+      result[sym] = { price: parseFloat(item.close), prev: parseFloat(item.previous_close), pct: parseFloat(item.percent_change) };
+    }
+  }
+  return result;
 }
 
 async function fetchLiveData() {
-  const results = await Promise.allSettled([
-    fetchLiveQuote('^VNINDEX'),
-    fetchLiveQuote('USDVND=X'),
-    fetchLiveQuote('^VIX'),
-    fetchLiveQuote('BZ=F'),
-    fetchLiveQuote('DX-Y.NYB'),
-  ]);
-  const [vnindex, usdvnd, usvix, crude, dxy] = results.map(r => r.status === 'fulfilled' ? r.value : null);
-  _liveData = { vnindex, usdvnd, usvix, crude, dxy };
+  const td = await fetchTDData(['VNI:HOSE', 'USD/VND', 'VIX', 'BCO/USD', 'DXY']).catch(() => ({}));
+  _liveData = {
+    vnindex: td['VNI:HOSE'] ? { price: td['VNI:HOSE'].price, prev: td['VNI:HOSE'].prev } : null,
+    usdvnd:  td['USD/VND']  ? { price: td['USD/VND'].price,  prev: td['USD/VND'].prev  } : null,
+    usvix:   td['VIX']      ? { price: td['VIX'].price,      prev: td['VIX'].prev      } : null,
+    crude:   td['BCO/USD']  ? { price: td['BCO/USD'].price,  prev: td['BCO/USD'].prev  } : null,
+    dxy:     td['DXY']      ? { price: td['DXY'].price,      prev: td['DXY'].prev      } : null,
+  };
 }
 
 function getKey() { return localStorage.getItem('anthropic_api_key') || ''; }
@@ -458,6 +480,8 @@ function toggleKeySetup() {
 window.addEventListener('DOMContentLoaded', function() {
   if (!getKey()) document.getElementById('key-setup').style.display = 'block';
   else fetchLiveData().then(updateActionGuide);
+  const tdSetup = document.getElementById('td-key-setup');
+  if (tdSetup) tdSetup.style.display = getTDKey() ? 'none' : 'block';
 });
 
 async function updateActionGuide() {
@@ -516,6 +540,8 @@ async function updateActionGuide() {
       if (ag.buy2_desc) document.getElementById('ag-buy2-desc').textContent = ag.buy2_desc;
       if (ag.sell_desc) document.getElementById('ag-sell-desc').textContent = ag.sell_desc;
       if (status) status.textContent = 'AI 업데이트 완료';
+    } else {
+      if (status) status.textContent = '';
     }
   } catch(e) {
     if (status) status.textContent = '';
