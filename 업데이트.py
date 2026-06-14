@@ -1147,7 +1147,11 @@ table td {{ padding: 5px 0; border-bottom: 1px solid var(--border); }}
     <div class="ai-response" id="ai-resp">질문을 입력하거나 위 버튼을 눌러보세요.</div>
   </div>
 
-  <div class="footer">마지막 업데이트: {updated_at}</div>
+  <div class="footer">
+    마지막 업데이트: {updated_at}
+    <br><br>
+    <button onclick="location.reload(true)" style="margin-top:4px;padding:8px 24px;border-radius:20px;border:0.5px solid var(--border);background:var(--card-bg);color:var(--text);font-size:13px;font-weight:500;cursor:pointer;">🔄 새로고침</button>
+  </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
