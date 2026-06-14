@@ -63,9 +63,21 @@ def load_config():
 
 
 def fetch_vietnam_data():
-    ticker = yf.Ticker("^VNINDEX")
-    hist = ticker.history(period="1y", interval="1wk")
-    prices = [float(row["Close"]) for _, row in hist.iterrows() if not row.isnull()["Close"]]
+    # VNM ETF로 주간 추세 계산 (^VNINDEX.VN은 당일 데이터만 가능)
+    vnm = yf.Ticker("VNM")
+    hist = vnm.history(period="1y", interval="1wk")
+    vnm_prices = [float(row["Close"]) for _, row in hist.iterrows() if not row.isnull()["Close"]]
+
+    # 현재 VN-Index 실제값은 ^VNINDEX.VN에서 가져와서 스케일 계산
+    try:
+        vn_now = yf.Ticker("^VNINDEX.VN").history(period="1d", interval="1d")
+        vn_current = float(vn_now["Close"].iloc[-1]) if not vn_now.empty else None
+        vnm_now = float(hist["Close"].iloc[-1]) if not hist.empty else None
+        scale = vn_current / vnm_now if vn_current and vnm_now else 100
+    except Exception:
+        scale = 100
+
+    prices = [p * scale for p in vnm_prices]
 
     current = prices[-1]
     prev = prices[-2] if len(prices) >= 2 else current
