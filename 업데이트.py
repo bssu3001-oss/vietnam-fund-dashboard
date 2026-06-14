@@ -1690,16 +1690,21 @@ def main():
     if rest_api_key and refresh_token:
         try:
             access_token = kakao_refresh_access_token(rest_api_key, refresh_token, client_secret or None)
+            print("✅ 카카오 토큰 갱신 완료")
 
             commentary = generate_ai_commentary(vn, vn_ind, macro, cfg, api_key)
             if commentary:
                 kakao_send(access_token, commentary)
                 print("✅ AI 코멘트 발송 완료")
+            else:
+                print("ℹ️ AI 코멘트: 특이사항 없음 — 발송 안 함")
 
             achievement = check_action_guide_achievement(vn, vn_ind, macro, cfg, action_guide, api_key)
             if achievement:
                 kakao_send(access_token, achievement)
                 print("✅ 액션가이드 달성 알림 발송 완료")
+            else:
+                print("ℹ️ 액션가이드: 달성 조건 없음 — 발송 안 함")
 
         except Exception as e:
             print(f"카카오 알림 오류: {e}")
