@@ -1517,8 +1517,13 @@ function recalcScorecard() {{
   if (eMacro) {{ eMacro.textContent = (macroScore>=0?'+':'')+macroScore.toFixed(1); eMacro.style.color = color; }}
   if (eNews)  {{ eNews.textContent  = (newsScore>=0?'+':'')+newsScore.toFixed(1);   eNews.style.color  = color; }}
 }}
-fetchLiveData().then(data => {{ recalcScorecard(); updateActionGuide(data); }});
-setInterval(() => fetchLiveData().then(() => recalcScorecard()), 5*60*1000);
+recalcScorecard();
+fetchLiveData()
+  .then(data => {{ recalcScorecard(); updateActionGuide(data); }})
+  .catch(() => recalcScorecard());
+setInterval(() => fetchLiveData()
+  .then(data => {{ recalcScorecard(); updateActionGuide(data); }})
+  .catch(() => recalcScorecard()), 5*60*1000);
 
 function setQ(q) {{ document.getElementById('ai-q').value = q; }}
 
@@ -1584,7 +1589,9 @@ document.getElementById('ai-q').addEventListener('keydown', e => {{ if (e.key ==
 
 window._charts = {{}};
 const PDATA_chartVN = {vn_periods_js};
-window._charts['chartVN'] = {{inst: initChart('chartVN', PDATA_chartVN, 'd1'), data: PDATA_chartVN}};
+try {{
+  window._charts['chartVN'] = {{inst: initChart('chartVN', PDATA_chartVN, 'd1'), data: PDATA_chartVN}};
+}} catch(e) {{ console.warn('차트 초기화 실패:', e); }}
 
 // 페이지 열릴 때 신호 설명 자동 세팅
 // 종합 투자 신호 설명은 업데이트.py 실행 시 실제 지표 기반으로 자동 생성됩니다.
