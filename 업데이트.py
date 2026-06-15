@@ -1258,6 +1258,7 @@ table td {{ padding: 5px 0; border-bottom: 1px solid var(--border); }}
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>window.Chart||document.write('<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"><\/script>')</script>
 <script>
 const VN_SCALE = {vn["scale"]:.4f};
 const isDark = matchMedia('(prefers-color-scheme: dark)').matches;
@@ -1591,7 +1592,7 @@ window._charts = {{}};
 const PDATA_chartVN = {vn_periods_js};
 try {{
   window._charts['chartVN'] = {{inst: initChart('chartVN', PDATA_chartVN, 'd1'), data: PDATA_chartVN}};
-}} catch(e) {{ console.warn('차트 초기화 실패:', e); }}
+}} catch(e) {{ console.warn('차트 초기화 실패:', e); document.querySelectorAll('.chart-wrap').forEach(el=>{{if(!el.querySelector('canvas').dataset.done)el.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text2);font-size:12px;">⚠️ 차트 로딩 실패 (새로고침 해보세요)</div>'}});}}
 
 // 페이지 열릴 때 신호 설명 자동 세팅
 // 종합 투자 신호 설명은 업데이트.py 실행 시 실제 지표 기반으로 자동 생성됩니다.
