@@ -98,8 +98,16 @@ def fetch_vnindex():
     mo6_labels, mo6_prices = fetch_period_scaled(vnm, "6mo", "1wk", "%-m/%-d", scale)
     yr1_labels, yr1_prices = fetch_period_scaled(vnm, "1y",  "1wk", "%-m/%-d", scale)
 
-    # 전일 대비 등락
-    prev_close = d5_prices[-2] if len(d5_prices) >= 2 else current
+    # 전일 대비 등락 (VN-Index 직접 → VNM*scale 순으로 시도)
+    try:
+        prev_close = round(float(vn_ticker.fast_info.previous_close), 2)
+        if not prev_close:
+            raise ValueError
+    except Exception:
+        try:
+            prev_close = round(float(vnm.fast_info.previous_close) * scale, 2)
+        except Exception:
+            prev_close = d5_prices[-2] if len(d5_prices) >= 2 else current
     change_val = round(current - prev_close, 2)
     change_pct = round(change_val / prev_close * 100, 2) if prev_close else 0
 
@@ -622,11 +630,11 @@ def build_html(vn, cfg, api_key, updated_at, vn_analysis, indicators=None, macro
     pos_txt = f"52주 고점 대비 {fh}% / 저점 대비 +{fl}%"
 
     tech_signals_html = (
-        sig_row("RSI (14주)", rsi_cls, rsi_txt) +
-        sig_row("이평선 배열", ma_cls, ma_sig) +
-        sig_row("단기 모멘텀", mom_cls, mom_txt) +
-        sig_row("변동성", vol_cls, vol_txt) +
-        sig_row("52주 가격 위치", pos_cls, pos_txt)
+        sig_row("RSI (14주)", rsi_cls, rsi_txt, "badge-rsi") +
+        sig_row("이평선 배열", ma_cls, ma_sig, "badge-ma") +
+        sig_row("단기 모멘텀", mom_cls, mom_txt, "badge-mom") +
+        sig_row("변동성", vol_cls, vol_txt, "badge-vol") +
+        sig_row("52주 가격 위치", pos_cls, pos_txt, "badge-pos")
     )
 
     # ── 매크로 신호 ──────────────────────────────────────────────
@@ -729,7 +737,7 @@ def build_html(vn, cfg, api_key, updated_at, vn_analysis, indicators=None, macro
         tooltip_attr = f'title="{tooltip}"' if tooltip else ""
         return (f'<div class="signal-row" {tooltip_attr}>'
                 f'<span class="signal-name">{label}{tag}</span>'
-                f'<span class="badge {badge_cls}">{text}</span>'
+                f'<span class="badge {badge_cls}" id="badge-{key}">{text}</span>'
                 f'</div>')
 
     fed_n = nws.get("fed", {})
@@ -800,7 +808,7 @@ def build_html(vn, cfg, api_key, updated_at, vn_analysis, indicators=None, macro
     {news_row("베트남 GDP", "gdp")}
     <div class="signal-row">
       <span class="signal-name">미국 연준 금리{auto_tag}</span>
-      <span class="badge {fed_badge}">{fed_text}</span>
+      <span class="badge {fed_badge}" id="badge-fed">{fed_text}</span>
     </div>
     <div style="margin-top:10px;font-size:11px;color:var(--text3);">* 뉴스 항목은 마우스를 올리면 원문 헤드라인을 볼 수 있어요</div>
   </div>"""
@@ -1433,7 +1441,43 @@ async function updateActionGuide(td) {{
 }}
 if (!getKey()) document.getElementById('key-setup').style.display = 'block';
 initTDKeyUI();
-fetchLiveData().then(updateActionGuide);
+function recalcScorecard() {{
+  const bmap = {{'badge-g':1,'badge-y':0,'badge-r':-1,'badge-b':0}};
+  function bval(id) {{
+    const el = document.getElementById(id);
+    if (!el) return 0;
+    const cls = [...el.classList].find(c => c in bmap) || '';
+    return bmap[cls] || 0;
+  }}
+  const techIds  = ['badge-rsi','badge-ma','badge-mom','badge-vol','badge-pos'];
+  const macroIds = ['badge-vnm','badge-usdvnd','badge-usdcny','badge-dxy','badge-eem','badge-vix','badge-crude','badge-gold'];
+  const newsIds  = ['badge-fdi','badge-fii','badge-sbv','badge-trade','badge-china','badge-cpi','badge-semi','badge-fed','badge-gdp'];
+  const techScore  = techIds.reduce((s,id)  => s + bval(id)*1.5, 0);
+  const macroScore = macroIds.reduce((s,id) => s + bval(id)*1.0, 0);
+  const newsScore  = newsIds.reduce((s,id)  => s + bval(id)*0.8, 0);
+  const total = techScore + macroScore + newsScore;
+  const maxScore = techIds.length*1.5 + macroIds.length*1.0 + newsIds.length*0.8;
+  const pct = Math.max(0, Math.min(100, Math.round((total + maxScore) / (2*maxScore) * 100)));
+  let label, color, bg, emoji;
+  if (total >= maxScore*0.5)        {{ label='강매수';    color='#2d6a0a'; bg='#e8fde8'; emoji='🔥'; }}
+  else if (total >= maxScore*0.15)  {{ label='매수 검토'; color='#2d8a4e'; bg='#f0faf0'; emoji='🟢'; }}
+  else if (total >= -maxScore*0.15) {{ label='관망';      color='#BA7517'; bg='#fff8e1'; emoji='📌'; }}
+  else if (total >= -maxScore*0.5)  {{ label='조심';      color='#c0392b'; bg='#fff0f0'; emoji='⚠️'; }}
+  else                               {{ label='진입 자제'; color='#9b2020'; bg='#fde8e8'; emoji='🔴'; }}
+  const eEmoji = document.getElementById('sc-emoji');
+  const ePct   = document.getElementById('sc-pct');
+  const eBar   = document.getElementById('sc-bar');
+  const eTech  = document.getElementById('sc-tech');
+  const eMacro = document.getElementById('sc-macro');
+  const eNews  = document.getElementById('sc-news');
+  if (eEmoji) {{ eEmoji.textContent = emoji+' '+label; eEmoji.style.color = color; }}
+  if (ePct)   {{ ePct.textContent   = pct+'점';        ePct.style.color   = color; }}
+  if (eBar)   {{ eBar.style.width   = pct+'%';         eBar.style.background = color; }}
+  if (eTech)  {{ eTech.textContent  = (techScore>=0?'+':'')+techScore.toFixed(1);   eTech.style.color  = color; }}
+  if (eMacro) {{ eMacro.textContent = (macroScore>=0?'+':'')+macroScore.toFixed(1); eMacro.style.color = color; }}
+  if (eNews)  {{ eNews.textContent  = (newsScore>=0?'+':'')+newsScore.toFixed(1);   eNews.style.color  = color; }}
+}}
+fetchLiveData().then(data => {{ updateActionGuide(data); recalcScorecard(); }});
 
 function setQ(q) {{ document.getElementById('ai-q').value = q; }}
 
