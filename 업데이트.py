@@ -1449,6 +1449,7 @@ async function updateActionGuide(td) {{
   }}).catch(() => ({{\}}));
   const newsLines = Object.entries(news).map(([k,v]) => v.length ? `[${{k}}] ${{v.join(' / ')}}` : '').filter(Boolean);
   const newsText = newsLines.join('\n');
+  const scLabel = document.getElementById('sc-emoji')?.textContent?.trim() || '';
   const ctx = `당신은 10년차 베트남 펀드 매니저입니다.
 현재 상황: 베트남 VN-Index 펀드 매수 전 관찰 중 (아직 미매수)
 투자 계획: 1차 {invest:,}만원, 추가 {add:,}만원 분할, 손절 -{sl_pct}%
@@ -1457,7 +1458,7 @@ async function updateActionGuide(td) {{
 - VNM ETF: $${{fmt('VNM')}} (${{pct('VNM')}})
 - USD/VND: ₫${{fmt('USD/VND',0)}} / USD/CNY: ¥${{fmt('USD/CNY')}}
 - DXY: ${{fmt('DXY')}} / EEM: $${{fmt('EEM')}} (${{pct('EEM')}})
-- US VIX: ${{fmt('VIX',1)}} / 브렌트유: $${{fmt('BCO/USD',1)}} / 금: $${{fmt('XAU/USD',0)}}` + (newsText ? `\n\n[실시간 뉴스 헤드라인]\n${{newsText}}` : '');
+- US VIX: ${{fmt('VIX',1)}} / 브렌트유: $${{fmt('BCO/USD',1)}} / 금: $${{fmt('XAU/USD',0)}}` + (newsText ? `\n\n[실시간 뉴스 헤드라인]\n${{newsText}}` : '') + (scLabel ? `\n\n[현재 종합신호]: ${{scLabel}} — 액션 가이드는 이 신호와 반드시 일치해야 합니다.` : '');
   const prompt = `위 실시간 데이터${{newsText ? '와 최신 뉴스' : ''}}를 바탕으로 지금 시점의 액션 가이드를 JSON으로 작성해주세요.
 반드시 아래 형식만 출력하세요 (다른 텍스트 없이):
 {{"now_title":"📌 지금 — [한 줄 현황]","now_desc":"[현재 상황 2문장]","buy1_title":"🟢 1차 매수 조건","buy1_desc":"[1차 매수 조건 2문장]","buy2_title":"🟢 2차 매수 조건","buy2_desc":"[2차 매수 조건 2문장]","sell_title":"🔴 손절 조건","sell_desc":"[손절 조건 1~2문장]"}}`;
@@ -1516,7 +1517,7 @@ function recalcScorecard() {{
   if (eMacro) {{ eMacro.textContent = (macroScore>=0?'+':'')+macroScore.toFixed(1); eMacro.style.color = color; }}
   if (eNews)  {{ eNews.textContent  = (newsScore>=0?'+':'')+newsScore.toFixed(1);   eNews.style.color  = color; }}
 }}
-fetchLiveData().then(data => {{ updateActionGuide(data); recalcScorecard(); }});
+fetchLiveData().then(data => {{ recalcScorecard(); updateActionGuide(data); }});
 setInterval(() => fetchLiveData().then(() => recalcScorecard()), 5*60*1000);
 
 function setQ(q) {{ document.getElementById('ai-q').value = q; }}
