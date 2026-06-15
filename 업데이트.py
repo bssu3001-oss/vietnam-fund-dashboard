@@ -559,7 +559,7 @@ def index_section_html(data, chart_analysis, name, chart_id, period_prefix):
         analysis_card = f"""
   <div class="card" style="margin-top:-4px;">
     <div class="card-title" style="font-size:12px;color:var(--text2);font-weight:500;margin-bottom:10px;">📊 AI 차트 분석 — {name}</div>
-    <div style="font-size:13px;line-height:2;color:var(--text);">{analysis_html}</div>
+    <div id="ai-chart-analysis" style="font-size:13px;line-height:2;color:var(--text);">{analysis_html}</div>
   </div>"""
 
     return f"""
@@ -583,6 +583,7 @@ def index_section_html(data, chart_analysis, name, chart_id, period_prefix):
   </div>
   <div class="card" style="padding:12px 12px 10px;">
     <div class="chart-wrap"><canvas id="{chart_id}"></canvas></div>
+    <div style="font-size:11px;color:var(--text3);margin-top:-4px;margin-bottom:4px;">* VN-Index는 야후에 직접 데이터가 없어 VNM ETF 기준 환산 추정치입니다 (실시간)</div>
     <div style="display:flex;gap:16px;font-size:11px;color:var(--text2);margin-top:4px;">
       <span style="display:flex;align-items:center;gap:4px;"><span style="width:12px;height:2px;background:#378ADD;display:inline-block;border-radius:1px;"></span>{name}</span>
     </div>
@@ -812,6 +813,7 @@ def build_html(vn, cfg, api_key, updated_at, vn_analysis, indicators=None, macro
       <span class="badge {fed_badge}" id="badge-fed">{fed_text}</span>
     </div>
     <div style="margin-top:10px;font-size:11px;color:var(--text3);">* 뉴스 항목은 마우스를 올리면 원문 헤드라인을 볼 수 있어요</div>
+    <div id="news-live-note" style="margin-top:4px;font-size:11px;color:var(--text3);"></div>
   </div>"""
 
     # ── 종합 스코어카드 ──────────────────────────────────────────
@@ -1597,6 +1599,7 @@ try {{
 // 페이지 열릴 때 신호 설명 자동 세팅
 // 종합 투자 신호 설명은 업데이트.py 실행 시 실제 지표 기반으로 자동 생성됩니다.
 </script>
+<script src="실시간.js"></script>
 </body>
 </html>"""
     return html
