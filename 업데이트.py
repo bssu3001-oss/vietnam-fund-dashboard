@@ -388,7 +388,7 @@ def calc_indicators(prices):
     }
 
 # ── AI 차트 분석 ──────────────────────────────────────────────────
-def generate_chart_analysis(vn, api_key):
+def generate_chart_analysis(vn, api_key, scorecard_label=None):
     if not api_key:
         return "AI 분석을 보려면 설정.json에 anthropic_api_key를 입력해주세요."
 
@@ -399,8 +399,10 @@ def generate_chart_analysis(vn, api_key):
     ma5_str  = f"{ind['ma5']:,}"  if ind['ma5']  else "데이터 부족"
     ma13_str = f"{ind['ma13']:,}" if ind['ma13'] else "데이터 부족"
     ma26_str = f"{ind['ma26']:,}" if ind['ma26'] else "데이터 부족"
+    sc_note = f"\n참고: 종합매수신호 계산 결과는 '{scorecard_label}'입니다. 이 결론과 일치하는 방향으로 분석해주세요." if scorecard_label else ""
 
-    prompt = f"""VN-Index 주간 차트 지표를 바탕으로 매수 타이밍 분석을 해줘.
+    prompt = f"""오늘은 {datetime.now().strftime('%Y년 %m월 %d일')}입니다.{sc_note}
+VN-Index 주간 차트 지표를 바탕으로 매수 타이밍 분석을 해줘.
 
 [지표]
 현재: {ind['current']:,} (전일 대비 {actual_chg_str})
@@ -442,7 +444,7 @@ RSI(14): {ind['rsi']} (30이하=과매도, 70이상=과매수)
         return f"분석 생성 실패: {e}"
 
 # ── 매수 타이밍 가이드 AI 생성 ───────────────────────────────────
-def generate_action_guide(vn, indicators, macro, news, cfg, api_key, events=None):
+def generate_action_guide(vn, indicators, macro, news, cfg, api_key, events=None, scorecard_label=None):
     if not api_key:
         return None
 
@@ -461,6 +463,8 @@ def generate_action_guide(vn, indicators, macro, news, cfg, api_key, events=None
         n = nws.get(k, {})
         news_summary += f"- {lbl}: {n.get('text','정보없음')} (판단: {n.get('badge','').replace('badge-','')})\n"
 
+    sc_note = f"\n[종합신호 참고]\n종합매수신호 계산 결과: '{scorecard_label}' — ACTION과 NOW_TITLE은 이 결과와 반드시 일치해야 합니다.\n" if scorecard_label else ""
+
     events_note = ""
     if events:
         from datetime import date as _date
@@ -476,7 +480,8 @@ def generate_action_guide(vn, indicators, macro, news, cfg, api_key, events=None
         if upcoming:
             events_note = "\n[30일 내 주요 이벤트]\n" + "\n".join(f"- {e}" for e in upcoming)
 
-    prompt = f"""당신은 베트남 주식 펀드 전문 매니저입니다. 아래 현재 지표를 보고 매수 타이밍 가이드를 작성해주세요.
+    prompt = f"""오늘은 {datetime.now().strftime('%Y년 %m월 %d일')}입니다.{sc_note}
+당신은 베트남 주식 펀드 전문 매니저입니다. 아래 현재 지표를 보고 매수 타이밍 가이드를 작성해주세요.
 
 [투자 계획 (아직 미매수)]
 - 투자 예정금: {invest:,}만원 (1차) / 추가 {add:,}만원 (2차 분할)
@@ -1444,13 +1449,19 @@ async function askAI() {{
   const box = document.getElementById('ai-resp');
   box.textContent = '분석 중...';
 
+  const _liveVN = (typeof _liveDataVN !== 'undefined' && _liveDataVN.vn) ? _liveDataVN.vn.toLocaleString('ko-KR',{{maximumFractionDigits:2}}) : '{current:,.2f}';
+  const _liveVNPct = (typeof _liveDataVN !== 'undefined' && _liveDataVN.vnPct !== undefined) ? ((_liveDataVN.vnPct>=0)?'▲':'▼')+Math.abs(_liveDataVN.vnPct).toFixed(2)+'%' : '{_vn_chg_sign}{vn["change_pct"]}%';
+  const _scVN = document.getElementById('sc-emoji')?.textContent?.trim() || '';
+  const _todayVN = new Date().toLocaleDateString('ko-KR',{{year:'numeric',month:'long',day:'numeric'}});
   const ctx = `당신은 10년차 베트남 펀드 매니저입니다.
 현재 상황: 베트남 VN-Index 펀드 매수 전 관찰 중 (아직 미매수)
 투자 계획: 1차 {invest:,}만원, 추가 {add:,}만원 분할, 손절 -{sl_pct}%
+오늘 날짜: ${{_todayVN}}
 
-[실시간 시장 데이터 — {updated_at} 기준]
-- VN-Index: {current:,.2f} ({_vn_chg_sign}{vn['change_pct']}%)
+[실시간 시장 데이터]
+- VN-Index: ${{_liveVN}} (${{_liveVNPct}})
 - USD/VND: {mac.get('usdvnd','?'):,}동 / US VIX: {mac.get('vix','?')} / 브렌트유: ${mac.get('crude','?')}
+- 종합신호: ${{_scVN}}
 - FDI: {_n_fdi} / 외국인: {_n_fii}
 - SBV 금리: {_n_sbv} / 미국 연준: {_n_fed}
 - 미-베트남 무역: {_n_trade} / CPI: {_n_cpi}
@@ -1631,14 +1642,30 @@ def main():
     print("뉴스 신호 수집 중...")
     news = fetch_news_signals(api_key, newsapi_key if newsapi_key else None)
 
-    print("AI 차트 분석 생성 중...")
-    vn_analysis = generate_chart_analysis(vn, api_key)
-
     vn_ind = calc_indicators(vn["yr1"]["prices"])
     events = cfg.get("주요이벤트", [])
 
+    # 종합신호 미리 계산
+    _bmap_vn = {"badge-g": 1, "badge-y": 0, "badge-r": -1, "badge-b": 0}
+    _rsi_vn = vn_ind.get("rsi", 50)
+    _rsi_cls_vn = "badge-g" if _rsi_vn <= 30 else ("badge-r" if _rsi_vn >= 70 else "badge-b")
+    _ma_cls_vn = "badge-g" if "정배열" in vn_ind.get("ma_signal","") else ("badge-r" if "역배열" in vn_ind.get("ma_signal","") else "badge-y")
+    _mom_cls_vn = "badge-g" if vn_ind.get("momentum",0) > 1 else ("badge-r" if vn_ind.get("momentum",0) < -1 else "badge-y")
+    _news_vn = sum(_bmap_vn.get(news.get(k,{}).get("badge","badge-b"),0) for k in ["fdi","fii","sbv","trade","cpi","fed"])
+    _total_vn = sum(_bmap_vn.get(c,0)*1.5 for c in [_rsi_cls_vn,_ma_cls_vn,_mom_cls_vn]) + _news_vn*0.8
+    _max_vn = 3*1.5 + 6*0.8
+    if _total_vn >= _max_vn * 0.5:    sc_label_vn = "강매수"
+    elif _total_vn >= _max_vn * 0.15: sc_label_vn = "매수 검토"
+    elif _total_vn >= -_max_vn * 0.15: sc_label_vn = "관망"
+    elif _total_vn >= -_max_vn * 0.5:  sc_label_vn = "조심"
+    else:                               sc_label_vn = "진입 자제"
+    print(f"  종합매수신호(미리보기): {sc_label_vn}")
+
+    print("AI 차트 분석 생성 중...")
+    vn_analysis = generate_chart_analysis(vn, api_key, scorecard_label=sc_label_vn)
+
     print("액션 가이드 생성 중...")
-    action_guide = generate_action_guide(vn, vn_ind, macro, news, cfg, api_key, events=events)
+    action_guide = generate_action_guide(vn, vn_ind, macro, news, cfg, api_key, events=events, scorecard_label=sc_label_vn)
 
     html = build_html(vn, cfg, api_key, updated_at, vn_analysis,
                       indicators=vn_ind, macro=macro, news=news,
