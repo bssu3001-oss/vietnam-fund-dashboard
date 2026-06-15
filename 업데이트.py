@@ -1542,7 +1542,7 @@ def kakao_send(access_token, text):
     print("✅ 카카오 알림 전송 완료")
 
 
-def generate_ai_commentary(vn, indicators, macro, cfg, api_key):
+def generate_ai_commentary(vn, indicators, macro, cfg, api_key, signal_emoji=None):
     if not api_key:
         return ""
     from datetime import timezone, timedelta
@@ -1588,9 +1588,11 @@ def generate_ai_commentary(vn, indicators, macro, cfg, api_key):
         comment = result["content"][0]["text"].strip()
         if "특이사항 없음" in comment:
             return ""
+        sc_line = f"{signal_emoji}\n" if signal_emoji else ""
         msg = (f"📊 베트남펀드 {now_str}\n"
                f"VN-Index {current:.0f} ({vn['change_pct']:+}%)\n"
                f"매수단가 {buy_price:.0f} / 손익 {pnl:+.1f}%\n"
+               f"{sc_line}"
                f"💬 {comment}")
         return msg
     except Exception as e:
@@ -1704,7 +1706,12 @@ def main():
             access_token = kakao_refresh_access_token(rest_api_key, refresh_token, client_secret or None)
             print("✅ 카카오 토큰 갱신 완료")
 
-            commentary = generate_ai_commentary(vn, vn_ind, macro, cfg, api_key)
+            import re as _re
+            _html_path = os.path.join(os.path.dirname(__file__), "베트남펀드_대시보드.html")
+            _html_txt = open(_html_path, encoding="utf-8").read()
+            _em = _re.search(r'id="sc-emoji"[^>]*>([^<]+)<', _html_txt)
+            signal_emoji = _em.group(1).strip() if _em else None
+            commentary = generate_ai_commentary(vn, vn_ind, macro, cfg, api_key, signal_emoji=signal_emoji)
             if commentary:
                 kakao_send(access_token, commentary)
                 print("✅ AI 코멘트 발송 완료")
