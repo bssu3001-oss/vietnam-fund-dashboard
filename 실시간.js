@@ -94,6 +94,18 @@
         c.inst.update();
       }
     } catch (e) {}
+    // VN-Index 시가/고가/저가: VNM 환산 분봉(d1)으로 추정해 채움 (직접 OHLC 데이터 없음)
+    try {
+      const d1 = c.data.d1 && c.data.d1.prices;
+      if (d1 && d1.length) {
+        const open = d1[0], high = Math.max(...d1), low = Math.min(...d1);
+        const fmt = (n) => n.toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        const vals = document.querySelectorAll('.ohlc-val');
+        if (vals[0]) vals[0].textContent = fmt(open);
+        if (vals[1]) vals[1].textContent = fmt(high);
+        if (vals[2]) vals[2].textContent = fmt(low);
+      }
+    } catch (e) {}
     return lastMeta;
   }
 
