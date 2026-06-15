@@ -1702,12 +1702,12 @@ def main():
             _pct   = _pt.group(1).strip() if _pt else None
             signal_emoji = f"{_emoji} ({_pct})" if _emoji and _pct else _emoji
             signal_desc  = _ds.group(1).strip() if _ds else None
-            commentary = generate_ai_commentary(vn, vn_ind, macro, cfg, api_key, signal_emoji=signal_emoji, signal_desc=signal_desc)
-            if commentary:
-                kakao_send(access_token, commentary)
-                print("✅ AI 코멘트 발송 완료")
-            else:
-                print("ℹ️ AI 코멘트: 특이사항 없음 — 발송 안 함")
+            _vn_price = f"{vn['price']:,.0f}" if vn.get('price') else "?"
+            signal_msg = f"📊 [베트남펀드] 종합신호\nVN-Index {_vn_price}\n{signal_emoji}"
+            if signal_desc:
+                signal_msg += f"\n{signal_desc[:150]}"
+            kakao_send(access_token, signal_msg)
+            print("✅ 종합신호 발송 완료")
 
             achievement = check_action_guide_achievement(vn, vn_ind, macro, cfg, action_guide, api_key)
             if achievement:
