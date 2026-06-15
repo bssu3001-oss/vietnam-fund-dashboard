@@ -564,8 +564,8 @@ def index_section_html(data, chart_analysis, name, chart_id, period_prefix):
     return f"""
   <div class="nifty-header">
     <div class="nifty-name">{name}</div>
-    <div class="nifty-price {chg_class}">{data["current"]:,.2f}</div>
-    <div class="nifty-change {chg_class}">{chg_sign} {chg_val} &nbsp;({'+' if chg>=0 else ''}{chg}%)</div>
+    <div class="nifty-price {chg_class}" id="live-vn-price">{data["current"]:,.2f}</div>
+    <div class="nifty-change {chg_class}" id="live-vn-change">{chg_sign} {chg_val} &nbsp;({'+' if chg>=0 else ''}{chg}%)</div>
     <div class="ohlc-row">
       <div class="ohlc-item"><div class="ohlc-label">시가</div><div class="ohlc-val">{data["open"]:,.2f}</div></div>
       <div class="ohlc-item"><div class="ohlc-label">고가</div><div class="ohlc-val up">{data["high"]:,.2f}</div></div>
@@ -1258,6 +1258,7 @@ table td {{ padding: 5px 0; border-bottom: 1px solid var(--border); }}
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script>
+const VN_SCALE = {scale:.4f};
 const isDark = matchMedia('(prefers-color-scheme: dark)').matches;
 const tC = isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.4)';
 const gC = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)';
@@ -1394,7 +1395,19 @@ async function fetchLiveData() {{
   const td = await fetchTDData(['VNM','USD/VND','USD/CNY','DXY','EEM','VIX','BCO/USD','XAU/USD']).catch(() => ({{}}));
   const fmt = (v, d=2) => v != null ? v.toLocaleString('ko-KR', {{maximumFractionDigits: d}}) : '-';
   const arrow = pct => pct >= 0 ? '▲' : '▼';
-  if (td['VNM']) {{ const v=td['VNM']; const c=v.pct>=0?'badge-g':'badge-r'; setBadge('badge-vnm',`$${{fmt(v.price)}} ${{arrow(v.pct)}}${{Math.abs(v.pct).toFixed(2)}}% — ${{v.pct>=0?'상승':'하락'}}`,c); }}
+  if (td['VNM']) {{
+    const v=td['VNM']; const c=v.pct>=0?'badge-g':'badge-r';
+    setBadge('badge-vnm',`$${{fmt(v.price)}} ${{arrow(v.pct)}}${{Math.abs(v.pct).toFixed(2)}}% — ${{v.pct>=0?'상승':'하락'}}`,c);
+    const vnEst = v.price * VN_SCALE;
+    const vnPrev = v.prev * VN_SCALE;
+    const vnChg = vnEst - vnPrev;
+    const vnPct = (vnChg/vnPrev*100).toFixed(2);
+    const isUp = vnChg >= 0;
+    const pEl = document.getElementById('live-vn-price');
+    const cEl = document.getElementById('live-vn-change');
+    if (pEl) {{ pEl.textContent = vnEst.toLocaleString('ko-KR',{{maximumFractionDigits:2}}); pEl.className='nifty-price '+(isUp?'up':'down'); }}
+    if (cEl) {{ cEl.textContent = `${{isUp?'▲':'▼'}} ${{Math.abs(vnChg).toFixed(2)}}  (${{isUp?'+':''}}${{vnPct}}%)`; cEl.className='nifty-change '+(isUp?'up':'down'); }}
+  }}
   if (td['USD/VND']) {{ const v=td['USD/VND']; const c=v.price>26500?'badge-r':v.price>25500?'badge-y':v.price>24500?'badge-b':'badge-g'; const l=v.price>26500?'동 급락':v.price>25500?'동 약세':v.price>24500?'안정':'동 강세'; setBadge('badge-usdvnd',`₫${{fmt(v.price,0)}} — ${{l}}`,c); }}
   if (td['USD/CNY']) {{ const v=td['USD/CNY']; const c=v.price<7.1?'badge-g':v.price<7.3?'badge-y':'badge-r'; const l=v.price<7.1?'위안 안정':v.price<7.3?'위안 약세':'위안 급약세'; setBadge('badge-usdcny',`¥${{fmt(v.price)}} — ${{l}}`,c); }}
   if (td['DXY']) {{ const v=td['DXY']; const c=v.price>105?'badge-r':v.price>100?'badge-y':'badge-b'; setBadge('badge-dxy',`DXY ${{fmt(v.price)}} ${{arrow(v.pct)}}${{Math.abs(v.pct).toFixed(2)}} — ${{v.price>105?'달러 강세':v.price>100?'달러 강세 주의':'안정'}}`,c); }}
@@ -1478,6 +1491,7 @@ function recalcScorecard() {{
   if (eNews)  {{ eNews.textContent  = (newsScore>=0?'+':'')+newsScore.toFixed(1);   eNews.style.color  = color; }}
 }}
 fetchLiveData().then(data => {{ updateActionGuide(data); recalcScorecard(); }});
+setInterval(() => fetchLiveData().then(() => recalcScorecard()), 5*60*1000);
 
 function setQ(q) {{ document.getElementById('ai-q').value = q; }}
 
