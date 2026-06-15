@@ -1670,8 +1670,11 @@ def main():
             _html_txt = open(_html_path, encoding="utf-8").read()
             _em = _re.search(r'id="sc-emoji"[^>]*>([^<]+)<', _html_txt)
             _ds = _re.search(r'id="sc-desc"[^>]*>([^<]+)<', _html_txt)
-            signal_emoji = _em.group(1).strip() if _em else None
-            signal_desc  = _ds.group(1).strip()  if _ds else None
+            _pt = _re.search(r'id="sc-pct"[^>]*>([^<]+)<', _html_txt)
+            _emoji = _em.group(1).strip() if _em else None
+            _pct   = _pt.group(1).strip() if _pt else None
+            signal_emoji = f"{_emoji} ({_pct})" if _emoji and _pct else _emoji
+            signal_desc  = _ds.group(1).strip() if _ds else None
             commentary = generate_ai_commentary(vn, vn_ind, macro, cfg, api_key, signal_emoji=signal_emoji, signal_desc=signal_desc)
             if commentary:
                 kakao_send(access_token, commentary)
