@@ -295,6 +295,74 @@
       `<span style="color:var(--text3);font-size:11px;">* 열 때마다 실시간 지표로 자동 작성됩니다 (VNM ETF 환산 기준)</span>`;
   }
 
+  // ── 📰 주요 뉴스 (제목+링크, 열 때마다 실시간) — 베트남 현지 RSS ──
+  const NEWS_FEEDS = [
+    { url: 'https://e.vnexpress.net/rss/business.rss', source: 'VnExpress' },
+  ];
+
+  function relTime(ts) {
+    if (!ts) return '';
+    const diff = Date.now() / 1000 - ts;
+    if (diff < 3600) return Math.max(1, Math.round(diff / 60)) + '분 전';
+    if (diff < 86400) return Math.round(diff / 3600) + '시간 전';
+    return Math.round(diff / 86400) + '일 전';
+  }
+
+  async function fetchNewsItems() {
+    const sets = await Promise.all(NEWS_FEEDS.map(async (f) => {
+      const xml = await proxyText(f.url, 8000);
+      if (!xml) return [];
+      try {
+        const doc = new DOMParser().parseFromString(xml, 'text/xml');
+        return [...doc.querySelectorAll('item')].slice(0, 25).map((it) => {
+          let link = (it.querySelector('link')?.textContent || '').trim();
+          if (!link) link = (it.querySelector('guid')?.textContent || '').trim();
+          const pd = it.querySelector('pubDate')?.textContent || '';
+          return {
+            title: (it.querySelector('title')?.textContent || '').trim(),
+            link,
+            source: f.source,
+            ts: (new Date(pd).getTime() || 0) / 1000,
+          };
+        }).filter((x) => x.title && x.link.startsWith('http'));
+      } catch (e) { return []; }
+    }));
+    const all = [], seen = new Set();
+    sets.forEach((s) => s.forEach((n) => {
+      const k = n.title.toLowerCase().slice(0, 60);
+      if (seen.has(k)) return;
+      seen.add(k); all.push(n);
+    }));
+    all.sort((a, b) => (b.ts || 0) - (a.ts || 0));
+    // 시장·경제 관련만 (연예/라이프 잡음 제거)
+    const RE = /\b(vietnam|vn-?index|stock|share|market|economy|economic|gdp|fdi|export|import|trade|tariff|bank|dong|inflation|cpi|sbv|fed|interest rate|us|china|oil|crude|property|real estate|estate|manufactur|samsung|intel|invest|securities|billion|million|growth|export|factory|industrial|enterprise|tax|budget|currency)\b/i;
+    const rel = all.filter((n) => RE.test(n.title));
+    return (rel.length >= 5 ? rel : all).slice(0, 8);
+  }
+
+  function ensureNewsCard() {
+    if (document.getElementById('major-news')) return;
+    const anchor = document.querySelector('.section-label') || document.querySelector('.nifty-header');
+    if (!anchor || !anchor.parentNode) return;
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = '<div class="card-title">📰 주요 뉴스 <span style="font-size:11px;font-weight:400;color:var(--text3);">— 실시간 · 베트남 시장</span></div><div id="major-news"><div style="font-size:12px;color:var(--text3);">뉴스 불러오는 중…</div></div>';
+    anchor.parentNode.insertBefore(card, anchor);
+  }
+
+  async function renderMajorNews() {
+    ensureNewsCard();
+    const box = document.getElementById('major-news');
+    if (!box) return;
+    const items = await fetchNewsItems();
+    if (!items.length) { box.innerHTML = '<div style="font-size:12px;color:var(--text3);">뉴스를 불러오지 못했어요 (잠시 후 새로고침)</div>'; return; }
+    box.innerHTML = items.map((n) => {
+      const title = n.title.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+      const meta = [n.source, relTime(n.ts)].filter(Boolean).join(' · ');
+      return `<a href="${n.link}" target="_blank" rel="noopener" style="display:block;padding:9px 0;border-bottom:0.5px solid var(--border);text-decoration:none;color:var(--text);"><div style="font-size:13px;line-height:1.45;">${title}</div><div style="font-size:11px;color:var(--text3);margin-top:3px;">${meta} ↗</div></a>`;
+    }).join('');
+  }
+
   async function runRealtime() {
     let meta = null;
     try { meta = await refreshChartVN(); } catch (e) {}
@@ -307,6 +375,7 @@
       }
     } catch (e) {}
     try { await updateNewsSignals(); } catch (e) {}
+    try { await renderMajorNews(); } catch (e) {}
     try { if (typeof recalcScorecard === 'function') recalcScorecard(); } catch (e) {}
   }
 
