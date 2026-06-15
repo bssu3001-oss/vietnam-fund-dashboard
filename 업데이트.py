@@ -128,6 +128,7 @@ def fetch_vnindex():
         "yr1": {"labels": yr1_labels, "prices": yr1_prices},
         "labels": yr1_labels,
         "prices": yr1_prices,
+        "scale": round(scale, 4),
     }
 
 # ── 매크로 지표 ──────────────────────────────────────────────────
@@ -1258,7 +1259,7 @@ table td {{ padding: 5px 0; border-bottom: 1px solid var(--border); }}
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script>
-const VN_SCALE = {scale:.4f};
+const VN_SCALE = {vn["scale"]:.4f};
 const isDark = matchMedia('(prefers-color-scheme: dark)').matches;
 const tC = isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.4)';
 const gC = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)';
