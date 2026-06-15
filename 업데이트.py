@@ -1542,62 +1542,21 @@ def kakao_send(access_token, text):
     print("✅ 카카오 알림 전송 완료")
 
 
-def generate_ai_commentary(vn, indicators, macro, cfg, api_key, signal_emoji=None):
-    if not api_key:
-        return ""
+def generate_ai_commentary(vn, indicators, macro, cfg, api_key, signal_emoji=None, signal_desc=None):
     from datetime import timezone, timedelta
     KST = timezone(timedelta(hours=9))
     now_str = datetime.now(KST).strftime("%H:%M")
-    ind = indicators or {}
-    mac = macro or {}
     buy_price = cfg.get("매수단가", 0)
     current = vn['current']
     pnl = (current - buy_price) / buy_price * 100 if buy_price else 0
-    prompt = f"""당신은 베트남 펀드 투자 어시스턴트입니다.
-아래 현재 데이터를 보고, 투자자가 알아야 할 특이사항이나 흐름 변화가 있으면 2~3문장으로 한국어로 코멘트해주세요.
-특이사항이 전혀 없으면 "특이사항 없음"이라고만 답하세요.
-마지막 줄에는 반드시 지금 해야 할 행동을 아래 형식으로 한 줄 추가하세요:
-👉 [매수 / 매도 / 관망] — 이유 한 줄
-
-[현재 데이터]
-- VN-Index: {current:.0f} ({vn['change_pct']:+}%)
-- 매수단가: {buy_price:.0f} / 손익: {pnl:+.1f}%
-- RSI(14주): {ind.get('rsi', '?')}
-- 이평 배열: {ind.get('ma_signal', '?')}
-- 4주 모멘텀: {ind.get('momentum', 0):+.1f}%
-- DXY: {mac.get('dxy', '?')}
-- 미국 VIX: {mac.get('vix', '?')}
-
-반드시 짧게, 핵심만 말해주세요."""
-    body = json.dumps({
-        "model": "claude-haiku-4-5-20251001",
-        "max_tokens": 300,
-        "messages": [{"role": "user", "content": prompt}]
-    }).encode()
-    try:
-        req = urllib.request.Request(
-            "https://api.anthropic.com/v1/messages",
-            data=body,
-            headers={"Content-Type": "application/json",
-                     "x-api-key": api_key,
-                     "anthropic-version": "2023-06-01"},
-            method="POST"
-        )
-        with urllib.request.urlopen(req, timeout=30) as r:
-            result = json.loads(r.read())
-        comment = result["content"][0]["text"].strip()
-        if "특이사항 없음" in comment:
-            return ""
-        sc_line = f"{signal_emoji}\n" if signal_emoji else ""
-        msg = (f"📊 베트남펀드 {now_str}\n"
-               f"VN-Index {current:.0f} ({vn['change_pct']:+}%)\n"
-               f"매수단가 {buy_price:.0f} / 손익 {pnl:+.1f}%\n"
-               f"{sc_line}"
-               f"💬 {comment}")
-        return msg
-    except Exception as e:
-        print(f"AI 코멘트 생성 실패: {e}")
-        return ""
+    sc_line = f"{signal_emoji}\n" if signal_emoji else ""
+    desc_line = f"\n{signal_desc}" if signal_desc else ""
+    msg = (f"📊 베트남펀드 {now_str}\n"
+           f"VN-Index {current:.0f} ({vn['change_pct']:+}%)\n"
+           f"매수단가 {buy_price:.0f} / 손익 {pnl:+.1f}%\n"
+           f"{sc_line}"
+           f"{desc_line}")
+    return msg.strip()
 
 
 def check_action_guide_achievement(vn, indicators, macro, cfg, action_guide, api_key):
@@ -1710,8 +1669,10 @@ def main():
             _html_path = os.path.join(os.path.dirname(__file__), "베트남펀드_대시보드.html")
             _html_txt = open(_html_path, encoding="utf-8").read()
             _em = _re.search(r'id="sc-emoji"[^>]*>([^<]+)<', _html_txt)
+            _ds = _re.search(r'id="sc-desc"[^>]*>([^<]+)<', _html_txt)
             signal_emoji = _em.group(1).strip() if _em else None
-            commentary = generate_ai_commentary(vn, vn_ind, macro, cfg, api_key, signal_emoji=signal_emoji)
+            signal_desc  = _ds.group(1).strip()  if _ds else None
+            commentary = generate_ai_commentary(vn, vn_ind, macro, cfg, api_key, signal_emoji=signal_emoji, signal_desc=signal_desc)
             if commentary:
                 kakao_send(access_token, commentary)
                 print("✅ AI 코멘트 발송 완료")
