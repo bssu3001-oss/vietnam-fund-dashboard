@@ -1440,7 +1440,7 @@ async function fetchLatestNews(queries) {{
 async function updateActionGuide(td) {{
   const API_KEY = getKey();
   if (!API_KEY) return;
-  if (!td) td = await fetchLiveData().catch(() => ({{\}}));
+  if (!td) td = await fetchLiveData().catch(() => ({{}}));
   const fmt = (sym, d=2) => td[sym] ? td[sym].price.toLocaleString('ko-KR',{{maximumFractionDigits:d}}) : '-';
   const pct  = sym => td[sym] ? `${{td[sym].pct>=0?'▲':'▼'}}${{Math.abs(td[sym].pct).toFixed(2)}}%` : '';
   const news = await fetchLatestNews({{
@@ -1449,9 +1449,9 @@ async function updateActionGuide(td) {{
     'Vietnam economy': 'Vietnam economy GDP growth',
     'Vietnam trade': 'Vietnam export import trade',
     'US Fed': 'US Federal Reserve rate decision'
-  }}).catch(() => ({{\}}));
+  }}).catch(() => ({{}}));
   const newsLines = Object.entries(news).map(([k,v]) => v.length ? `[${{k}}] ${{v.join(' / ')}}` : '').filter(Boolean);
-  const newsText = newsLines.join('\n');
+  const newsText = newsLines.join('\\n');
   const scLabel = document.getElementById('sc-emoji')?.textContent?.trim() || '';
   const ctx = `당신은 10년차 베트남 펀드 매니저입니다.
 현재 상황: 베트남 VN-Index 펀드 매수 전 관찰 중 (아직 미매수)
