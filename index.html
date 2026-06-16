@@ -6,24 +6,15 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>베트남 펀드 대시보드</title>
+<title>베트남 시장 대시보드</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
-  --bg: #f5f5f7;
-  --card-bg: #ffffff;
-  --text: #1d1d1f;
-  --text2: #6e6e73;
-  --text3: #aeaeb2;
-  --border: rgba(0,0,0,0.1);
-  --up: #2d8a4e;
-  --down: #c0392b;
-  --warn-bg: #fff8e1;
-  --warn-text: #BA7517;
-  --buy-bg: #f0faf0;
-  --buy-text: #2d6a0a;
-  --sell-bg: #fff0f0;
-  --sell-text: #9b2020;
+  --bg: #f5f5f7; --card-bg: #ffffff; --text: #1d1d1f; --text2: #6e6e73; --text3: #aeaeb2;
+  --border: rgba(0,0,0,0.1); --up: #2d8a4e; --down: #c0392b;
+  --warn-bg: #fff8e1; --warn-text: #BA7517;
+  --buy-bg: #f0faf0; --buy-text: #2d6a0a;
+  --sell-bg: #fff0f0; --sell-text: #9b2020;
   --badge-r-bg: #fde8e8; --badge-r: #c0392b;
   --badge-g-bg: #e8fde8; --badge-g: #2d6a0a;
   --badge-y-bg: #fdf6e8; --badge-y: #BA7517;
@@ -50,22 +41,27 @@ body { font-family: -apple-system, 'Apple SD Gothic Neo', sans-serif; background
 .section-label { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px; }
 .card { background: var(--card-bg); border-radius: 16px; padding: 16px; margin-bottom: 16px; border: 0.5px solid var(--border); }
 .card-title { font-size: 14px; font-weight: 600; margin-bottom: 14px; }
-.nifty-header { background: var(--card-bg); border-radius: 16px; padding: 16px; margin-bottom: 12px; border: 0.5px solid var(--border); }
-.nifty-name { font-size: 13px; color: var(--text2); margin-bottom: 6px; }
-.nifty-price { font-size: 36px; font-weight: 700; letter-spacing: -1px; }
-.nifty-change { font-size: 15px; font-weight: 500; margin-top: 4px; }
+.main-header { background: var(--card-bg); border-radius: 16px; padding: 16px; margin-bottom: 12px; border: 0.5px solid var(--border); }
+.idx-name { font-size: 13px; color: var(--text2); margin-bottom: 6px; }
+.idx-price { font-size: 36px; font-weight: 700; letter-spacing: -1px; }
+.idx-change { font-size: 15px; font-weight: 500; margin-top: 4px; }
 .ohlc-row { display: flex; gap: 0; margin-top: 12px; border-top: 0.5px solid var(--border); padding-top: 12px; }
 .ohlc-item { flex: 1; text-align: center; }
 .ohlc-label { font-size: 11px; color: var(--text3); margin-bottom: 3px; }
 .ohlc-val { font-size: 13px; font-weight: 600; }
+.sub-header { background: var(--card-bg); border-radius: 16px; padding: 14px 16px; margin-bottom: 12px; border: 0.5px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+.sub-left .s-name { font-size: 12px; color: var(--text2); margin-bottom: 4px; }
+.sub-left .s-price { font-size: 22px; font-weight: 700; }
+.sub-left .s-change { font-size: 13px; font-weight: 500; margin-top: 2px; }
+.sub-right { text-align: right; font-size: 12px; color: var(--text3); line-height: 1.8; }
 .period-tabs { display: flex; gap: 4px; margin-bottom: 10px; }
 .period-tab { flex: 1; text-align: center; font-size: 12px; font-weight: 500; padding: 7px 0; border-radius: 8px; border: 0.5px solid var(--border); background: var(--bg); color: var(--text2); cursor: pointer; }
 .period-tab.active { background: var(--text); color: var(--bg); border-color: var(--text); }
 .chart-wrap { height: 230px; margin-bottom: 8px; }
 .signal-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 0.5px solid var(--border); }
 .signal-row:last-child { border-bottom: none; }
-.signal-name { font-size: 13px; color: var(--text2); }
-.badge { font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 8px; }
+.signal-name { font-size: 13px; color: var(--text2); flex: 1; margin-right: 8px; }
+.badge { font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 8px; white-space: nowrap; }
 .badge-r { background: var(--badge-r-bg); color: var(--badge-r); }
 .badge-g { background: var(--badge-g-bg); color: var(--badge-g); }
 .badge-y { background: var(--badge-y-bg); color: var(--badge-y); }
@@ -80,9 +76,7 @@ body { font-family: -apple-system, 'Apple SD Gothic Neo', sans-serif; background
 .action-sell .action-title { color: var(--sell-text); }
 .action-desc { font-size: 12px; color: var(--text2); line-height: 1.6; }
 .divider { border: none; border-top: 0.5px solid var(--border); margin: 20px 0; }
-table td { padding: 5px 0; border-bottom: 1px solid var(--border); }
-.up { color: var(--up); }
-.down { color: var(--down); }
+.up { color: var(--up); } .down { color: var(--down); }
 .input-row { display: flex; gap: 8px; margin-bottom: 10px; }
 .input-row input { flex: 1; font-size: 13px; padding: 10px 12px; border: 0.5px solid var(--border); border-radius: 10px; background: var(--bg); color: var(--text); outline: none; }
 .input-row input:focus { border-color: #0071e3; }
@@ -98,65 +92,72 @@ table td { padding: 5px 0; border-bottom: 1px solid var(--border); }
 
   <div style="display:flex;justify-content:space-between;align-items:flex-start;">
     <div class="header" style="margin-bottom:0;">
-      <h1>🇻🇳 베트남 펀드 대시보드</h1>
-      <p>VN-Index 기반 매수 타이밍 분석 · 매수 전 관찰 중</p>
+      <h1>&#x1F1FB;&#x1F1F3; 베트남 시장 대시보드</h1>
+      <p>VN-Index · VNM ETF 기반 매수 타이밍 분석</p>
     </div>
-    <button onclick="location.reload(true)" style="margin-top:4px;padding:7px 18px;border-radius:20px;border:0.5px solid var(--border);background:var(--card-bg);color:var(--text);font-size:13px;font-weight:500;cursor:pointer;flex-shrink:0;">🔄 새로고침</button>
+    <button onclick="location.reload(true)" style="margin-top:4px;padding:7px 18px;border-radius:20px;border:0.5px solid var(--border);background:var(--card-bg);color:var(--text);font-size:13px;font-weight:500;cursor:pointer;flex-shrink:0;">&#x1F504; 새로고침</button>
   </div>
 
-  <div style="background:#fff8e1;border:1px solid #BA751733;border-radius:18px;padding:18px 20px;margin-bottom:20px;">
+  <!-- 종합 매수 신호 -->
+  <div style="background:var(--warn-bg);border:1px solid rgba(186,117,23,0.2);border-radius:18px;padding:18px 20px;margin-bottom:20px;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
       <div>
-        <div style="font-size:11px;font-weight:600;color:#BA7517;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:4px;">종합 매수 신호</div>
-        <div id="sc-emoji" style="font-size:28px;font-weight:700;color:#BA7517;">📌 관망</div>
+        <div style="font-size:11px;font-weight:600;color:var(--warn-text);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:4px;">종합 매수 신호</div>
+        <div id="sc-emoji" style="font-size:28px;font-weight:700;color:var(--warn-text);">&#x1F4CC; 관망</div>
       </div>
       <div style="text-align:right;">
         <div style="font-size:11px;color:var(--text3);margin-bottom:4px;">신호 강도</div>
-        <div id="sc-pct" style="font-size:24px;font-weight:700;color:#BA7517;">55점</div>
+        <div id="sc-pct" style="font-size:24px;font-weight:700;color:var(--warn-text);">--점</div>
         <div style="font-size:10px;color:var(--text3);">/ 100점</div>
       </div>
     </div>
     <div style="background:rgba(0,0,0,0.08);border-radius:6px;height:8px;overflow:hidden;margin-bottom:10px;">
-      <div id="sc-bar" style="width:55%;height:100%;border-radius:6px;background:#BA7517;transition:width 0.6s;"></div>
+      <div id="sc-bar" style="width:50%;height:100%;border-radius:6px;background:var(--warn-text);transition:width 0.6s;"></div>
     </div>
     <div style="display:flex;gap:16px;font-size:11px;color:var(--text2);">
-      <span>기술적 <strong id="sc-tech" style="color:#BA7517;">-3.0</strong></span>
-      <span>매크로 <strong id="sc-macro" style="color:#BA7517;">+4.0</strong></span>
-      <span>뉴스 <strong id="sc-news" style="color:#BA7517;">+1.6</strong></span>
+      <span>기술적 <strong id="sc-tech" style="color:var(--warn-text);">--</strong></span>
+      <span>매크로 <strong id="sc-macro" style="color:var(--warn-text);">--</strong></span>
+      <span>뉴스 <strong id="sc-news" style="color:var(--warn-text);">--</strong></span>
     </div>
-    <div id="sc-desc" style="margin-top:10px;font-size:12px;color:var(--text2);line-height:1.6;padding:10px 12px;background:rgba(0,0,0,0.04);border-radius:10px;">✅ FDI 유입(FDI 43-35% 증가, 강한 자본유입), GDP 호조 긍정적이나, ⚠️ 이평선 역배열(하락), 모멘텀 -3.4%, 외국인 순매도(외국인 자금 이탈, 주식서 이탈) 부담이 남아 있습니다. 이평선 정배열 전환 또는 외국인 순매수 전환을 확인한 뒤 진입을 고려하세요.</div>
+    <div id="sc-desc" style="margin-top:10px;font-size:12px;color:var(--text2);line-height:1.6;padding:10px 12px;background:rgba(0,0,0,0.04);border-radius:10px;">데이터 로딩 중...</div>
   </div>
 
-  <div class="section-label">VN-Index (호치민 지수)</div>
-  
-  <div class="nifty-header">
-    <div class="nifty-name">VN-Index</div>
-    <div class="nifty-price up" id="live-vn-price">1,799.31</div>
-    <div class="nifty-change up" id="live-vn-change">▲ +7.66 &nbsp;(+0.43%)</div>
+  <div class="section-label">VN-Index (호찌민증권거래소)</div>
+  <div class="main-header">
+    <div class="idx-name">VN-Index (VNM ETF × 99.5744 추정)</div>
+    <div class="idx-price" id="live-vnindex-price">--</div>
+    <div class="idx-change" id="live-vnindex-change">--</div>
     <div class="ohlc-row">
-      <div class="ohlc-item"><div class="ohlc-label">시가</div><div class="ohlc-val">0.00</div></div>
-      <div class="ohlc-item"><div class="ohlc-label">고가</div><div class="ohlc-val up">0.00</div></div>
-      <div class="ohlc-item"><div class="ohlc-label">저가</div><div class="ohlc-val down">0.00</div></div>
+      <div class="ohlc-item"><div class="ohlc-label">시가</div><div class="ohlc-val" id="vnindex-open">--</div></div>
+      <div class="ohlc-item"><div class="ohlc-label">고가</div><div class="ohlc-val up" id="vnindex-high">--</div></div>
+      <div class="ohlc-item"><div class="ohlc-label">저가</div><div class="ohlc-val down" id="vnindex-low">--</div></div>
     </div>
   </div>
-  <div class="period-tabs" id="vn-tabs">
-    <div class="period-tab active" onclick="switchChart('chartVN','vn','d1',this)">일</div>
-    <div class="period-tab" onclick="switchChart('chartVN','vn','d5',this)">5일</div>
-    <div class="period-tab" onclick="switchChart('chartVN','vn','d30',this)">1개월</div>
-    <div class="period-tab" onclick="switchChart('chartVN','vn','mo3',this)">3개월</div>
-    <div class="period-tab" onclick="switchChart('chartVN','vn','mo6',this)">6개월</div>
-    <div class="period-tab" onclick="switchChart('chartVN','vn','yr1',this)">1년</div>
+
+  <div class="sub-header">
+    <div class="sub-left">
+      <div class="s-name">VNM ETF (반에크 베트남 ETF)</div>
+      <div class="s-price" id="live-vnm-price">--</div>
+      <div class="s-change" id="live-vnm-change">--</div>
+    </div>
+    <div class="sub-right" id="vnm-ohlc">시가: --<br>고: -- / 저: --</div>
+  </div>
+
+  <div class="period-tabs" id="vnindex-tabs">
+    <div class="period-tab active" onclick="switchPeriod('d1',this)">일</div>
+    <div class="period-tab" onclick="switchPeriod('d5',this)">5일</div>
+    <div class="period-tab" onclick="switchPeriod('d30',this)">1개월</div>
+    <div class="period-tab" onclick="switchPeriod('mo3',this)">3개월</div>
+    <div class="period-tab" onclick="switchPeriod('mo6',this)">6개월</div>
+    <div class="period-tab" onclick="switchPeriod('yr1',this)">1년</div>
   </div>
   <div class="card" style="padding:12px 12px 10px;">
-    <div class="chart-wrap"><canvas id="chartVN"></canvas></div>
-    <div style="font-size:11px;color:var(--text3);margin-top:-4px;margin-bottom:4px;">* VN-Index는 야후에 직접 데이터가 없어 VNM ETF 기준 환산 추정치입니다 (실시간)</div>
-    <div style="display:flex;gap:16px;font-size:11px;color:var(--text2);margin-top:4px;">
-      <span style="display:flex;align-items:center;gap:4px;"><span style="width:12px;height:2px;background:#378ADD;display:inline-block;border-radius:1px;"></span>VN-Index</span>
-    </div>
+    <div class="chart-wrap"><canvas id="chartVNINDEX"></canvas></div>
+    <div style="font-size:11px;color:var(--text3);margin-top:-4px;margin-bottom:4px;">* VNM ETF × 99.5744 기준 VN-Index 추정치 (Yahoo Finance 실시간)</div>
   </div>
   <div class="card" style="margin-top:-4px;">
-    <div class="card-title" style="font-size:12px;color:var(--text2);font-weight:500;margin-bottom:10px;">📊 AI 차트 분석 — VN-Index</div>
-    <div id="ai-chart-analysis" style="font-size:13px;line-height:2;color:var(--text);">• <strong>현재 지수</strong>: 1,799.31 (+0.43%) — 약한 상승세 유지 중<br><br>• <strong>추세 (이평)</strong>: 5주 < 13주 < 26주 역배열(하락) — <strong>매도세 우위</strong>, 단기 반등에도 장기 하락 추세 지속<br><br>• <strong>모멘텀</strong>: RSI 61.5(중립~약한 과매수), 4주 모멘텀 -3.4% — <strong>단기 힘 약화</strong>, 상승 동력 부족<br><br>• <strong>변동성</strong>: ±2.34% — 평년 수준의 변동성, 시장 방향성 불명확<br><br>• <strong>위치</strong>: 52주 고점 대비 -8.3% 하회, 52주 저점 대비 +36.0% 회복 — 중간값 근처에서 방황 중<br><br>• <strong>매수 타이밍</strong>: <strong>지금 진입 보류 권장</strong> — 이평 역배열이 풀릴 때까지 대기, 1,780 이하 재테스트 가능성 주시<br><br>• <strong>한 줄 결론</strong>: 기술적 약세 신호가 지배적이므로 <strong>반발 확인 후 추가 하락 시점에서의 진입</strong>을 검토하는 것이 현명합니다.</div>
+    <div class="card-title" style="font-size:12px;color:var(--text2);font-weight:500;margin-bottom:10px;">&#x1F4CA; AI 차트 분석 — VN-Index</div>
+    <div id="ai-chart-analysis" style="font-size:13px;line-height:2;color:var(--text);white-space:pre-line;">데이터 로딩 후 분석합니다...</div>
   </div>
 
   <hr class="divider">
@@ -164,14 +165,18 @@ table td { padding: 5px 0; border-bottom: 1px solid var(--border); }
   <div class="section-label">주요 이벤트 일정</div>
   <div class="card" style="margin-bottom:16px;">
     <table style="width:100%;border-collapse:collapse;font-size:13px;">
-      <tbody style="line-height:2.2;"><tr><td style="color:var(--text2);">07-01</td><td>베트남 반기 GDP 발표</td><td style="text-align:right;color:var(--warn-text);font-weight:500;">D-15</td></tr><tr><td style="color:var(--text2);">09-17</td><td>FOMC 금리결정</td><td style="text-align:right;color:var(--text3);">D-93</td></tr></tbody>
+      <tbody style="line-height:2.2;">
+        <tr><td style="color:var(--text2);width:60px;">07-01</td><td>베트남 SBV 통화정책 발표</td><td style="text-align:right;color:var(--warn-text);font-weight:500;">예정</td></tr>
+        <tr><td style="color:var(--text2);">07-15</td><td>베트남 GDP Q2 발표</td><td style="text-align:right;color:var(--text3);">예정</td></tr>
+        <tr><td style="color:var(--text2);">09-17</td><td>FOMC 금리결정</td><td style="text-align:right;color:var(--text3);">예정</td></tr>
+      </tbody>
     </table>
   </div>
   <hr class="divider" style="margin-top:0;">
 
   <div class="section-label">매수 계획</div>
-    <div class="card">
-    <div class="card-title" style="margin-bottom:10px;">💰 투자 계획</div>
+  <div class="card">
+    <div class="card-title" style="margin-bottom:10px;">&#x1F4B0; 투자 계획</div>
     <table style="width:100%;border-collapse:collapse;font-size:13px;">
       <thead>
         <tr style="color:var(--text2);font-size:11px;border-bottom:1px solid var(--border);">
@@ -180,143 +185,61 @@ table td { padding: 5px 0; border-bottom: 1px solid var(--border); }
           <th style="text-align:right;padding:5px 0;font-weight:500;">비고</th>
         </tr>
       </thead>
-      <tbody style="line-height:2.2;"><tr>
-          <td style="color:var(--text2);">1차 매수</td>
-          <td style="text-align:right;font-weight:600;">2,000만원</td>
-          <td style="text-align:right;color:var(--text3);">현재가 1,799.31pt 기준</td>
-        </tr><tr>
-          <td style="color:var(--text2);">2차 분할매수</td>
-          <td style="text-align:right;font-weight:600;">1,000만원</td>
-          <td style="text-align:right;color:var(--text3);">현재가 1,799.31pt 기준</td>
-        </tr><tr>
-          <td style="color:var(--text2);">3차 분할매수</td>
-          <td style="text-align:right;font-weight:600;">1,000만원</td>
-          <td style="text-align:right;color:var(--text3);">현재가 1,799.31pt 기준</td>
-        </tr>
-        <tr style="border-top:1px solid var(--border);font-weight:600;">
-          <td>합계</td>
-          <td style="text-align:right;">4,000만원</td>
-          <td></td>
-        </tr>
+      <tbody style="line-height:2.2;">
+        <tr><td style="color:var(--text2);">1차 매수</td><td style="text-align:right;font-weight:600;">미정</td><td style="text-align:right;color:var(--text3);">—</td></tr>
+        <tr><td style="color:var(--text2);">2차 분할매수</td><td style="text-align:right;font-weight:600;">미정</td><td style="text-align:right;color:var(--text3);">—</td></tr>
+        <tr style="border-top:1px solid var(--border);font-weight:600;"><td>합계</td><td style="text-align:right;">미정</td><td></td></tr>
       </tbody>
     </table>
-    <div style="margin-top:12px;padding:10px;background:var(--bg);border-radius:8px;font-size:12px;">
-      <div style="color:var(--text2);margin-bottom:4px;">현재 VN-Index 1,799.31pt 기준 손절선</div>
-      <div style="font-size:16px;font-weight:700;color:var(--down);">1,619.38pt <span style="font-size:12px;font-weight:400;color:var(--text3);">(-10%)</span></div>
-    </div>
-  </div>
-    <div class="card">
-    <div class="card-title" style="margin-bottom:10px;">🎯 목표수익 시뮬레이션</div>
-    <table style="width:100%;border-collapse:collapse;font-size:13px;">
-      <thead>
-        <tr style="color:var(--text2);font-size:11px;border-bottom:1px solid var(--border);">
-          <th style="text-align:left;padding:5px 0;font-weight:500;">목표 수익률</th>
-          <th style="text-align:right;padding:5px 0;font-weight:500;">필요 VN-Index</th>
-          <th style="text-align:right;padding:5px 0;font-weight:500;">수익금</th>
-        </tr>
-      </thead>
-      <tbody style="line-height:2.2;"><tr>
-          <td>+10%</td>
-          <td style="text-align:right;font-weight:600;">1,979.24</td>
-          <td style="text-align:right;color:var(--up);">+200.0만원</td>
-        </tr><tr>
-          <td>+20%</td>
-          <td style="text-align:right;font-weight:600;">2,159.17</td>
-          <td style="text-align:right;color:var(--up);">+400.0만원</td>
-        </tr><tr>
-          <td>+30%</td>
-          <td style="text-align:right;font-weight:600;">2,339.10</td>
-          <td style="text-align:right;color:var(--up);">+600.0만원</td>
-        </tr><tr>
-          <td>+50%</td>
-          <td style="text-align:right;font-weight:600;">2,698.97</td>
-          <td style="text-align:right;color:var(--up);">+1000.0만원</td>
-        </tr></tbody>
-    </table>
-    <div style="margin-top:8px;font-size:11px;color:var(--text3);">* 현재 VN-Index 1,799.31pt 기준 / 2,000만원 1차 매수 가정</div>
   </div>
 
   <hr class="divider">
 
   <div class="section-label">매매 신호</div>
   <div class="card">
-    <div class="card-title" style="margin-bottom:8px;">📡 기술적 지표 (자동)</div>
-    <div class="signal-row"><span class="signal-name">RSI (14주)</span><span class="badge badge-b" id="badge-rsi" data-sg="tech">RSI 61.5 — 중립</span></div><div class="signal-row"><span class="signal-name">이평선 배열</span><span class="badge badge-r" id="badge-ma" data-sg="tech">역배열(하락)</span></div><div class="signal-row"><span class="signal-name">단기 모멘텀</span><span class="badge badge-r" id="badge-mom" data-sg="tech">▼ 3.4% (4주 변화)</span></div><div class="signal-row"><span class="signal-name">변동성</span><span class="badge badge-r" id="badge-vol" data-sg="tech">주간 ±2.34% — 고변동</span></div><div class="signal-row"><span class="signal-name">52주 가격 위치</span><span class="badge badge-g" id="badge-pos" data-sg="tech">52주 고점 대비 -8.3% / 저점 대비 +36.0%</span></div>
+    <div class="card-title" style="margin-bottom:8px;">&#x1F4E1; 기술적 지표 (자동)</div>
+    <div class="signal-row"><span class="signal-name">RSI (14일)</span><span class="badge badge-b" id="badge-rsi">로딩 중...</span></div>
+    <div class="signal-row"><span class="signal-name">이평선 배열</span><span class="badge badge-b" id="badge-ma">로딩 중...</span></div>
+    <div class="signal-row"><span class="signal-name">단기 모멘텀</span><span class="badge badge-b" id="badge-mom">로딩 중...</span></div>
+    <div class="signal-row"><span class="signal-name">변동성</span><span class="badge badge-b" id="badge-vol">로딩 중...</span></div>
+    <div class="signal-row"><span class="signal-name">52주 가격 위치</span><span class="badge badge-b" id="badge-pos">로딩 중...</span></div>
   </div>
-    <div class="card" style="margin-top:-4px;">
-    <div class="card-title" style="margin-bottom:8px;">🌏 매크로 신호 <span style="font-size:11px;font-weight:400;color:var(--text3);">— 업데이트 실행 시 갱신</span></div>
-    
-    <div class="signal-row">
-      <span class="signal-name">VNM ETF<span style="font-size:10px;color:var(--text3);margin-left:4px;">자동</span> <span style="font-size:10px;color:var(--text3);">(뉴욕상장 베트남 대표)</span></span>
-      <span class="badge badge-g" id="badge-vnm">$18.12 ▲1.74% — 상승</span>
-    </div>
-    <div class="signal-row">
-      <span class="signal-name">동/달러<span style="font-size:10px;color:var(--text3);margin-left:4px;">자동</span> <span style="font-size:10px;color:var(--text3);">(USD/VND)</span></span>
-      <span class="badge badge-y" id="badge-usdvnd">₫26,230 — 동 약세</span>
-    </div>
-    <div class="signal-row">
-      <span class="signal-name">위안화<span style="font-size:10px;color:var(--text3);margin-left:4px;">자동</span> <span style="font-size:10px;color:var(--text3);">(USD/CNY)</span></span>
-      <span class="badge badge-g" id="badge-usdcny">¥6.76 — 위안 안정</span>
-    </div>
-    <div class="signal-row">
-      <span class="signal-name">달러 인덱스<span style="font-size:10px;color:var(--text3);margin-left:4px;">자동</span> <span style="font-size:10px;color:var(--text3);">(DXY)</span></span>
-      <span class="badge badge-b" id="badge-dxy">DXY 99.68 ▼0.07 — 안정</span>
-    </div>
-    <div class="signal-row">
-      <span class="signal-name">신흥국 ETF<span style="font-size:10px;color:var(--text3);margin-left:4px;">자동</span> <span style="font-size:10px;color:var(--text3);">(EEM)</span></span>
-      <span class="badge badge-g" id="badge-eem">$69.75 ▲2.75% — 신흥국 상승(호재)</span>
-    </div>
-    <div class="signal-row">
-      <span class="signal-name">공포지수 VIX<span style="font-size:10px;color:var(--text3);margin-left:4px;">자동</span> <span style="font-size:10px;color:var(--text3);">(미국)</span></span>
-      <span class="badge badge-g" id="badge-vix">US VIX 16.2 — 안정</span>
-    </div>
-    <div class="signal-row">
-      <span class="signal-name">브렌트유<span style="font-size:10px;color:var(--text3);margin-left:4px;">자동</span> <span style="font-size:10px;color:var(--text3);">(PetroVN 수혜)</span></span>
-      <span class="badge badge-y" id="badge-crude">$83.6 보통</span>
-    </div>
-    <div class="signal-row">
-      <span class="signal-name">금 가격<span style="font-size:10px;color:var(--text3);margin-left:4px;">자동</span> <span style="font-size:10px;color:var(--text3);">(소비심리·헷지)</span></span>
-      <span class="badge badge-y" id="badge-gold">$4,331 ▲2.8% — 위험회피 심리 강함</span>
-    </div>
-    <div class="signal-row" title=" FDI inflows as a share of GDP Vietnam 2012-2023 |  Asia’s recipe for winning inflows and impact |  FDI surges in Vietnam as Q1 capital climbs 43 per cent on-year"><span class="signal-name">베트남 FDI 유입<span style="font-size:10px;color:var(--text3);margin-left:4px;">자동</span></span><span class="badge badge-g" id="badge-fdi">FDI 43-35% 증가, 강한 자본유입</span></div>
-    <div class="signal-row" title=" Vietnam is booming, but foreign cash is fleeing from stocks |  Vietnam ETF: 10 Stocks Investors Should Get To Know |  Vietnam Eases Foreign Access to Equities: What the New Rules Mean for Global Investors"><span class="signal-name">외국인 자금 흐름<span style="font-size:10px;color:var(--text3);margin-left:4px;">자동</span></span><span class="badge badge-r" id="badge-fii">외국인 자금 이탈, 주식서 이탈</span></div>
-    <div class="signal-row" title=" Vietnam central bank blows whistle on rising interest rate race |  SBV vows agile policy response amid global headwinds |  New governor pushes for lower interest rates to support growth"><span class="signal-name">SBV 금리<span style="font-size:10px;color:var(--text3);margin-left:4px;">자동</span></span><span class="badge badge-y" id="badge-sbv">금리 인상 압박, 성장 지원 고민</span></div>
-    <div class="signal-row">
-      <span class="signal-name">베트남 10년 국채 <span style="font-size:10px;color:var(--text3);margin-left:4px;">수동</span> <span style="font-size:10px;color:var(--text3);">(외국인 자금)</span></span>
-      <span class="badge badge-g">3.85% — 안정</span>
-    </div>
-    <div class="signal-row" title=" US Forced Labor Ruling Does Not Reflect Vietnam’s Efforts, Govt Says |  Vietnam does not have a policy of creating excess capacity, PM tells U.S. trade rep |  Tracking Trump’s Trade Deals"><span class="signal-name">미-베트남 무역<span style="font-size:10px;color:var(--text3);margin-left:4px;">자동</span></span><span class="badge badge-y" id="badge-trade">강제노동 논란, 무역 리스크</span></div>
-    <div class="signal-row" title=" US Section 301 Forced Labor Investigation: New Trade Compliance Risks for Vietnam Exporters |  Thailand Joins Vietnam, Singapore, South Korea, China and the United States in Reshaping Asia’s High-Tech Manufacturing Future as Trade Surges, Investment Accelerates and Regional Supply Chains Face New Competitive Pressures |  A Winner in Early Trump Tariffs, Vietnam Thrives in Trade War 2.0"><span class="signal-name">중국-베트남 관계<span style="font-size:10px;color:var(--text3);margin-left:4px;">자동</span></span><span class="badge badge-g" id="badge-china">미-중 무역전쟁 수혜, 공급망 이동</span></div>
-    <div class="signal-row" title=" Vietnam Dong Under Pressure: Inflation and Trade Headwinds Intensify – Commerzbank |  Vietnam’s inflation climbs amid strong foreign investment surge |  Việt Nam’s 2025 CPI rises 3.31%, within National Assembly’s target"><span class="signal-name">베트남 CPI<span style="font-size:10px;color:var(--text3);margin-left:4px;">자동</span></span><span class="badge badge-r" id="badge-cpi">인플레 상승, 통화 압박 증가</span></div>
-    <div class="signal-row" title=" Samsung, LG pursue massive expansions in Vietnam |  Trump opens for Vietnam the chip door he locked on China |  Intel to continue expanding investment in Vietnam: exec"><span class="signal-name">반도체·제조업<span style="font-size:10px;color:var(--text3);margin-left:4px;">자동</span></span><span class="badge badge-g" id="badge-semi">삼성·인텔 확대, 칩 산업 호황</span></div>
-    <div class="signal-row" title=" GDP growth rate in Vietnam 2020-2023, by quarter |  Southeast Asia quarterly economic review: A strong year-end rebound |  Vietnam Manufacturing Tracker: As of June 2026"><span class="signal-name">베트남 GDP<span style="font-size:10px;color:var(--text3);margin-left:4px;">자동</span></span><span class="badge badge-g" id="badge-gdp">4분기 성장 반등, 회복 지속</span></div>
-    <div class="signal-row">
-      <span class="signal-name">미국 연준 금리<span style="font-size:10px;color:var(--text3);margin-left:4px;">자동</span></span>
-      <span class="badge badge-b" id="badge-fed">연준 정책 불확실, 추이 주시</span>
-    </div>
-    <div style="margin-top:10px;font-size:11px;color:var(--text3);">* 뉴스 항목은 마우스를 올리면 원문 헤드라인을 볼 수 있어요</div>
-    <div id="news-live-note" style="margin-top:4px;font-size:11px;color:var(--text3);"></div>
+  <div class="card" style="margin-top:-4px;">
+    <div class="card-title" style="margin-bottom:8px;">&#x1F30F; 매크로 신호 <span style="font-size:11px;font-weight:400;color:var(--text3);">— 새로고침 시 갱신</span></div>
+    <div class="signal-row"><span class="signal-name">VNM ETF<span style="font-size:10px;color:var(--text3);margin-left:4px;">자동</span> <span style="font-size:10px;color:var(--text3);">(뉴욕상장 베트남 대표)</span></span><span class="badge badge-b" id="badge-vnm">로딩 중...</span></div>
+    <div class="signal-row"><span class="signal-name">달러/동<span style="font-size:10px;color:var(--text3);margin-left:4px;">자동</span> <span style="font-size:10px;color:var(--text3);">(USD/VND)</span></span><span class="badge badge-b" id="badge-vnd">로딩 중...</span></div>
+    <div class="signal-row"><span class="signal-name">달러 인덱스<span style="font-size:10px;color:var(--text3);margin-left:4px;">자동</span> <span style="font-size:10px;color:var(--text3);">(DXY)</span></span><span class="badge badge-b" id="badge-dxy">로딩 중...</span></div>
+    <div class="signal-row"><span class="signal-name">신흥국 ETF<span style="font-size:10px;color:var(--text3);margin-left:4px;">자동</span> <span style="font-size:10px;color:var(--text3);">(EEM)</span></span><span class="badge badge-b" id="badge-eem">로딩 중...</span></div>
+    <div class="signal-row"><span class="signal-name">공포지수 VIX<span style="font-size:10px;color:var(--text3);margin-left:4px;">자동</span> <span style="font-size:10px;color:var(--text3);">(미국)</span></span><span class="badge badge-b" id="badge-vix">로딩 중...</span></div>
+    <div class="signal-row"><span class="signal-name">국제유가<span style="font-size:10px;color:var(--text3);margin-left:4px;">자동</span> <span style="font-size:10px;color:var(--text3);">(브렌트유, 베트남 수출)</span></span><span class="badge badge-b" id="badge-crude">로딩 중...</span></div>
+    <div class="signal-row"><span class="signal-name">외국인 자금 흐름<span style="font-size:10px;color:var(--text3);margin-left:4px;">자동</span></span><span class="badge badge-b" id="badge-fii">로딩 중...</span></div>
+    <div class="signal-row"><span class="signal-name">SBV 금리<span style="font-size:10px;color:var(--text3);margin-left:4px;">자동</span></span><span class="badge badge-b" id="badge-sbv">로딩 중...</span></div>
+    <div class="signal-row"><span class="signal-name">베트남 물가(CPI)<span style="font-size:10px;color:var(--text3);margin-left:4px;">자동</span></span><span class="badge badge-b" id="badge-cpi">로딩 중...</span></div>
+    <div class="signal-row"><span class="signal-name">베트남 GDP<span style="font-size:10px;color:var(--text3);margin-left:4px;">자동</span></span><span class="badge badge-b" id="badge-gdp">로딩 중...</span></div>
+    <div class="signal-row"><span class="signal-name">미국 연준 금리<span style="font-size:10px;color:var(--text3);margin-left:4px;">자동</span></span><span class="badge badge-b" id="badge-fed">로딩 중...</span></div>
+    <div class="signal-row"><span class="signal-name">미-베트남 무역<span style="font-size:10px;color:var(--text3);margin-left:4px;">자동</span></span><span class="badge badge-b" id="badge-trade">로딩 중...</span></div>
+    <div class="signal-row"><span class="signal-name">지정학 리스크<span style="font-size:10px;color:var(--text3);margin-left:4px;">자동</span></span><span class="badge badge-b" id="badge-geo">로딩 중...</span></div>
+    <div style="margin-top:8px;font-size:11px;color:var(--text3);" id="news-live-note">* 뉴스 헤드라인 기반 자동 분류</div>
   </div>
 
   <hr class="divider">
 
   <div class="section-label">매수 타이밍 가이드</div>
-  
   <div class="action action-hold" id="ag-now">
-    <div class="action-title" id="ag-now-title">📌 지금 — 혼조 신호, 매수 보류</div>
-    <div class="action-desc" id="ag-now-desc">RSI 61.5(과열대), 이평 역배열, 외국인 자금 이탈 중인 가운데 FDI 강세가 부분 지지하지만 금리·인플레·무역리스크 압박으로 반기GDP 발표(D-15) 이후 추이 관찰 필수.</div>
+    <div class="action-title" id="ag-now-title">&#x1F4CC; 지금 — 분석 중</div>
+    <div class="action-desc" id="ag-now-desc">데이터 로딩 후 AI가 현황을 분석합니다.</div>
   </div>
   <div class="action action-buy" id="ag-buy1">
-    <div class="action-title" id="ag-buy1-title">🟢 1차 매수 조건</div>
-    <div class="action-desc" id="ag-buy1-desc">VN-Index 1,750pt 이하 돌파(지지 확인) + RSI 50 이하 + 반기GDP 긍정 신호 확보 시 2,000만원 진입.</div>
+    <div class="action-title" id="ag-buy1-title">&#x1F7E2; 1차 매수 조건</div>
+    <div class="action-desc" id="ag-buy1-desc">데이터 로딩 후 AI가 조건을 생성합니다.</div>
   </div>
   <div class="action action-buy" id="ag-buy2">
-    <div class="action-title" id="ag-buy2-title">🟢 2차 매수 조건</div>
-    <div class="action-desc" id="ag-buy2-desc">1차 매수 후 1,700pt 이하 추가 하락 또는 외국인 자금 복귀 신호(일평잔 양전) 확인 시 2,000만원 추가 분할.</div>
+    <div class="action-title" id="ag-buy2-title">&#x1F7E2; 2차 매수 조건</div>
+    <div class="action-desc" id="ag-buy2-desc">데이터 로딩 후 AI가 조건을 생성합니다.</div>
   </div>
   <div class="action action-sell" id="ag-sell">
-    <div class="action-title" id="ag-sell-title">🔴 손절 조건</div>
-    <div class="action-desc" id="ag-sell-desc">매수가 기준 -10% 하락 또는 VN-Index 1,619.38pt 이하 붕괴 시 즉시 손절.</div>
+    <div class="action-title" id="ag-sell-title">&#x1F534; 손절 조건</div>
+    <div class="action-desc" id="ag-sell-desc">데이터 로딩 후 AI가 조건을 생성합니다.</div>
   </div>
 
   <hr class="divider">
@@ -324,16 +247,6 @@ table td { padding: 5px 0; border-bottom: 1px solid var(--border); }
   <div class="section-label">AI 매수 판단 질문</div>
   <div class="card">
     <div class="card-title">지금 상황 물어보기</div>
-    <div id="td-key-setup" style="margin-bottom:10px;background:#f8f9fa;border-radius:10px;padding:12px;">
-      <div id="td-key-connected" style="display:none;font-size:12px;color:var(--text2);">✅ TwelveData 실시간 연동 중 &nbsp;<button class="btn" style="font-size:11px;padding:4px 10px;" onclick="document.getElementById('td-key-connected').style.display='none';document.getElementById('td-key-input-row').style.display='flex';">🔑 키 변경</button></div>
-      <div id="td-key-input-row" style="display:none;flex-direction:column;gap:6px;">
-        <div style="font-size:12px;color:var(--text2);">📡 실시간 시세 연동을 위해 <b>TwelveData API 키</b>가 필요해요 (<a href="https://twelvedata.com" target="_blank">twelvedata.com</a> 무료 가입)</div>
-        <div class="input-row">
-          <input type="password" id="td-key-input" placeholder="TwelveData API 키 입력" style="flex:1;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-size:13px;background:var(--card-bg);color:var(--text);">
-          <button class="btn" onclick="saveTDKey()">저장</button>
-        </div>
-      </div>
-    </div>
     <div id="key-setup" style="margin-bottom:10px;display:none;">
       <div style="font-size:12px;color:var(--text3);margin-bottom:6px;">Anthropic API 키를 입력하면 저장됩니다 (이 기기에만)</div>
       <div class="input-row">
@@ -342,369 +255,505 @@ table td { padding: 5px 0; border-bottom: 1px solid var(--border); }
       </div>
     </div>
     <div class="input-row">
-      <input type="text" id="ai-q" placeholder="예: 지금 매수 타이밍인가요?">
+      <input type="text" id="ai-q" placeholder="예: 지금 VN-Index 매수 타이밍인가요?">
       <button class="btn" onclick="askAI()">분석 ↗</button>
     </div>
     <div class="quick-btns">
       <button class="btn quick-btn" onclick="setQ('지금 1차 매수 타이밍인가요?')">1차 매수?</button>
       <button class="btn quick-btn" onclick="setQ('VN-Index 하락 원인이 뭔가요?')">하락 이유</button>
       <button class="btn quick-btn" onclick="setQ('이번 주 베트남 시장 핵심 이슈가 뭔가요?')">이번 주 이슈</button>
-      <button class="btn quick-btn" onclick="toggleKeySetup()">🔑 키 변경</button>
+      <button class="btn quick-btn" onclick="toggleKeySetup()">&#x1F511; 키 변경</button>
     </div>
     <div class="ai-response" id="ai-resp">질문을 입력하거나 위 버튼을 눌러보세요.</div>
   </div>
 
   <div class="footer">
-    마지막 업데이트: 2026.06.16 07:11
+    마지막 업데이트: <span id="last-updated">--</span>
     <br><br>
-    <button onclick="location.reload(true)" style="margin-top:4px;padding:8px 24px;border-radius:20px;border:0.5px solid var(--border);background:var(--card-bg);color:var(--text);font-size:13px;font-weight:500;cursor:pointer;">🔄 새로고침</button>
+    <button onclick="location.reload(true)" style="margin-top:4px;padding:8px 24px;border-radius:20px;border:0.5px solid var(--border);background:var(--card-bg);color:var(--text);font-size:13px;font-weight:500;cursor:pointer;">&#x1F504; 새로고침</button>
   </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script>window.Chart||document.write('<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"><\/script>')</script>
 <script>
-const VN_SCALE = 99.2997;
-const isDark = matchMedia('(prefers-color-scheme: dark)').matches;
-const tC = isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.4)';
-const gC = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)';
+// VNM ETF -> VN-Index 환산 비율
+var VNM_SCALE = 99.5744;
+
+var _chartInst = null;
+var _chartCache = {};
+var _curPeriod = 'd1';
+var _liveData = {};
+
+var isDark = matchMedia('(prefers-color-scheme: dark)').matches;
+var tC = isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.4)';
+var gC = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)';
+
+var MA_CONFIG = {
+  d1:  [{n:5,color:'#FF6B6B',label:'MA5'},{n:20,color:'#FFA500',label:'MA20'}],
+  d5:  [{n:3,color:'#FF6B6B',label:'MA3'},{n:5,color:'#FFA500',label:'MA5'}],
+  d30: [{n:5,color:'#FF6B6B',label:'MA5'},{n:10,color:'#FFA500',label:'MA10'}],
+  mo3: [{n:4,color:'#FF6B6B',label:'MA4주'},{n:8,color:'#FFA500',label:'MA8주'}],
+  mo6: [{n:5,color:'#FF6B6B',label:'MA5주'},{n:13,color:'#FFA500',label:'MA13주'}],
+  yr1: [{n:5,color:'#FF6B6B',label:'MA5주'},{n:13,color:'#FFA500',label:'MA13주'},{n:26,color:'#9B59B6',label:'MA26주'}],
+};
 
 function calcMA(prices, n) {
-  return prices.map((_, i) => {
-    if (i < n - 1) return null;
-    const slice = prices.slice(i - n + 1, i + 1);
-    return +(slice.reduce((a, b) => a + b, 0) / n).toFixed(2);
+  return prices.map(function(_, i) {
+    if (i < n-1) return null;
+    return +(prices.slice(i-n+1,i+1).reduce(function(a,b){return a+b;},0)/n).toFixed(2);
   });
 }
 
-const MA_CONFIG = {
-  d1:  [{n:5, color:'#FF6B6B',label:'MA5'}, {n:20,color:'#FFA500',label:'MA20'}],
-  d5:  [{n:3, color:'#FF6B6B',label:'MA3'}, {n:5, color:'#FFA500',label:'MA5'}],
-  d30: [{n:5, color:'#FF6B6B',label:'MA5'}, {n:10,color:'#FFA500',label:'MA10'}],
-  mo3: [{n:4, color:'#FF6B6B',label:'MA4주'},{n:8, color:'#FFA500',label:'MA8주'}],
-  mo6: [{n:5, color:'#FF6B6B',label:'MA5주'},{n:13,color:'#FFA500',label:'MA13주'}],
-  yr1: [{n:5, color:'#FF6B6B',label:'MA5주'},{n:13,color:'#FFA500',label:'MA13주'},{n:26,color:'#9B59B6',label:'MA26주'}],
-};
-
-function makeDatasets(prices, periodKey, name, sl) {
-  const n = prices.length;
-  const maCfg = MA_CONFIG[periodKey] || MA_CONFIG.yr1;
-  const maDatasets = maCfg.filter(p => p.n < n).map(p => ({
-    label: p.label, data: calcMA(prices, p.n),
-    borderColor: p.color, borderWidth: 1.2,
-    pointRadius: 0, fill: false, tension: 0.3, spanGaps: false
-  }));
-  return [
-    { label: name || 'VN-Index', data: prices, borderColor: '#EA1F26',
-       backgroundColor: 'rgba(234,31,38,0.06)', borderWidth: 2,
-       pointRadius: 0, pointHoverRadius: 4, fill: true, tension: 0.3 },
-    ...maDatasets
-  ];
+function makeDatasets(prices, period) {
+  var maCfg = MA_CONFIG[period] || MA_CONFIG.yr1;
+  var maDs = maCfg.filter(function(p){return p.n<prices.length;}).map(function(p){
+    return {label:p.label,data:calcMA(prices,p.n),borderColor:p.color,borderWidth:1.2,
+    pointRadius:0,fill:false,tension:0.3,spanGaps:false};
+  });
+  return [{
+    label:'VN-Index (추정)',data:prices,borderColor:'#DA251D',
+    backgroundColor:'rgba(218,37,29,0.06)',borderWidth:2,
+    pointRadius:0,pointHoverRadius:4,fill:true,tension:0.3
+  }].concat(maDs);
 }
 
-function initChart(canvasId, pdata, initKey) {
-  return new Chart(document.getElementById(canvasId), {
-    type: 'line',
-    data: { labels: pdata[initKey].labels, datasets: makeDatasets(pdata[initKey].prices, initKey, pdata.name, pdata.sl) },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      interaction: { mode: 'index', intersect: false },
-      plugins: {
-        legend: { display: true, position: 'top', labels: { color: tC, font: { size: 10 }, boxWidth: 20, padding: 8 } },
-        tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': ' + (ctx.parsed.y ? ctx.parsed.y.toLocaleString() : '-') } }
+function renderChart(labels, prices) {
+  var ctx = document.getElementById('chartVNINDEX');
+  if (_chartInst) _chartInst.destroy();
+  _chartInst = new Chart(ctx, {
+    type:'line',
+    data:{labels:labels,datasets:makeDatasets(prices,_curPeriod)},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      interaction:{mode:'index',intersect:false},
+      plugins:{
+        legend:{display:true,position:'top',labels:{color:tC,font:{size:10},boxWidth:20,padding:8}},
+        tooltip:{callbacks:{label:function(c){return c.dataset.label+': '+(c.parsed.y?c.parsed.y.toLocaleString():'-');}}}
       },
-      scales: {
-        x: { ticks: { color: tC, font: { size: 10 }, maxRotation: 0, autoSkip: true, maxTicksLimit: 8 }, grid: { color: gC } },
-        y: { ticks: { color: tC, font: { size: 10 }, callback: v => v.toLocaleString() }, grid: { color: gC } }
+      scales:{
+        x:{ticks:{color:tC,font:{size:10},maxRotation:0,autoSkip:true,maxTicksLimit:8},grid:{color:gC}},
+        y:{ticks:{color:tC,font:{size:10},callback:function(v){return v.toLocaleString();}},grid:{color:gC}}
       }
     }
   });
 }
 
-function switchChart(canvasId, prefix, key, el) {
-  document.querySelectorAll(`#${prefix}-tabs .period-tab`).forEach(t => t.classList.remove('active'));
-  el.classList.add('active');
-  const c = window._charts[canvasId];
-  c.inst.data.labels = c.data[key].labels;
-  c.inst.data.datasets = makeDatasets(c.data[key].prices, key, c.data.name, c.data.sl);
-  c.inst.update();
-}
-
-function getKey() { return localStorage.getItem('anthropic_api_key') || ''; }
-function saveKey() {
-  const k = document.getElementById('api-key-input').value.trim();
-  if (!k) return;
-  localStorage.setItem('anthropic_api_key', k);
-  document.getElementById('api-key-input').value = '';
-  document.getElementById('key-setup').style.display = 'none';
-  document.getElementById('ai-resp').textContent = 'API 키가 저장됐어요. 질문을 입력해보세요.';
-}
-function toggleKeySetup() {
-  const el = document.getElementById('key-setup');
-  el.style.display = el.style.display === 'none' ? 'block' : 'none';
-}
-function getTDKey() { return localStorage.getItem('twelvedata_api_key') || ''; }
-function saveTDKey() {
-  const k = document.getElementById('td-key-input').value.trim();
-  if (!k) return;
-  localStorage.setItem('twelvedata_api_key', k);
-  document.getElementById('td-key-input').value = '';
-  document.getElementById('td-key-connected').style.display = 'block';
-  document.getElementById('td-key-input-row').style.display = 'none';
-}
-function initTDKeyUI() {
-  const connected = document.getElementById('td-key-connected');
-  const inputRow = document.getElementById('td-key-input-row');
-  if (!connected || !inputRow) return;
-  connected.style.display = 'block';
-  inputRow.style.display = 'none';
-}
-async function fetchYahooProxy(ticker) {
+async function fetchYahoo(ticker, interval, range) {
   try {
-    const target = encodeURIComponent(`https://query2.finance.yahoo.com/v8/finance/chart/${ticker}?interval=1d&range=1d`);
-    const r = await fetch(`https://corsproxy.io/?${target}`);
+    var url = 'https://query2.finance.yahoo.com/v8/finance/chart/'+ticker+'?interval='+interval+'&range='+range;
+    var r = await fetch('https://corsproxy.io/?'+encodeURIComponent(url));
     if (!r.ok) return null;
-    const j = await r.json();
-    const meta = j.chart.result[0].meta;
-    const price = meta.regularMarketPrice;
-    const prev = meta.chartPreviousClose || meta.previousClose || price;
-    return { price, prev, pct: prev ? (price - prev) / prev * 100 : 0 };
+    var j = await r.json();
+    return j.chart.result[0];
   } catch(e) { return null; }
 }
-async function fetchTDData(symbols) {
-  const tickers = {
-    'VNM':     'VNM',
-    'USD/VND': 'USDVND%3DX',
-    'USD/CNY': 'USDCNY%3DX',
-    'DXY':     'DX-Y.NYB',
-    'EEM':     'EEM',
-    'VIX':     '%5EVIX',
-    'BCO/USD': 'BZ%3DF',
-    'XAU/USD': 'GC%3DF',
-  };
-  const result = {};
-  await Promise.all(symbols.map(async sym => {
-    const yf = tickers[sym];
-    if (!yf) return;
-    const d = await fetchYahooProxy(yf);
-    if (d) result[sym] = d;
-  }));
+
+async function loadChart(period) {
+  if (_chartCache[period]) return _chartCache[period];
+  var cfg = {d1:{i:'5m',r:'1d'},d5:{i:'1d',r:'5d'},d30:{i:'1d',r:'1mo'},mo3:{i:'1d',r:'3mo'},mo6:{i:'1wk',r:'6mo'},yr1:{i:'1wk',r:'1y'}};
+  var c = cfg[period];
+  var data = await fetchYahoo('VNM', c.i, c.r);
+  if (!data) return null;
+  var ts = data.timestamp;
+  var closes = data.indicators.quote[0].close;
+  var labels = [], prices = [];
+  ts.forEach(function(t,i) {
+    if (closes[i] == null) return;
+    var d = new Date(t*1000);
+    var lbl = period==='d1'
+      ? d.toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})
+      : (d.getMonth()+1)+'/'+d.getDate();
+    labels.push(lbl);
+    prices.push(Math.round(closes[i] * VNM_SCALE));
+  });
+  var result = {labels:labels, prices:prices};
+  _chartCache[period] = result;
   return result;
 }
+
+async function switchPeriod(period, el) {
+  document.querySelectorAll('#vnindex-tabs .period-tab').forEach(function(t){t.classList.remove('active');});
+  el.classList.add('active');
+  _curPeriod = period;
+  var data = await loadChart(period);
+  if (!data) return;
+  if (_chartInst) {
+    _chartInst.data.labels = data.labels;
+    _chartInst.data.datasets = makeDatasets(data.prices, period);
+    _chartInst.update();
+  } else {
+    renderChart(data.labels, data.prices);
+  }
+}
+
+function fmt(v, d) {
+  if (d === undefined) d = 2;
+  return v==null?'--':v.toLocaleString('ko-KR',{maximumFractionDigits:d});
+}
+function arrow(p) { return p>=0?'▲':'▼'; }
+
 function setBadge(id, text, cls) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  el.textContent = text;
-  el.className = 'badge ' + cls;
+  var el = document.getElementById(id);
+  if (el) { el.textContent=text; el.className='badge '+cls; }
 }
-async function fetchLiveData() {
-  const td = await fetchTDData(['VNM','USD/VND','USD/CNY','DXY','EEM','VIX','BCO/USD','XAU/USD']).catch(() => ({}));
-  const fmt = (v, d=2) => v != null ? v.toLocaleString('ko-KR', {maximumFractionDigits: d}) : '-';
-  const arrow = pct => pct >= 0 ? '▲' : '▼';
-  if (td['VNM']) {
-    const v=td['VNM']; const c=v.pct>=0?'badge-g':'badge-r';
-    setBadge('badge-vnm',`$${fmt(v.price)} ${arrow(v.pct)}${Math.abs(v.pct).toFixed(2)}% — ${v.pct>=0?'상승':'하락'}`,c);
-    const vnEst = v.price * VN_SCALE;
-    const vnPrev = v.prev * VN_SCALE;
-    const vnChg = vnEst - vnPrev;
-    const vnPct = (vnChg/vnPrev*100).toFixed(2);
-    const isUp = vnChg >= 0;
-    const pEl = document.getElementById('live-vn-price');
-    const cEl = document.getElementById('live-vn-change');
-    if (pEl) { pEl.textContent = vnEst.toLocaleString('ko-KR',{maximumFractionDigits:2}); pEl.className='nifty-price '+(isUp?'up':'down'); }
-    if (cEl) { cEl.textContent = `${isUp?'▲':'▼'} ${Math.abs(vnChg).toFixed(2)}  (${isUp?'+':''}${vnPct}%)`; cEl.className='nifty-change '+(isUp?'up':'down'); }
+
+async function fetchQuote(ticker) {
+  var data = await fetchYahoo(ticker, '1d', '1d');
+  if (!data) return null;
+  var meta = data.meta;
+  var price = meta.regularMarketPrice;
+  var prev = meta.chartPreviousClose || meta.previousClose || price;
+  return {
+    price:price, prev:prev,
+    pct: prev?(price-prev)/prev*100:0,
+    open: meta.regularMarketOpen||prev,
+    high: meta.regularMarketDayHigh||price,
+    low:  meta.regularMarketDayLow||price,
+    high52: meta.fiftyTwoWeekHigh||price,
+    low52:  meta.fiftyTwoWeekLow||price,
+  };
+}
+
+async function fetchAllLive() {
+  var tickers = ['VNM','VND=X','DX-Y.NYB','EEM','^VIX','BZ=F'];
+  var results = await Promise.all(tickers.map(function(t){return fetchQuote(t).catch(function(){return null;});}));
+  var vnm=results[0], vnd=results[1], dxy=results[2], eem=results[3], vix=results[4], crude=results[5];
+
+  if (vnm) {
+    var vnIndexPrice = vnm.price * VNM_SCALE;
+    var vnIndexPrev  = vnm.prev  * VNM_SCALE;
+    var vnIndexOpen  = vnm.open  * VNM_SCALE;
+    var vnIndexHigh  = vnm.high  * VNM_SCALE;
+    var vnIndexLow   = vnm.low   * VNM_SCALE;
+    var pct = vnm.pct;
+    var chgAbs = vnIndexPrice - vnIndexPrev;
+    var up = pct >= 0;
+
+    var pEl = document.getElementById('live-vnindex-price');
+    var cEl = document.getElementById('live-vnindex-change');
+    pEl.textContent = fmt(vnIndexPrice, 2);
+    pEl.className = 'idx-price ' + (up?'up':'down');
+    cEl.textContent = arrow(pct)+' '+Math.abs(chgAbs).toFixed(2)+'  ('+(up?'+':'')+pct.toFixed(2)+'%)';
+    cEl.className = 'idx-change ' + (up?'up':'down');
+    document.getElementById('vnindex-open').textContent = fmt(vnIndexOpen, 2);
+    document.getElementById('vnindex-high').textContent = fmt(vnIndexHigh, 2);
+    document.getElementById('vnindex-low').textContent  = fmt(vnIndexLow, 2);
   }
-  if (td['USD/VND']) { const v=td['USD/VND']; const c=v.price>26500?'badge-r':v.price>25500?'badge-y':v.price>24500?'badge-b':'badge-g'; const l=v.price>26500?'동 급락':v.price>25500?'동 약세':v.price>24500?'안정':'동 강세'; setBadge('badge-usdvnd',`₫${fmt(v.price,0)} — ${l}`,c); }
-  if (td['USD/CNY']) { const v=td['USD/CNY']; const c=v.price<7.1?'badge-g':v.price<7.3?'badge-y':'badge-r'; const l=v.price<7.1?'위안 안정':v.price<7.3?'위안 약세':'위안 급약세'; setBadge('badge-usdcny',`¥${fmt(v.price)} — ${l}`,c); }
-  if (td['DXY']) { const v=td['DXY']; const c=v.price>105?'badge-r':v.price>100?'badge-y':'badge-b'; setBadge('badge-dxy',`DXY ${fmt(v.price)} ${arrow(v.pct)}${Math.abs(v.pct).toFixed(2)} — ${v.price>105?'달러 강세':v.price>100?'달러 강세 주의':'안정'}`,c); }
-  if (td['EEM']) { const v=td['EEM']; const c=v.pct>=0.5?'badge-g':v.pct>=-0.5?'badge-b':'badge-r'; setBadge('badge-eem',`$${fmt(v.price)} ${arrow(v.pct)}${Math.abs(v.pct).toFixed(2)}% — ${v.pct>=0.5?'상승':v.pct>=-0.5?'보합':'하락'}`,c); }
-  if (td['VIX']) { const v=td['VIX']; const c=v.price>25?'badge-r':v.price>18?'badge-y':'badge-g'; setBadge('badge-vix',`US VIX ${fmt(v.price,1)} — ${v.price>25?'공포':v.price>18?'불안':'안정'}`,c); }
-  if (td['BCO/USD']) { const v=td['BCO/USD']; const c=v.price>90?'badge-r':v.price>80?'badge-y':'badge-g'; setBadge('badge-crude',`$${fmt(v.price,1)} ${v.price>90?'고유가':v.price>80?'보통':'저유가'}`,c); }
-  if (td['XAU/USD']) { const v=td['XAU/USD']; const c=v.pct>1?'badge-r':v.pct>0?'badge-y':'badge-g'; setBadge('badge-gold',`$${fmt(v.price,0)} ${arrow(v.pct)}${Math.abs(v.pct).toFixed(1)}% — ${v.pct>1?'위험회피 심리 강함':'안정'}`,c); }
-  return td;
+
+  if (vnm) {
+    var upV = vnm.pct >= 0;
+    var chgAbsV = vnm.price - vnm.prev;
+    var pElV = document.getElementById('live-vnm-price');
+    var cElV = document.getElementById('live-vnm-change');
+    pElV.textContent = '$'+fmt(vnm.price);
+    pElV.className = 's-price ' + (upV?'up':'down');
+    cElV.textContent = arrow(vnm.pct)+' '+Math.abs(chgAbsV).toFixed(2)+'  ('+(upV?'+':'')+vnm.pct.toFixed(2)+'%)';
+    cElV.className = 's-change ' + (upV?'up':'down');
+    document.getElementById('vnm-ohlc').innerHTML = '시가: $'+fmt(vnm.open)+'<br>고: $'+fmt(vnm.high)+' / 저: $'+fmt(vnm.low);
+  }
+
+  if (vnm) {
+    var cV = vnm.pct>=0.5?'badge-g':vnm.pct<=-0.5?'badge-r':'badge-b';
+    setBadge('badge-vnm','$'+fmt(vnm.price)+' '+arrow(vnm.pct)+Math.abs(vnm.pct).toFixed(2)+'% — '+(vnm.pct>=0.5?'상승':vnm.pct<=-0.5?'하락':'보합'),cV);
+  }
+  if (vnd) {
+    var cD = vnd.price<25000?'badge-g':vnd.price>26000?'badge-r':'badge-y';
+    var lD = vnd.price<25000?'동 강세':vnd.price>26000?'동 약세':'동 보통';
+    setBadge('badge-vnd','₫'+fmt(vnd.price,0)+' — '+lD,cD);
+  }
+  if (dxy) {
+    var cX = dxy.price>104?'badge-r':dxy.price>100?'badge-y':'badge-b';
+    setBadge('badge-dxy','DXY '+fmt(dxy.price)+' '+arrow(dxy.pct)+Math.abs(dxy.pct).toFixed(2)+' — '+(dxy.price>104?'달러 강세':dxy.price>100?'달러 주의':'안정'),cX);
+  }
+  if (eem) {
+    var cE = eem.pct>=0.5?'badge-g':eem.pct<=-0.5?'badge-r':'badge-b';
+    setBadge('badge-eem','$'+fmt(eem.price)+' '+arrow(eem.pct)+Math.abs(eem.pct).toFixed(2)+'% — '+(eem.pct>=0.5?'신흥국 상승(호재)':eem.pct<=-0.5?'신흥국 하락':'보합'),cE);
+  }
+  if (vix) {
+    var cVix = vix.price>28?'badge-r':vix.price>20?'badge-y':'badge-g';
+    setBadge('badge-vix','US VIX '+fmt(vix.price,1)+' — '+(vix.price>28?'공포':vix.price>20?'불안':'안정'),cVix);
+  }
+  if (crude) {
+    var cOil = crude.price>85?'badge-g':crude.price<75?'badge-r':'badge-y';
+    setBadge('badge-crude','$'+fmt(crude.price,1)+' — '+(crude.price>85?'고유가(베트남 호재)':crude.price<75?'저유가(베트남 부담)':'보통'),cOil);
+  }
+
+  fetchYahoo('VNM','1wk','1y').then(function(hist){
+    if (!hist) return;
+    var closes = hist.indicators.quote[0].close.filter(function(p){return p!=null;});
+    var prices = closes.map(function(p){return p * VNM_SCALE;});
+    var n = prices.length;
+    if (n < 2) return;
+    var cur = vnm ? vnm.price * VNM_SCALE : prices[n-1];
+    var ma5  = n>=5  ? prices.slice(-5).reduce(function(a,b){return a+b;},0)/5 : null;
+    var ma13 = n>=13 ? prices.slice(-13).reduce(function(a,b){return a+b;},0)/13 : null;
+    var ma26 = n>=26 ? prices.slice(-26).reduce(function(a,b){return a+b;},0)/26 : null;
+    var mom4w = n>=5 ? (prices[n-1]-prices[n-5])/prices[n-5]*100 : null;
+    var vol=null;
+    if (n>=8) {
+      var rets=[]; for(var i=n-8;i<n;i++) rets.push((prices[i]-prices[i-1])/prices[i-1]*100);
+      var mean=rets.reduce(function(a,b){return a+b;},0)/rets.length;
+      vol=Math.sqrt(rets.reduce(function(a,b){return a+(b-mean)*(b-mean);},0)/rets.length);
+    }
+    var pct1d = vnm?vnm.pct:0;
+    setBadge('badge-rsi','1일 모멘텀 '+(pct1d>=0?'▲':'▼')+Math.abs(pct1d).toFixed(2)+'%',pct1d>1?'badge-g':pct1d<-1?'badge-r':'badge-b');
+    var maBadge='badge-y',maText='혼조';
+    if (ma5&&ma13&&ma26) {
+      if (cur>ma5&&ma5>ma13&&ma13>ma26){maBadge='badge-g';maText='정배열(상승)';}
+      else if(cur<ma5&&ma5<ma13&&ma13<ma26){maBadge='badge-r';maText='역배열(하락)';}
+    } else if(ma5&&ma13){
+      if(cur>ma5&&ma5>ma13){maBadge='badge-g';maText='단기 정배열';}
+      else if(cur<ma5&&ma5<ma13){maBadge='badge-r';maText='단기 역배열';}
+    }
+    setBadge('badge-ma',maText,maBadge);
+    setBadge('badge-mom',mom4w!=null?(mom4w>=0?'▲':'▼')+' '+Math.abs(mom4w).toFixed(1)+'% (4주 변화)':'N/A',
+      mom4w==null?'badge-b':mom4w>2?'badge-g':mom4w<-2?'badge-r':'badge-y');
+    setBadge('badge-vol',vol!=null?'주간 ±'+vol.toFixed(2)+'% — '+(vol>3?'고변동':vol>1.5?'보통':'저변동'):'N/A',
+      vol==null?'badge-b':vol>3?'badge-r':vol>1.5?'badge-y':'badge-g');
+    if (vnm&&vnm.high52) {
+      var high52 = vnm.high52 * VNM_SCALE;
+      var low52  = vnm.low52  * VNM_SCALE;
+      var belowHigh=(high52-cur)/high52*100;
+      var aboveLow=low52?(cur-low52)/low52*100:null;
+      setBadge('badge-pos','고점 대비 -'+belowHigh.toFixed(1)+'% / 저점 대비 +'+(aboveLow?aboveLow.toFixed(1):'--')+'%',
+        belowHigh<5?'badge-r':belowHigh<15?'badge-y':'badge-g');
+    }
+    recalcScorecard();
+  });
+
+  document.getElementById('last-updated').textContent =
+    new Date().toLocaleDateString('ko-KR')+' '+new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'});
+
+  _liveData = {vnm:vnm, vnd:vnd, dxy:dxy, eem:eem, vix:vix, crude:crude};
+  return _liveData;
 }
-async function fetchLatestNews(queries) {
-  const results = {};
-  for (const [key, query] of Object.entries(queries)) {
+
+async function fetchNews() {
+  var FEEDS = [
+    'https://news.google.com/rss/search?q=%EB%B2%A0%ED%8A%B8%EB%82%A8+%EC%A6%9D%EC%8B%9C&hl=ko&gl=KR&ceid=KR:ko',
+    'https://news.google.com/rss/search?q=VN-Index+%EB%B2%A0%ED%8A%B8%EB%82%A8&hl=ko&gl=KR&ceid=KR:ko',
+  ];
+  var allTitles = [];
+  for (var fi=0; fi<FEEDS.length; fi++) {
     try {
-      const url = `https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=en&gl=US&ceid=US:en`;
-      const proxy = `https://corsproxy.io/?${encodeURIComponent(url)}`;
-      const r = await fetch(proxy, { signal: AbortSignal.timeout(5000) });
-      const xml = await r.text();
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(xml, 'text/xml');
-      const items = [...doc.querySelectorAll('item')].slice(0, 3);
-      results[key] = items.map(item => item.querySelector('title')?.textContent?.split(' - ')[0]?.trim() || '').filter(Boolean);
-    } catch(e) { results[key] = []; }
+      var r = await fetch('https://api.rss2json.com/v1/api.json?rss_url='+encodeURIComponent(FEEDS[fi]), {signal: AbortSignal.timeout(8000)});
+      if (!r.ok) continue;
+      var d = await r.json();
+      var titles = (d.items || []).map(function(i){return (i.title||'').trim();}).filter(Boolean);
+      allTitles = allTitles.concat(titles);
+    } catch(e) {}
   }
-  return results;
+  window.__newsForAnalysis = allTitles;
+  recalcScorecard();
 }
-async function updateActionGuide(td) {
-  const API_KEY = getKey();
-  if (!API_KEY) return;
-  if (!td) td = await fetchLiveData().catch(() => ({}));
-  const fmt = (sym, d=2) => td[sym] ? td[sym].price.toLocaleString('ko-KR',{maximumFractionDigits:d}) : '-';
-  const pct  = sym => td[sym] ? `${td[sym].pct>=0?'▲':'▼'}${Math.abs(td[sym].pct).toFixed(2)}%` : '';
-  const news = await fetchLatestNews({
-    'Vietnam market': 'Vietnam VN-Index stock market today',
-    'Vietnam FDI': 'Vietnam FDI foreign investment',
-    'Vietnam economy': 'Vietnam economy GDP growth',
-    'Vietnam trade': 'Vietnam export import trade',
-    'US Fed': 'US Federal Reserve rate decision'
-  }).catch(() => ({}));
-  const newsLines = Object.entries(news).map(([k,v]) => v.length ? `[${k}] ${v.join(' / ')}` : '').filter(Boolean);
-  const newsText = newsLines.join('\n');
-  const scLabel = document.getElementById('sc-emoji')?.textContent?.trim() || '';
-  const ctx = `당신은 10년차 베트남 펀드 매니저입니다.
-현재 상황: 베트남 VN-Index 펀드 매수 전 관찰 중 (아직 미매수)
-투자 계획: 1차 2,000만원, 추가 2,000만원 분할, 손절 -10%
 
-[실시간 시장 데이터]
-- VNM ETF: $${fmt('VNM')} (${pct('VNM')})
-- USD/VND: ₫${fmt('USD/VND',0)} / USD/CNY: ¥${fmt('USD/CNY')}
-- DXY: ${fmt('DXY')} / EEM: $${fmt('EEM')} (${pct('EEM')})
-- US VIX: ${fmt('VIX',1)} / 브렌트유: $${fmt('BCO/USD',1)} / 금: $${fmt('XAU/USD',0)}` + (newsText ? `
-
-[실시간 뉴스 헤드라인]
-${newsText}` : '') + (scLabel ? `
-
-[현재 종합신호]: ${scLabel} — 액션 가이드는 이 신호와 반드시 일치해야 합니다.` : '');
-  const prompt = `위 실시간 데이터${newsText ? '와 최신 뉴스' : ''}를 바탕으로 지금 시점의 액션 가이드를 JSON으로 작성해주세요.
-반드시 아래 형식만 출력하세요 (다른 텍스트 없이):
-{"now_title":"📌 지금 — [한 줄 현황]","now_desc":"[현재 상황 2문장]","buy1_title":"🟢 1차 매수 조건","buy1_desc":"[1차 매수 조건 2문장]","buy2_title":"🟢 2차 매수 조건","buy2_desc":"[2차 매수 조건 2문장]","sell_title":"🔴 손절 조건","sell_desc":"[손절 조건 1~2문장]"}`;
-  try {
-    const r = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'x-api-key': API_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json', 'anthropic-dangerous-direct-browser-access': 'true' },
-      body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 600, system: ctx, messages: [{ role: 'user', content: prompt }] })
-    });
-    const d = await r.json();
-    const text = d.content?.[0]?.text || '';
-    const match = text.match(/\{[\s\S]*\}/);
-    if (!match) return;
-    const ag = JSON.parse(match[0]);
-    if (ag.now_title)  { document.getElementById('ag-now-title').textContent  = ag.now_title;  document.getElementById('ag-now-desc').textContent  = ag.now_desc; }
-    if (ag.buy1_title) { document.getElementById('ag-buy1-title').textContent = ag.buy1_title; document.getElementById('ag-buy1-desc').textContent = ag.buy1_desc; }
-    if (ag.buy2_title) { document.getElementById('ag-buy2-title').textContent = ag.buy2_title; document.getElementById('ag-buy2-desc').textContent = ag.buy2_desc; }
-    if (ag.sell_title) { document.getElementById('ag-sell-title').textContent = ag.sell_title; document.getElementById('ag-sell-desc').textContent = ag.sell_desc; }
-  } catch(e) {}
-}
-if (!getKey()) document.getElementById('key-setup').style.display = 'block';
-initTDKeyUI();
 function recalcScorecard() {
-  const bmap = {'badge-g':1,'badge-y':0,'badge-r':-1,'badge-b':0};
-  function bval(id) {
-    const el = document.getElementById(id);
-    if (!el) return 0;
-    const cls = [...el.classList].find(c => c in bmap) || '';
-    return bmap[cls] || 0;
+  var bmap = {'badge-g':1,'badge-y':0,'badge-r':-1,'badge-b':0};
+  function bv(id) {
+    var el=document.getElementById(id); if(!el) return 0;
+    var cls = Array.from(el.classList).find(function(c){return c in bmap;});
+    return cls ? bmap[cls] : 0;
   }
-  const techIds  = ['badge-rsi','badge-ma','badge-mom','badge-vol','badge-pos'];
-  const macroIds = ['badge-vnm','badge-usdvnd','badge-usdcny','badge-dxy','badge-eem','badge-vix','badge-crude','badge-gold'];
-  const newsIds  = ['badge-fdi','badge-fii','badge-sbv','badge-trade','badge-china','badge-cpi','badge-semi','badge-fed','badge-gdp'];
-  const techScore  = techIds.reduce((s,id)  => s + bval(id)*1.5, 0);
-  const macroScore = macroIds.reduce((s,id) => s + bval(id)*1.0, 0);
-  const newsScore  = newsIds.reduce((s,id)  => s + bval(id)*0.8, 0);
-  const total = techScore + macroScore + newsScore;
-  const maxScore = techIds.length*1.5 + macroIds.length*1.0 + newsIds.length*0.8;
-  const pct = Math.max(0, Math.min(100, Math.round((total + maxScore) / (2*maxScore) * 100)));
-  let label, color, bg, emoji;
-  if (total >= maxScore*0.5)        { label='강매수';    color='#2d6a0a'; bg='#e8fde8'; emoji='🔥'; }
-  else if (total >= maxScore*0.15)  { label='매수 검토'; color='#2d8a4e'; bg='#f0faf0'; emoji='🟢'; }
-  else if (total >= -maxScore*0.15) { label='관망';      color='#BA7517'; bg='#fff8e1'; emoji='📌'; }
-  else if (total >= -maxScore*0.5)  { label='조심';      color='#c0392b'; bg='#fff0f0'; emoji='⚠️'; }
-  else                               { label='진입 자제'; color='#9b2020'; bg='#fde8e8'; emoji='🔴'; }
-  const eEmoji = document.getElementById('sc-emoji');
-  const ePct   = document.getElementById('sc-pct');
-  const eBar   = document.getElementById('sc-bar');
-  const eTech  = document.getElementById('sc-tech');
-  const eMacro = document.getElementById('sc-macro');
-  const eNews  = document.getElementById('sc-news');
-  if (eEmoji) { eEmoji.textContent = emoji+' '+label; eEmoji.style.color = color; }
-  if (ePct)   { ePct.textContent   = pct+'점';        ePct.style.color   = color; }
-  if (eBar)   { eBar.style.width   = pct+'%';         eBar.style.background = color; }
-  if (eTech)  { eTech.textContent  = (techScore>=0?'+':'')+techScore.toFixed(1);   eTech.style.color  = color; }
-  if (eMacro) { eMacro.textContent = (macroScore>=0?'+':'')+macroScore.toFixed(1); eMacro.style.color = color; }
-  if (eNews)  { eNews.textContent  = (newsScore>=0?'+':'')+newsScore.toFixed(1);   eNews.style.color  = color; }
+  var techIds  = ['badge-rsi','badge-ma','badge-mom','badge-vol','badge-pos'];
+  var macroIds = ['badge-vnm','badge-vnd','badge-dxy','badge-eem','badge-vix','badge-crude'];
+  var newsIds  = ['badge-fii','badge-sbv','badge-cpi','badge-gdp','badge-fed','badge-trade','badge-geo'];
+  var tS = techIds.reduce(function(s,id){return s+bv(id)*1.5;},0);
+  var mS = macroIds.reduce(function(s,id){return s+bv(id)*1.0;},0);
+  var nS = newsIds.reduce(function(s,id){return s+bv(id)*0.8;},0);
+  var total = tS+mS+nS;
+  var max = techIds.length*1.5+macroIds.length*1.0+newsIds.length*0.8;
+  var pct = Math.max(0,Math.min(100,Math.round((total+max)/(2*max)*100)));
+  var label,color,emoji;
+  if (total>=max*0.5)       {label='강매수';   color='#2d6a0a';emoji='🔥';}
+  else if(total>=max*0.15)  {label='매수 검토';color='#2d8a4e';emoji='🟢';}
+  else if(total>=-max*0.15) {label='관망';     color='#BA7517';emoji='📌';}
+  else if(total>=-max*0.5)  {label='조심';     color='#c0392b';emoji='⚠️';}
+  else                       {label='진입 자제';color='#9b2020';emoji='🔴';}
+  document.getElementById('sc-emoji').textContent=emoji+' '+label; document.getElementById('sc-emoji').style.color=color;
+  document.getElementById('sc-pct').textContent=pct+'점'; document.getElementById('sc-pct').style.color=color;
+  document.getElementById('sc-bar').style.width=pct+'%'; document.getElementById('sc-bar').style.background=color;
+  document.getElementById('sc-tech').textContent=(tS>=0?'+':'')+tS.toFixed(1); document.getElementById('sc-tech').style.color=color;
+  document.getElementById('sc-macro').textContent=(mS>=0?'+':'')+mS.toFixed(1); document.getElementById('sc-macro').style.color=color;
+  document.getElementById('sc-news').textContent=(nS>=0?'+':'')+nS.toFixed(1); document.getElementById('sc-news').style.color=color;
 }
-recalcScorecard();
-fetchLiveData()
-  .then(data => { recalcScorecard(); updateActionGuide(data); })
-  .catch(() => recalcScorecard());
-setInterval(() => fetchLiveData()
-  .then(data => { recalcScorecard(); updateActionGuide(data); })
-  .catch(() => recalcScorecard()), 5*60*1000);
 
-function setQ(q) { document.getElementById('ai-q').value = q; }
+function ruleBasedAnalysis(liveData) {
+  var v = liveData&&liveData.vnm ? liveData.vnm : null;
+  var vix = (liveData&&liveData.vix&&liveData.vix.price) ? liveData.vix.price : 0;
+  var vnd = (liveData&&liveData.vnd&&liveData.vnd.price) ? liveData.vnd.price : 0;
+  var price = v ? v.price * VNM_SCALE : 0;
+  var pct = v ? v.pct : 0;
+  var pctStr = (pct>=0?'▲+':'▼')+Math.abs(pct).toFixed(2)+'%';
+
+  function badgeClass(id) {
+    var el = document.getElementById(id); if (!el) return '';
+    return Array.from(el.classList).find(function(c){return ['badge-g','badge-r','badge-y','badge-b'].indexOf(c)>=0;}) || '';
+  }
+  var maState  = (document.getElementById('badge-ma')  && document.getElementById('badge-ma').textContent)  || '';
+  var momState = (document.getElementById('badge-mom') && document.getElementById('badge-mom').textContent) || '';
+  var volState = (document.getElementById('badge-vol') && document.getElementById('badge-vol').textContent) || '';
+  var posState = (document.getElementById('badge-pos') && document.getElementById('badge-pos').textContent) || '';
+  var scLabel  = (document.getElementById('sc-emoji')  && document.getElementById('sc-emoji').textContent  || '').trim();
+  var scPct    = (document.getElementById('sc-pct')    && document.getElementById('sc-pct').textContent)    || '';
+  var maBadge  = badgeClass('badge-ma');
+  var vixState = vix > 28 ? '공포' : vix > 20 ? '주의' : '안정';
+
+  var now_title = '📌 지금 — '+(price ? fmt(price)+' ('+pctStr+')' : '분석');
+  var now_desc = price
+    ? 'VN-Index는 현재 '+fmt(price)+' ('+pctStr+') 수준이며, 종합 신호는 '+scLabel+' ('+scPct+')입니다. 미국 VIX '+(vix?vix.toFixed(1):'N/A')+' — '+vixState+' 상태로, '+(vix>28?'변동성이 높아 신규 진입에 주의가 필요합니다.':'변동성은 안정적입니다.')
+    : '데이터를 불러오는 중입니다. 잠시 후 다시 확인해주세요.';
+
+  function cleanTitle(t) { return (t||'').replace(/\[.*?\]\s*/g,'').replace(/\s*[-–]\s*\S+$/,'').trim(); }
+  var newsItems = window.__majorNewsItems || [];
+  var topTitles = newsItems.slice(0,5).map(function(n){return cleanTitle(n.ko||n.title);}).filter(Boolean);
+  var hasNews = topTitles.length > 0;
+
+  var allMacroIds = ['badge-vnm','badge-eem','badge-dxy','badge-vix','badge-crude','badge-fii','badge-sbv','badge-cpi','badge-gdp','badge-fed','badge-trade','badge-geo'];
+  var greenCount = 0, redCount = 0;
+  allMacroIds.forEach(function(id){
+    var cl = badgeClass(id);
+    if (cl==='badge-g') greenCount++;
+    else if (cl==='badge-r') redCount++;
+  });
+  var newsFavorable = greenCount > redCount;
+  var newsAdverse   = redCount > greenCount + 1;
+
+  var newsContext = hasNews ? topTitles.slice(0,2).join(' / ') : '';
+  var newsContext3 = hasNews ? topTitles.slice(0,3).join(', ') : '';
+
+  var buy1_price = price ? Math.round(price * (newsFavorable ? 0.97 : 0.95)) : null;
+  var buy1_news = hasNews
+    ? (newsFavorable ? '현재 뉴스 흐름('+topTitles[0]+')이 이어지는 동안은 눈림목 매수 유리.' : '뉴스 변화 확인 후 진입.')
+    : '';
+  var buy1_desc = buy1_price
+    ? 'VN-Index가 '+fmt(buy1_price)+' 이하로 하락하면 1차 분할매수 진입. 조건 ① 미국 VIX '+(vix?vix.toFixed(1):'20')+' 이하 유지 ② 이평선 지지 확인 ③ 외국인 순매도 급증 없을 것. '+buy1_news
+    : '데이터 로딩 후 조건이 계산됩니다.';
+
+  var buy2_price = price ? Math.round(price * (newsAdverse ? 0.88 : 0.91)) : null;
+  var buy2_news = newsAdverse
+    ? '악재 뉴스 지속 시 더 낙은 구간까지 기다리는 것이 유리.'
+    : 'RSI 30 이하 과매도 + 외국인 순매수 전환 시 적극 진입.';
+  var buy2_desc = buy2_price
+    ? '1차 매수 후 추가 '+(newsAdverse?'-7%':'-5%')+' 하락('+fmt(buy2_price)+' 부근)까지 오면 2차 분할매수. 조건 ① RSI 30 이하 과매도 ② 단기 반등 캔들 ③ 외국인 순매수 전환. '+buy2_news
+    : '데이터 로딩 후 조건이 계산됩니다.';
+
+  var sell_price = price ? Math.round(price * (newsAdverse ? 0.92 : 0.90)) : null;
+  var sell_desc = sell_price
+    ? '매수 평균가 대비 '+(newsAdverse?'-8%':'-10%')+' 이탈('+fmt(sell_price)+' 이하) 시 기계적 손절. 조기 손절 신호: 미국 VIX 30 이상 급등 / 외국인 대량 순매도 / SBV 예상 밖 금리 인상.'
+    : '매수 평균가 대비 -10% 이탈 시 기계적 손절 실행.';
+
+  var sc_desc = '이평선 '+(maState||'혼조')+', 4주 모멘텀 '+(momState||'계산 중')+', 미국 VIX '+(vix?vix.toFixed(1)+'('+vixState+')':'N/A')+', USD/VND ₫'+(vnd?fmt(vnd,0):'N/A')+'.'+(hasNews?' [최신 뉴스] '+newsContext+'.':'')+' '+scLabel+' 판단 — '+(maBadge==='badge-g'?'분할 매수 단계적 검토 가능.':maBadge==='badge-r'?'추세 회복 확인 후 진입 권장.':'관망하며 추가 신호 대기.');
+
+  var trendConclusion = maBadge==='badge-g'
+    ? (newsFavorable?'상승 추세 + 뉴스 호재 — 눈림목 매수 적극 검토':'상승 추세 유지 — 눈림목 매수 기회 탐색')
+    : maBadge==='badge-r'
+    ? (newsAdverse?'하락 추세 + 악재 우세 — 추가 하락 주의, 반등 확인 필수':'하락 추세 — 반등 확인 후 진입')
+    : (newsFavorable?'혼조이나 뉴스 우호적 — 추세 전환 신호 대기':'혼조 — 추세 전환 신호 대기');
+
+  var chart_analysis = [
+    '• 현재 지수: '+(price?fmt(price)+' ('+pctStr+')':'N/A')+' — '+(Math.abs(pct)<0.3?'보합':pct>0?'상승':'하락'),
+    '• 추세 (이평): '+(maState||'계산 중')+' / 변동성: '+(volState||'계산 중'),
+    '• 모멘텀: '+(momState||'계산 중')+' / 52주 위치: '+(posState||'계산 중'),
+    hasNews ? '• 주요 뉴스: '+newsContext3 : '',
+    '• 한 줄 결론: '+trendConclusion
+  ].filter(Boolean).join('\n\n');
+
+  return {now_title:now_title,now_desc:now_desc,buy1_title:'🟢 1차 매수 조건',buy1_desc:buy1_desc,buy2_title:'🟢 2차 매수 조건',buy2_desc:buy2_desc,sell_title:'🔴 손절 조건',sell_desc:sell_desc,sc_desc:sc_desc,chart_analysis:chart_analysis};
+}
+
+function applyAnalysis(ag) {
+  if (ag.now_title)      { document.getElementById('ag-now-title').textContent=ag.now_title; document.getElementById('ag-now-desc').textContent=ag.now_desc; }
+  if (ag.buy1_title)     { document.getElementById('ag-buy1-title').textContent=ag.buy1_title; document.getElementById('ag-buy1-desc').textContent=ag.buy1_desc; }
+  if (ag.buy2_title)     { document.getElementById('ag-buy2-title').textContent=ag.buy2_title; document.getElementById('ag-buy2-desc').textContent=ag.buy2_desc; }
+  if (ag.sell_title)     { document.getElementById('ag-sell-title').textContent=ag.sell_title; document.getElementById('ag-sell-desc').textContent=ag.sell_desc; }
+  if (ag.sc_desc)        { document.getElementById('sc-desc').textContent=ag.sc_desc; }
+  if (ag.chart_analysis) { document.getElementById('ai-chart-analysis').textContent=ag.chart_analysis; }
+}
+
+async function updateAI(liveData) {
+  var key = getKey();
+  if (!key) { applyAnalysis(ruleBasedAnalysis(liveData)); return; }
+
+  var v = liveData&&liveData.vnm ? liveData.vnm : null;
+  var sc = (document.getElementById('sc-emoji')&&document.getElementById('sc-emoji').textContent||'').trim();
+  var newsLines = (window.__newsForAnalysis||[]).slice(0,6).map(function(t){return '- '+t;}).join('\n');
+  var price = v ? v.price * VNM_SCALE : null;
+  var ctx = '당신은 10년차 베트남 주식시장 전문 애널리스트입니다.\n현재: VN-Index 매수 타이밍 관찰 중 (분할매수 예정, 손절 -10% 기준)\n\n[실시간 데이터]\nVN-Index: '+(price?fmt(price)+' ('+(v.pct>=0?'▲':'▼')+Math.abs(v.pct).toFixed(2)+'%)':'N/A')+'\nUSD/VND: '+(liveData&&liveData.vnd?'₫'+fmt(liveData.vnd.price,0):'N/A')+'\nUS VIX: '+(liveData&&liveData.vix?fmt(liveData.vix.price,1):'N/A')+'\n브렉트유: '+(liveData&&liveData.crude?'$'+fmt(liveData.crude.price,1):'N/A')+'\nEEM: '+(liveData&&liveData.eem?'$'+fmt(liveData.eem.price)+(liveData.eem.pct>=0?'+':'')+liveData.eem.pct.toFixed(2)+'%':'N/A')+'\n종합신호: '+sc+(newsLines?'\n\n[최신 뉴스 헤드라인]\n'+newsLines:'');
+
+  try {
+    var r = await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'x-api-key':key,'anthropic-version':'2023-06-01','content-type':'application/json','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:900,system:ctx,messages:[{role:'user',content:'아래 JSON 형식으로만 답하세요 (다른 텍스트 없이):\n{"now_title":"📌 지금 — [현황]","now_desc":"[2문장]","buy1_title":"🟢 1차 매수 조건","buy1_desc":"[2문장]","buy2_title":"🟢 2차 매수 조건","buy2_desc":"[2문장]","sell_title":"🔴 손절 조건","sell_desc":"[1~2문장]","sc_desc":"[종합 분석 2~3문장]","chart_analysis":"• 현재 지수: [가격] ([변화율]) — [한줄요약]\\n\\n• 추세 (이평): [분석]\\n\\n• 모멘텀: [분석]\\n\\n• 한 줄 결론: [결론]"}'}]})
+    });
+    var d = await r.json();
+    if (d.error) { console.warn('AI API 오류, 자동분석으로 대체:', d.error.message); applyAnalysis(ruleBasedAnalysis(liveData)); return; }
+    var text = d.content&&d.content[0]&&d.content[0].text||'';
+    var match = text.match(/\{[\s\S]*\}/);
+    if (!match) { applyAnalysis(ruleBasedAnalysis(liveData)); return; }
+    var ag = JSON.parse(match[0]);
+    applyAnalysis(ag);
+  } catch(e) { console.warn('AI error:', e); applyAnalysis(ruleBasedAnalysis(liveData)); }
+}
+
+function getKey() { return localStorage.getItem('anthropic_api_key')||''; }
+function saveKey() {
+  var k=document.getElementById('api-key-input').value.trim(); if(!k) return;
+  localStorage.setItem('anthropic_api_key',k);
+  document.getElementById('api-key-input').value='';
+  document.getElementById('key-setup').style.display='none';
+  document.getElementById('ai-resp').textContent='API 키가 저장디었어요.';
+}
+function toggleKeySetup() {
+  var el=document.getElementById('key-setup');
+  el.style.display=el.style.display==='none'?'block':'none';
+}
+function setQ(q) { document.getElementById('ai-q').value=q; }
 
 async function askAI() {
-  const q = document.getElementById('ai-q').value.trim();
-  if (!q) return;
-  const API_KEY = getKey();
-  if (!API_KEY) {
-    document.getElementById('key-setup').style.display = 'block';
-    document.getElementById('ai-resp').textContent = 'API 키를 먼저 입력해주세요.';
-    return;
-  }
-  const box = document.getElementById('ai-resp');
-  box.textContent = '분석 중...';
-
-  const _liveVN = (typeof _liveDataVN !== 'undefined' && _liveDataVN.vn) ? _liveDataVN.vn.toLocaleString('ko-KR',{maximumFractionDigits:2}) : '1,799.31';
-  const _liveVNPct = (typeof _liveDataVN !== 'undefined' && _liveDataVN.vnPct !== undefined) ? ((_liveDataVN.vnPct>=0)?'▲':'▼')+Math.abs(_liveDataVN.vnPct).toFixed(2)+'%' : '+0.43%';
-  const _scVN = document.getElementById('sc-emoji')?.textContent?.trim() || '';
-  const _todayVN = new Date().toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric'});
-  const ctx = `당신은 10년차 베트남 펀드 매니저입니다.
-현재 상황: 베트남 VN-Index 펀드 매수 전 관찰 중 (아직 미매수)
-투자 계획: 1차 2,000만원, 추가 2,000만원 분할, 손절 -10%
-오늘 날짜: ${_todayVN}
-
-[실시간 시장 데이터]
-- VN-Index: ${_liveVN} (${_liveVNPct})
-- USD/VND: 26,230동 / US VIX: 16.2 / 브렌트유: $83.6
-- 종합신호: ${_scVN}
-- FDI: FDI 43-35% 증가, 강한 자본유입 / 외국인: 외국인 자금 이탈, 주식서 이탈
-- SBV 금리: 금리 인상 압박, 성장 지원 고민 / 미국 연준: 연준 정책 불확실, 추이 주시
-- 미-베트남 무역: 강제노동 논란, 무역 리스크 / CPI: 인플레 상승, 통화 압박 증가
-
-3~5문장, 한국어, 마지막에 "이 답변은 참고용입니다" 짧게 명시.`;
-
+  var q=document.getElementById('ai-q').value.trim(); if(!q) return;
+  var key=getKey();
+  if (!key) { document.getElementById('key-setup').style.display='block'; document.getElementById('ai-resp').textContent='API 키를 먼저 입력해주세요.'; return; }
+  var box=document.getElementById('ai-resp'); box.textContent='분석 중...';
+  var sc=(document.getElementById('sc-emoji')&&document.getElementById('sc-emoji').textContent||'').trim();
+  var v=_liveData&&_liveData.vnm?_liveData.vnm:null;
+  var price = v ? v.price * VNM_SCALE : null;
+  var ctx='당신은 10년차 베트남 주식시장 전문 애널리스트입니다.\n오늘: '+new Date().toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric'})+'\nVN-Index: '+(price?fmt(price)+' ('+(v.pct>=0?'+':'')+v.pct.toFixed(2)+'%)':'N/A')+'\n종합신호: '+sc+'\n3~5문장, 한국어, 마지막에 "이 답변은 참고용입니다" 명시.';
   try {
-    const r = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': API_KEY,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true'
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 600,
-        system: ctx,
-        messages: [{ role: 'user', content: q }]
-      })
+    var r=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:600,system:ctx,messages:[{role:'user',content:q}]})
     });
-    const d = await r.json();
-    if (d.content?.[0]?.text) {
-      box.textContent = d.content[0].text;
-    } else {
-      box.textContent = '오류: ' + JSON.stringify(d.error || d);
+    var d=await r.json();
+    if (d.error) {
+      var msg=d.error.message||'';
+      if (msg.includes('credit')) box.textContent='⚠️ API 크레딧이 소진되었습니다. console.anthropic.com에서 크레딧을 충전해주세요.';
+      else box.textContent='API 오류: '+msg;
+      return;
     }
-  } catch(e) {
-    box.textContent = '네트워크 오류: ' + e.message;
-  }
+    box.textContent=d.content&&d.content[0]&&d.content[0].text||('오류: '+JSON.stringify(d.error||d));
+  } catch(e) { box.textContent='네트워크 오류: '+e.message; }
 }
 
-document.getElementById('ai-q').addEventListener('keydown', e => { if (e.key === 'Enter') askAI(); });
+document.getElementById('ai-q').addEventListener('keydown',function(e){if(e.key==='Enter')askAI();});
+if (!getKey()) document.getElementById('key-setup').style.display='block';
 
-window._charts = {};
-const PDATA_chartVN = {"name": "VN-Index", "sl": null, "d1": {"labels": ["09:00", "09:05", "09:10", "09:15", "09:20", "09:25", "09:30", "09:35", "09:40", "09:45", "09:50", "09:55", "10:00", "10:05", "10:10", "10:15", "10:20", "10:25", "10:30", "10:35", "10:40", "10:45", "10:50", "10:55", "11:00", "11:05", "11:10", "11:15", "11:20", "11:25", "11:30", "11:35", "11:40", "11:45", "11:50", "11:55", "12:00", "12:05", "12:10", "12:15", "12:20", "12:25", "12:30", "12:35", "12:40", "12:45", "12:50", "12:55", "13:00", "13:05", "13:10", "13:15", "13:20", "13:25", "13:30", "13:35", "13:40", "13:45", "13:50", "13:55", "14:00", "14:05", "14:10", "14:15", "14:20", "14:25", "14:30", "14:35", "14:40", "14:45", "14:50", "14:55"], "prices": [1800.67, 1799.47, 1802.91, 1806.12, 1808.4, 1809.25, 1806.34, 1804.29, 1797.73, 1797.21, 1796.63, 1793.04, 1793.87, 1783.0, 1781.91, 1780.85, 1777.72, 1778.08, 1779.04, 1786.93, 1789.76, 1792.26, 1792.67, 1791.97, 1795.94, 1792.55, 1790.33, 1794.17, 1794.1, 1794.37, 1794.58, 1794.58, 1794.58, 1794.58, 1794.58, 1794.58, 1794.58, 1794.58, 1794.58, 1794.58, 1794.58, 1794.58, 1794.58, 1794.58, 1794.58, 1794.58, 1794.58, 1794.58, 1791.82, 1792.79, 1797.24, 1798.41, 1801.06, 1800.58, 1799.88, 1798.41, 1795.47, 1794.43, 1793.35, 1795.41, 1797.01, 1796.35, 1795.32, 1795.02, 1795.29, 1797.45, 1798.12, 1797.37, 1798.94, 1799.31, 1799.31, 1799.31]}, "d5": {"labels": ["6/9", "6/10", "6/11", "6/12", "6/15"], "prices": [1758.6, 1768.53, 1791.37, 1768.53, 1799.31]}, "d30": {"labels": ["5/18", "5/19", "5/20", "5/21", "5/22", "5/26", "5/27", "5/28", "5/29", "6/1", "6/2", "6/3", "6/4", "6/5", "6/8", "6/9", "6/10", "6/11", "6/12", "6/15"], "prices": [1917.48, 1897.62, 1917.48, 1884.71, 1861.87, 1873.78, 1860.88, 1854.92, 1856.9, 1831.09, 1800.3, 1789.38, 1812.22, 1786.4, 1763.56, 1758.6, 1768.53, 1791.37, 1768.53, 1799.31]}, "mo3": {"labels": ["3/16", "3/23", "3/30", "4/6", "4/13", "4/20", "4/27", "5/4", "5/11", "5/18", "5/25", "6/1", "6/8", "6/15"], "prices": [1631.49, 1660.29, 1734.77, 1807.25, 1890.67, 1877.76, 1895.63, 1963.15, 1905.56, 1861.87, 1856.9, 1786.4, 1768.53, 1799.31]}, "mo6": {"labels": ["12/15", "12/22", "12/29", "1/5", "1/12", "1/19", "1/26", "2/2", "2/9", "2/16", "2/23", "3/2", "3/9", "3/16", "3/23", "3/30", "4/6", "4/13", "4/20", "4/27", "5/4", "5/11", "5/18", "5/25", "6/1", "6/8", "6/15"], "prices": [1822.35, 1823.34, 1897.62, 1914.5, 1959.18, 1928.4, 1893.64, 1790.37, 1875.77, 1915.49, 1894.64, 1732.78, 1659.3, 1631.49, 1660.29, 1734.77, 1807.25, 1890.67, 1877.76, 1895.63, 1963.15, 1905.56, 1861.87, 1856.9, 1786.4, 1768.53, 1799.31]}, "yr1": {"labels": ["6/16", "6/23", "6/30", "7/7", "7/14", "7/21", "7/28", "8/4", "8/11", "8/18", "8/25", "9/1", "9/8", "9/15", "9/22", "9/29", "10/6", "10/13", "10/20", "10/27", "11/3", "11/10", "11/17", "11/24", "12/1", "12/8", "12/15", "12/22", "12/29", "1/5", "1/12", "1/19", "1/26", "2/2", "2/9", "2/16", "2/23", "3/2", "3/9", "3/16", "3/23", "3/30", "4/6", "4/13", "4/20", "4/27", "5/4", "5/11", "5/18", "5/25", "6/1", "6/8", "6/15"], "prices": [1322.91, 1360.57, 1383.36, 1508.22, 1543.89, 1632.09, 1580.56, 1702.44, 1754.96, 1720.28, 1812.44, 1780.73, 1780.73, 1751.99, 1739.11, 1737.13, 1880.81, 1902.61, 1804.51, 1727.22, 1672.71, 1743.07, 1755.95, 1817.39, 1848.11, 1733.16, 1822.35, 1823.34, 1897.62, 1914.5, 1959.18, 1928.4, 1893.64, 1790.37, 1875.77, 1915.49, 1894.64, 1732.78, 1659.3, 1631.49, 1660.29, 1734.77, 1807.25, 1890.67, 1877.76, 1895.63, 1963.15, 1905.56, 1861.87, 1856.9, 1786.4, 1768.53, 1799.31]}};
-try {
-  window._charts['chartVN'] = {inst: initChart('chartVN', PDATA_chartVN, 'd1'), data: PDATA_chartVN};
-} catch(e) { console.warn('차트 초기화 실패:', e); document.querySelectorAll('.chart-wrap').forEach(el=>{if(!el.querySelector('canvas').dataset.done)el.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text2);font-size:12px;">⚠️ 차트 로딩 실패 (새로고침 해보세요)</div>'});}
+async function init() {
+  var chartData = await loadChart('d1');
+  if (chartData) renderChart(chartData.labels, chartData.prices);
+  var live = await fetchAllLive().catch(function(){return null;});
+  await fetchNews().catch(function(){});
+  await updateAI(live).catch(function(){});
+}
 
-// 페이지 열릴 때 신호 설명 자동 세팅
-// 종합 투자 신호 설명은 업데이트.py 실행 시 실제 지표 기반으로 자동 생성됩니다.
+init();
+setInterval(async function(){
+  var live=await fetchAllLive().catch(function(){return null;});
+  recalcScorecard();
+  delete _chartCache['d1'];
+},5*60*1000);
 </script>
 <script src="실시간.js"></script>
 </body>
