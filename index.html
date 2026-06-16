@@ -340,13 +340,20 @@ function renderChart(labels, prices) {
 }
 
 async function fetchYahoo(ticker, interval, range) {
-  try {
-    var url = 'https://query2.finance.yahoo.com/v8/finance/chart/'+ticker+'?interval='+interval+'&range='+range;
-    var r = await fetch('https://corsproxy.io/?'+encodeURIComponent(url));
-    if (!r.ok) return null;
-    var j = await r.json();
-    return j.chart.result[0];
-  } catch(e) { return null; }
+  var url = 'https://query2.finance.yahoo.com/v8/finance/chart/'+ticker+'?interval='+interval+'&range='+range;
+  var proxies = [
+    function(u){ return 'https://corsproxy.io/?'+encodeURIComponent(u); },
+    function(u){ return 'https://api.codetabs.com/v1/proxy?quest='+encodeURIComponent(u); },
+  ];
+  for (var i=0; i<proxies.length; i++) {
+    try {
+      var r = await fetch(proxies[i](url), {signal: AbortSignal.timeout(8000)});
+      if (!r.ok) continue;
+      var j = await r.json();
+      if (j.chart && j.chart.result && j.chart.result[0]) return j.chart.result[0];
+    } catch(e) {}
+  }
+  return null;
 }
 
 async function loadChart(period) {
@@ -399,7 +406,8 @@ function setBadge(id, text, cls) {
 }
 
 async function fetchQuote(ticker) {
-  var data = await fetchYahoo(ticker, '1d', '1d');
+  var data = await fetchYahoo(ticker, '1d', '5d');
+  if (!data) data = await fetchYahoo(ticker, '1wk', '1mo');
   if (!data) return null;
   var meta = data.meta;
   var price = meta.regularMarketPrice;
