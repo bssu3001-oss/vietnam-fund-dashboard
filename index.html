@@ -416,7 +416,7 @@ async function fetchQuote(ticker) {
 }
 
 async function fetchAllLive() {
-  var tickers = ['VNM','VND=X','DX-Y.NYB','EEM','^VIX','BZ=F'];
+  var tickers = ['VNM','USDVND=X','DX-Y.NYB','EEM','^VIX','BZ=F'];
   var results = await Promise.all(tickers.map(function(t){return fetchQuote(t).catch(function(){return null;});}));
   var vnm=results[0], vnd=results[1], dxy=results[2], eem=results[3], vix=results[4], crude=results[5];
 
@@ -742,6 +742,7 @@ if (!getKey()) document.getElementById('key-setup').style.display='block';
 
 async function init() {
   var chartData = await loadChart('d1');
+  if (!chartData) { chartData = await loadChart('d5'); }
   if (chartData) renderChart(chartData.labels, chartData.prices);
   var live = await fetchAllLive().catch(function(){return null;});
   await fetchNews().catch(function(){});
