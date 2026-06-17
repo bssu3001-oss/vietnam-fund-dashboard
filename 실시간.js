@@ -309,14 +309,26 @@
   async function fetchNewsItems() {
     var sets = await Promise.all(NEWS_FEEDS.map(async function(f) {
       try {
+        var items = [];
         var xml = await proxyText(f.url, 10000);
-        if (!xml) return [];
-        var doc = new DOMParser().parseFromString(xml, 'text/xml');
-        return Array.from(doc.querySelectorAll('item')).slice(0, 12).map(function(item) {
-          var g = function(tag){ return item.getElementsByTagName(tag)[0]?.textContent?.trim() || ''; };
-          var title = g('title'), link = g('link') || g('guid'), pubDate = g('pubDate');
-          return { title: title, link: link, source: f.source, isKo: !!f.isKo, ts: pubDate ? (new Date(pubDate).getTime() || 0) / 1000 : 0 };
-        }).filter(function(x){ return x.title && x.link.startsWith('http'); });
+        if (xml) {
+          var doc = new DOMParser().parseFromString(xml, 'text/xml');
+          items = Array.from(doc.querySelectorAll('item')).slice(0, 12).map(function(item) {
+            var g = function(tag){ return item.getElementsByTagName(tag)[0]?.textContent?.trim() || ''; };
+            var title = g('title'), link = g('link') || g('guid'), pubDate = g('pubDate');
+            return { title: title, link: link, source: f.source, isKo: !!f.isKo, ts: pubDate ? (new Date(pubDate).getTime() || 0) / 1000 : 0 };
+          }).filter(function(x){ return x.title && x.link.startsWith('http'); });
+        }
+        if (!items.length) {
+          var r = await fetch('https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(f.url), { signal: AbortSignal.timeout(10000) });
+          if (r.ok) {
+            var d = await r.json();
+            items = (d.items || []).slice(0, 12).map(function(it) {
+              return { title: (it.title || '').trim(), link: (it.link || it.guid || '').trim(), source: f.source, isKo: !!f.isKo, ts: it.pubDate ? (new Date(it.pubDate).getTime() || 0) / 1000 : 0 };
+            }).filter(function(x){ return x.title && x.link.startsWith('http'); });
+          }
+        }
+        return items;
       } catch (e) { return []; }
     }));
 
