@@ -309,25 +309,26 @@
   async function fetchNewsItems() {
     var sets = await Promise.all(NEWS_FEEDS.map(async function(f) {
       try {
-        var items = [];
-        var xml = await proxyText(f.url, 10000);
-        if (xml) {
-          var doc = new DOMParser().parseFromString(xml, 'text/xml');
-          items = Array.from(doc.querySelectorAll('item')).slice(0, 12).map(function(item) {
-            var g = function(tag){ return item.getElementsByTagName(tag)[0]?.textContent?.trim() || ''; };
-            var title = g('title'), link = g('link') || g('guid'), pubDate = g('pubDate');
-            return { title: title, link: link, source: f.source, isKo: !!f.isKo, ts: pubDate ? (new Date(pubDate).getTime() || 0) / 1000 : 0 };
-          }).filter(function(x){ return x.title && x.link.startsWith('http'); });
-        }
-        if (!items.length) {
-          var r = await fetch('https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(f.url), { signal: AbortSignal.timeout(10000) });
-          if (r.ok) {
-            var d = await r.json();
-            items = (d.items || []).slice(0, 12).map(function(it) {
-              return { title: (it.title || '').trim(), link: (it.link || it.guid || '').trim(), source: f.source, isKo: !!f.isKo, ts: it.pubDate ? (new Date(it.pubDate).getTime() || 0) / 1000 : 0 };
-            }).filter(function(x){ return x.title && x.link.startsWith('http'); });
-          }
-        }
+        var items = await new Promise(function(resolve) {
+          var done = false, pending = 2;
+          var tryResolve = function(r) { if (!done && r.length) { done = true; resolve(r); } if (--pending === 0 && !done) resolve([]); };
+          proxyText(f.url, 10000).then(function(xml) {
+            if (!xml) return tryResolve([]);
+            var doc = new DOMParser().parseFromString(xml, 'text/xml');
+            tryResolve(Array.from(doc.querySelectorAll('item')).slice(0, 12).map(function(item) {
+              var g = function(tag){ return item.getElementsByTagName(tag)[0]?.textContent?.trim() || ''; };
+              var pubDate = g('pubDate');
+              return { title: g('title'), link: g('link') || g('guid'), source: f.source, isKo: !!f.isKo, ts: pubDate ? (new Date(pubDate).getTime() || 0) / 1000 : 0 };
+            }).filter(function(x){ return x.title && x.link.startsWith('http'); }));
+          }).catch(function(){ tryResolve([]); });
+          fetch('https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(f.url), { signal: AbortSignal.timeout(10000) })
+            .then(function(r){ return r.ok ? r.json() : null; })
+            .then(function(d) {
+              tryResolve(!d ? [] : (d.items || []).slice(0, 12).map(function(it) {
+                return { title: (it.title || '').trim(), link: (it.link || it.guid || '').trim(), source: f.source, isKo: !!f.isKo, ts: it.pubDate ? (new Date(it.pubDate).getTime() || 0) / 1000 : 0 };
+              }).filter(function(x){ return x.title && x.link.startsWith('http'); }));
+            }).catch(function(){ tryResolve([]); });
+        });
         return items;
       } catch (e) { return []; }
     }));
