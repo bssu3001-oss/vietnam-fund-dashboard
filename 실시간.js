@@ -83,7 +83,7 @@
 
   // 구간 정의 (대시보드 탭과 1:1)
   var RANGE_DEFS = [
-    { key: 'd1',  interval: '5m',  range: '1d',  mode: 'time' },
+    { key: 'd1',  interval: '1d',  range: '5d',  mode: 'date' },
     { key: 'd5',  interval: '1d',  range: '5d',  mode: 'date' },
     { key: 'd30', interval: '1d',  range: '1mo', mode: 'date' },
     { key: 'mo3', interval: '1d',  range: '3mo', mode: 'date' },
@@ -517,11 +517,24 @@
     try { updateNewsBadgesFromKorean(); } catch (e) {}
 
     try {
-      var c = window._charts && window._charts['chartVNINDEX'];
-      var weekly = c && c.data && c.data.yr1 && c.data.yr1.prices;
-      if (weekly) {
-        updateTechnicals(vnmMeta, weekly);
-        buildAnalysis('VN-Index', weekly, c.data.d5 && c.data.d5.prices, vnmMeta);
+      var url1y = 'https://query2.finance.yahoo.com/v8/finance/chart/VNM?interval=1wk&range=1y';
+      var j1y = await proxyJSON(url1y, 9000);
+      if (j1y && j1y.chart && j1y.chart.result && j1y.chart.result[0]) {
+        var res1y = j1y.chart.result[0];
+        var rawWeekly = res1y.indicators.quote[0].close || [];
+        var weekly = rawWeekly.filter(function(p){ return p != null; }).map(function(p){ return p * VNM_SCALE; });
+        if (!vnmMeta) vnmMeta = res1y.meta;
+        if (weekly.length >= 6) {
+          updateTechnicals(vnmMeta, weekly);
+          var url5d = 'https://query2.finance.yahoo.com/v8/finance/chart/VNM?interval=1d&range=5d';
+          var j5d = await proxyJSON(url5d, 6000);
+          var d5prices = null;
+          if (j5d && j5d.chart && j5d.chart.result && j5d.chart.result[0]) {
+            var raw5d = j5d.chart.result[0].indicators.quote[0].close || [];
+            d5prices = raw5d.filter(function(p){ return p != null; }).map(function(p){ return p * VNM_SCALE; });
+          }
+          buildAnalysis('VN-Index', weekly, d5prices, vnmMeta);
+        }
       }
     } catch (e) {}
 

@@ -358,7 +358,7 @@ async function fetchYahoo(ticker, interval, range) {
 
 async function loadChart(period) {
   if (_chartCache[period]) return _chartCache[period];
-  var cfg = {d1:{i:'5m',r:'1d'},d5:{i:'1d',r:'5d'},d30:{i:'1d',r:'1mo'},mo3:{i:'1d',r:'3mo'},mo6:{i:'1wk',r:'6mo'},yr1:{i:'1wk',r:'1y'}};
+  var cfg = {d1:{i:'1d',r:'5d'},d5:{i:'1d',r:'5d'},d30:{i:'1d',r:'1mo'},mo3:{i:'1d',r:'3mo'},mo6:{i:'1wk',r:'6mo'},yr1:{i:'1wk',r:'1y'}};
   var c = cfg[period];
   var data = await fetchYahoo('VNM', c.i, c.r);
   if (!data) return null;
@@ -368,9 +368,7 @@ async function loadChart(period) {
   ts.forEach(function(t,i) {
     if (closes[i] == null) return;
     var d = new Date(t*1000);
-    var lbl = period==='d1'
-      ? d.toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})
-      : (d.getMonth()+1)+'/'+d.getDate();
+    var lbl = (d.getMonth()+1)+'/'+d.getDate();
     labels.push(lbl);
     prices.push(Math.round(closes[i] * VNM_SCALE));
   });
@@ -411,7 +409,7 @@ async function fetchQuote(ticker) {
   if (!data) return null;
   var meta = data.meta;
   var price = meta.regularMarketPrice;
-  var prev = meta.chartPreviousClose || meta.previousClose || price;
+  var prev = meta.regularMarketPreviousClose || meta.chartPreviousClose || meta.previousClose || price;
   return {
     price:price, prev:prev,
     pct: prev?(price-prev)/prev*100:0,
@@ -746,7 +744,7 @@ async function askAI() {
 }
 
 document.getElementById('ai-q').addEventListener('keydown',function(e){if(e.key==='Enter')askAI();});
-if (!getKey()) document.getElementById('key-setup').style.display='block';
+// API 키 폼은 사용자가 '키 변경' 버튼을 클릭할 때만 표시
 
 async function init() {
   var chartData = await loadChart('d1');

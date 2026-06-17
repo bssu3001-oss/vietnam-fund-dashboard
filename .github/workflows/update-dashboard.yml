@@ -1,11 +1,9 @@
-name: 베트남 대시보드 자동 업데이트
+name: 베트남 대시보드 자동 업데이트 (비활성화됨)
+# ⚠️ 이 워크플로우는 비활성화됨. deploy.yml + 알림체크.py 가 대신 처리.
+# 이 파일을 활성화하면 index.html이 구버전(TwelveData)으로 덮어씌워짐.
 
 on:
-  schedule:
-    - cron: '0 0 * * 1-5'    # 평일 오전 9시 KST
-    - cron: '0 5 * * 1-5'    # 평일 오후 2시 KST
-    - cron: '30 10 * * 1-5'  # 평일 오후 7시 30분 KST
-  workflow_dispatch:  # 수동 실행도 가능
+  workflow_dispatch:  # 수동 실행만 가능 (스케줄 제거)
 
 concurrency:
   group: vn-dashboard-update
