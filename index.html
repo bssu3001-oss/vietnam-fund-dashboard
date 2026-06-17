@@ -462,6 +462,9 @@ async function fetchAllLive() {
   if (vnm) {
     var cV = vnm.pct>=0.5?'badge-g':vnm.pct<=-0.5?'badge-r':'badge-b';
     setBadge('badge-vnm','$'+fmt(vnm.price)+' '+arrow(vnm.pct)+Math.abs(vnm.pct).toFixed(2)+'% — '+(vnm.pct>=0.5?'상승':vnm.pct<=-0.5?'하락':'보합'),cV);
+    var cf=vnm.pct>=0.5?'badge-g':vnm.pct<=-0.5?'badge-r':'badge-b';
+    var lf=vnm.pct>=0.5?'외국인 순유입':vnm.pct<=-0.5?'외국인 순유출':'외국인 보합';
+    setBadge('badge-fii','VNM '+arrow(vnm.pct)+Math.abs(vnm.pct).toFixed(2)+'% — '+lf,cf);
   }
   if (vnd) {
     var cD = vnd.price<25000?'badge-g':vnd.price>26000?'badge-r':'badge-y';
