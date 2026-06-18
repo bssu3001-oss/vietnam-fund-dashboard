@@ -124,7 +124,7 @@ body { font-family: -apple-system, 'Apple SD Gothic Neo', sans-serif; background
 
   <div class="section-label">VN-Index (호찌민증권거래소)</div>
   <div class="main-header">
-    <div class="idx-name">VN-Index (VNM ETF × 99.5744 추정)</div>
+    <div class="idx-name">VN-Index (호찌민 VNI)</div>
     <div class="idx-price" id="live-vnindex-price">--</div>
     <div class="idx-change" id="live-vnindex-change">--</div>
     <div class="ohlc-row">
@@ -153,7 +153,7 @@ body { font-family: -apple-system, 'Apple SD Gothic Neo', sans-serif; background
   </div>
   <div class="card" style="padding:12px 12px 10px;">
     <div class="chart-wrap"><canvas id="chartVNINDEX"></canvas></div>
-    <div style="font-size:11px;color:var(--text3);margin-top:-4px;margin-bottom:4px;">* VNM ETF × 99.5744 기준 VN-Index 추정치 (Yahoo Finance 실시간)</div>
+    <div style="font-size:11px;color:var(--text3);margin-top:-4px;margin-bottom:4px;">* VNM ETF 기반 추정치 (시장데이터 기준 동적 환산)</div>
   </div>
   <div class="card" style="margin-top:-4px;">
     <div class="card-title" style="font-size:12px;color:var(--text2);font-weight:500;margin-bottom:10px;">&#x1F4CA; AI 차트 분석 — VN-Index</div>
@@ -301,7 +301,7 @@ function makeDatasets(prices, period) {
     pointRadius:0,fill:false,tension:0.3,spanGaps:false};
   });
   return [{
-    label:'VN-Index (추정)',data:prices,borderColor:'#DA251D',
+    label:'VN-Index',data:prices,borderColor:'#DA251D',
     backgroundColor:'rgba(218,37,29,0.06)',borderWidth:2,
     pointRadius:0,pointHoverRadius:4,fill:true,tension:0.3
   }].concat(maDs);
@@ -511,7 +511,7 @@ async function fetchAllLive() {
       vol==null?'badge-b':vol>3?'badge-r':vol>1.5?'badge-y':'badge-g');
     if (vnm&&vnm.high52) {
       var high52 = vnm.high52 * VNM_SCALE;
-      var low52  = vnm.low52  * VNM_SCALE;
+      var low52  = vnm.low52 * VNM_SCALE;
       var belowHigh=(high52-cur)/high52*100;
       var aboveLow=low52?(cur-low52)/low52*100:null;
       setBadge('badge-pos','고점 대비 -'+belowHigh.toFixed(1)+'% / 저점 대비 +'+(aboveLow?aboveLow.toFixed(1):'--')+'%',
@@ -782,6 +782,20 @@ document.getElementById('ai-q').addEventListener('keydown',function(e){if(e.key=
 // API 키 폼은 사용자가 '키 변경' 버튼을 클릭할 때만 표시
 
 async function init() {
+  // 시장데이터.json에서 실제 VN-Index 값 읽어서 동적 스케일 계산
+  try {
+    var md = await fetch('시장데이터.json?t=' + Date.now());
+    if (md.ok) {
+      var mdj = await md.json();
+      if (mdj && mdj.vnindex > 500) {
+        var vnmNow = await fetchYahoo('VNM', '1d', '1d');
+        if (vnmNow && vnmNow.price) {
+          VNM_SCALE = mdj.vnindex / vnmNow.price;
+          console.log('[VNM_SCALE] 동적 계산:', VNM_SCALE.toFixed(4));
+        }
+      }
+    }
+  } catch (e) {}
   var chartData = await loadChart('d1');
   if (!chartData) { chartData = await loadChart('d5'); }
   if (chartData) renderChart(chartData.labels, chartData.prices);

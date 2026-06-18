@@ -8,7 +8,8 @@
 (function () {
   'use strict';
 
-  var VNM_SCALE = 99.5744;
+  var VNM_SCALE = 99.5744; // 시장데이터.json 로드 후 동적으로 업데이트됨
+  var _cachedVnindex = null; // 시장데이터.json에서 읽은 실제 VN-Index 값
 
   // ── 여러 CORS 프록시를 순서대로 시도 (하나 막혀도 다음으로) ──
   var PROXIES = [
@@ -465,6 +466,7 @@
       if (!res.ok) return;
       var d = await res.json();
       if (!d || !d.vnindex) return;
+      _cachedVnindex = d.vnindex;
 
       var scEmoji = document.getElementById('sc-emoji');
       var scPct   = document.getElementById('sc-pct');
@@ -512,6 +514,18 @@
   // ── 전체 실행 ──
   async function runRealtime() {
     await loadCachedMarketData();
+
+    // VNM ETF 현재가 가져와서 동적 스케일 계산
+    try {
+      var vnmNow = await proxyJSON('https://query2.finance.yahoo.com/v8/finance/chart/VNM?interval=1d&range=1d', 6000);
+      if (vnmNow && vnmNow.chart && vnmNow.chart.result) {
+        var vnmPrice = vnmNow.chart.result[0].meta.regularMarketPrice;
+        if (vnmPrice && _cachedVnindex && _cachedVnindex > 500) {
+          VNM_SCALE = _cachedVnindex / vnmPrice;
+          console.log('[VNM_SCALE] 동적 계산:', VNM_SCALE.toFixed(4), '(VN-Index', _cachedVnindex, '/ VNM', vnmPrice, ')');
+        }
+      }
+    } catch (e) {}
 
     var vnmMeta = null;
     try {
