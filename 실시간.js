@@ -381,10 +381,31 @@
 
   // ── 한국어 뉴스 키워드로 뉴스 배지 자동 분류 (API 키 불필요) ──
   function updateNewsBadgesFromKorean() {
-    var items = window.__majorNewsItems || [];
+    var items = (window.__majorNewsItems || []).length
+      ? (window.__majorNewsItems || [])
+      : (window.__newsForAnalysis || []).map(function(t){ return { ko: t, title: t }; });
     if (!items.length) return;
     var all = items.map(function(n){ return n.ko || n.title || ''; }).join(' ');
 
+    var relKw = {
+      'badge-sbv':   ['sbv','금리','기준금리','긴축','완화','피벗','통화정책'],
+      'badge-cpi':   ['물가','cpi','인플레','소비자물가','인플레이션'],
+      'badge-gdp':   ['gdp','성장률','경제성장','경기','성장'],
+      'badge-fed':   ['연준','fed','파월','fomc','달러','금리'],
+      'badge-trade': ['무역','관세','tariff','수출','수입','통상','미국'],
+      'badge-geo':   ['전쟁','분쟁','지정학','휴전','군사','중국'],
+    };
+    function cleanT(t) { return (t||'').replace(/\[.*?\]\s*/,'').replace(/\s*[-–]\s*\S+$/, '').trim(); }
+    function trimT(t) { return t.length > 30 ? t.slice(0, 30) + '…' : t; }
+    var latestHeadline = items.length ? trimT(cleanT(items[0].ko || items[0].title || '')) : null;
+    function findRelated(searchKws) {
+      for (var i=0; i<searchKws.length; i++) {
+        var kw = searchKws[i];
+        var found = items.find(function(n){ return (n.ko || n.title || '').toLowerCase().includes(kw.toLowerCase()); });
+        if (found) return trimT(cleanT(found.ko || found.title || ''));
+      }
+      return null;
+    }
     function ko(id, gKw, rKw, gT, rT, nT) {
       var isG = gKw.some(function(k){ return all.includes(k); });
       var isR = rKw.some(function(k){ return all.includes(k); });
@@ -392,7 +413,7 @@
       if      (isG && !isR) { cls = 'badge-g'; text = gT; }
       else if (isR && !isG) { cls = 'badge-r'; text = rT; }
       else if (isG && isR)  { cls = 'badge-y'; text = nT; }
-      else                  { cls = 'badge-b'; text = '뉴스 없음'; }
+      else                  { var _h = findRelated(relKw[id] || []); if (!_h) { continue; } cls = 'badge-b'; text = _h; }
       var el = document.getElementById(id);
       if (el) { el.textContent = text; el.className = 'badge ' + cls; }
     }

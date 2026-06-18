@@ -555,6 +555,7 @@ async function fetchNews() {
   }
   window.__newsForAnalysis = allTitles;
   recalcScorecard();
+  if (typeof updateNewsBadgesFromKorean === 'function') try { updateNewsBadgesFromKorean(); } catch(e) {}
 }
 
 function buildChecklist() {
@@ -811,6 +812,6 @@ setInterval(async function(){
   delete _chartCache['d1'];
 },5*60*1000);
 </script>
-<script src="실시간.js"></script>
+<script src="실시간.js?v=20260619"></script>
 </body>
 </html>
