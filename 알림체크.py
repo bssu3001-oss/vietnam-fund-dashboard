@@ -98,24 +98,49 @@ def kakao_send(access_token, text):
 
 # ── 시장 데이터 수집 ──
 def fetch_market_data():
-    # VNM ETF 데이터 수집 후 VNM_SCALE 곱해서 VN-Index 추정
+    # ^VNINDEX.VN으로 실제 VN-Index 현재가 먼저 시도, 실패 시 VNM×동적스케일 사용
     ticker = yf.Ticker("VNM")
     hist = ticker.history(period="1y", interval="1wk")
     vnm_prices = [float(r["Close"]) for _, r in hist.iterrows() if not r.isnull()["Close"]]
-    prices = [p * VNM_SCALE for p in vnm_prices]
 
-    # 전일 대비 등락률
+    # 동적 스케일 계산: ^VNINDEX.VN 실제가 / VNM 현재가
+    scale = VNM_SCALE
+    vnm_current = None
+    vnm_prev = None
     try:
         fi = ticker.fast_info
         vnm_current = fi.last_price
         vnm_prev = fi.previous_close
-        current = vnm_current * VNM_SCALE
-        prev_close = vnm_prev * VNM_SCALE
-        pct = (current - prev_close) / prev_close * 100
     except Exception:
-        current = prices[-1]
-        prev_close = prices[-2] if len(prices) >= 2 else current
-        pct = (current - prev_close) / prev_close * 100
+        pass
+
+    try:
+        vn_ticker = yf.Ticker("^VNINDEX.VN")
+        vn_fi = vn_ticker.fast_info
+        vn_price = vn_fi.last_price
+        vn_prev  = vn_fi.previous_close
+        if vn_price and vn_price > 500 and vnm_current:
+            scale = vn_price / vnm_current
+            print(f"  ^VNINDEX.VN 직접: {vn_price:,.1f} (스케일 {scale:.4f})")
+            current    = vn_price
+            prev_close = vn_prev if vn_prev else (vnm_prev * scale if vnm_prev else current)
+            pct = (current - prev_close) / prev_close * 100
+        else:
+            raise ValueError("VN-Index 직접 가져오기 실패")
+    except Exception:
+        # 폴백: VNM ETF × 동적 스케일
+        if vnm_current:
+            current    = vnm_current * scale
+            prev_close = (vnm_prev * scale) if vnm_prev else current
+            pct = (current - prev_close) / prev_close * 100
+            print(f"  VNM ETF 폴백: VNM {vnm_current} × {scale:.4f} = {current:,.1f}")
+        else:
+            prices_tmp = [p * scale for p in vnm_prices]
+            current    = prices_tmp[-1]
+            prev_close = prices_tmp[-2] if len(prices_tmp) >= 2 else current
+            pct = (current - prev_close) / prev_close * 100
+
+    prices = [p * scale for p in vnm_prices]
 
     ma5  = sum(prices[-5:])  / min(5,  len(prices))
     ma13 = sum(prices[-13:]) / min(13, len(prices))
