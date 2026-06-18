@@ -406,6 +406,15 @@
       }
       return null;
     }
+    var defaultLabels = {
+      'badge-sbv':   'SBV 정책 관망',
+      'badge-cpi':   '물가 혼조',
+      'badge-gdp':   'GDP 관망',
+      'badge-fed':   '연준 불확실',
+      'badge-trade': '무역 주시',
+      'badge-geo':   '지정학 관망'
+    };
+
     function ko(id, gKw, rKw, gT, rT, nT) {
       var isG = gKw.some(function(k){ return all.includes(k); });
       var isR = rKw.some(function(k){ return all.includes(k); });
@@ -413,7 +422,7 @@
       if      (isG && !isR) { cls = 'badge-g'; text = gT; }
       else if (isR && !isG) { cls = 'badge-r'; text = rT; }
       else if (isG && isR)  { cls = 'badge-y'; text = nT; }
-      else                  { var _h = findRelated(relKw[id] || []); if (!_h) { continue; } cls = 'badge-b'; text = _h; }
+      else { var _h = findRelated(relKw[id] || []); if (_h) { cls = 'badge-b'; text = _h; } else if (defaultLabels[id]) { cls = 'badge-y'; text = defaultLabels[id]; } else { return; } }
       var el = document.getElementById(id);
       if (el) { el.textContent = text; el.className = 'badge ' + cls; }
     }
