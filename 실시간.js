@@ -171,7 +171,7 @@
     const all = items.map(n => n.ko || n.title || '').join(' ');
 
     function ko(id, gKw, rKw, gT, rT, nT) {
-      if (hasKey) return; // AI가 처리하므로 skip
+      // 키워드 기반으로 항상 먼저 세팅 (API 키 있어도) → AI 성공 시 덮어씀
       const isG = gKw.some(k => all.includes(k));
       const isR = rKw.some(k => all.includes(k));
       let cls, text;
