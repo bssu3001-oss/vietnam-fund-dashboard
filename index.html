@@ -439,9 +439,8 @@ function fetchAllLive() {
     return fetch('https://raw.githubusercontent.com/bssu3001-oss/us-market-dashboard/main/'+encodeURIComponent('시장데이터.json')).then(function(r){return r.ok?r.json():null;}).catch(function(){return null;})
     .then(function(gj) {
       if (gj) {
+        // EEM만 단일소스 정규화. VIX·DXY는 라이브 유지
         if(gj.eem!=null) eem = mk(gj.eem, gj.eem_pct);
-        if(gj.vix!=null) vix = mk(gj.vix, 0);
-        if(gj.dxy!=null) dxy = mk(gj.dxy, 0);
       }
       return fetch('시장데이터.json?_='+Date.now()).then(function(r){return r.ok?r.json():null;}).catch(function(){return null;});
     })
