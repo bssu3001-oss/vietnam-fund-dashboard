@@ -273,34 +273,42 @@
       } catch(e) {}
 
       // 배지 초기값 (실시간 데이터 전까지 보여줄 캐시값)
+      // 캐시는 아직 로딩 중인 배지만 채움 → 이미 들어온 라이브 값을 덮어쓰지 않음
+      function setBadgeC(id, text, cls) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        if (!(el.classList.contains('badge-b') || /로딩/.test(el.textContent))) return;
+        el.textContent = text;
+        el.className = 'badge ' + cls;
+      }
       const ma = d.ma_signal || '';
-      setBadge('badge-ma',
+      setBadgeC('badge-ma',
         ma.includes('정배열') ? '정배열(상승)' : ma.includes('역배열') ? '역배열(하락)' : '혼조',
         ma.includes('정배열') ? 'badge-g' : ma.includes('역배열') ? 'badge-r' : 'badge-y');
 
       const rsi = d.rsi || 50;
-      setBadge('badge-rsi',
+      setBadgeC('badge-rsi',
         `RSI ${rsi} — ${rsi <= 40 ? '과매도(반등 기대)' : rsi >= 70 ? '과열' : '중립'}`,
         rsi <= 40 ? 'badge-g' : rsi >= 70 ? 'badge-r' : 'badge-y');
 
       const mom = d.mom4 || 0;
-      setBadge('badge-mom',
+      setBadgeC('badge-mom',
         mom >= 0 ? `▲ ${Math.abs(mom).toFixed(1)}% (4주 변화)` : `▼ ${Math.abs(mom).toFixed(1)}% (4주 변화)`,
         mom >= 2 ? 'badge-g' : mom <= -2 ? 'badge-r' : 'badge-y');
 
       const fhi = d.from_hi || 0;
-      setBadge('badge-pos',
+      setBadgeC('badge-pos',
         `고점 대비 ${fhi.toFixed(1)}%`,
         fhi <= -20 ? 'badge-g' : fhi >= -3 ? 'badge-r' : 'badge-y');
 
       const vix_u = d.us_vix || 0;
-      if (vix_u) setBadge('badge-vix', `US VIX ${vix_u} — ${vix_u < 18 ? '안정' : vix_u > 25 ? '공포' : '불안'}`, vix_u < 18 ? 'badge-g' : vix_u > 25 ? 'badge-r' : 'badge-y');
+      if (vix_u) setBadgeC('badge-vix', `US VIX ${vix_u} — ${vix_u < 18 ? '안정' : vix_u > 25 ? '공포' : '불안'}`, vix_u < 18 ? 'badge-g' : vix_u > 25 ? 'badge-r' : 'badge-y');
 
       const crude = d.crude || 0;
-      if (crude) setBadge('badge-crude', `$${crude} — ${crude > 90 ? '고유가(부담)' : crude > 80 ? '보통' : '저유가(호재)'}`, crude > 90 ? 'badge-r' : crude > 80 ? 'badge-y' : 'badge-g');
+      if (crude) setBadgeC('badge-crude', `$${crude} — ${crude > 90 ? '고유가(부담)' : crude > 80 ? '보통' : '저유가(호재)'}`, crude > 90 ? 'badge-r' : crude > 80 ? 'badge-y' : 'badge-g');
 
       const vnd = d.vnd || 0;
-      if (vnd) setBadge('badge-usdvnd', `₫${vnd.toLocaleString()} — ${vnd > 26500 ? '동 급락' : vnd > 25500 ? '동 약세' : '안정'}`, vnd > 26500 ? 'badge-r' : vnd > 25500 ? 'badge-y' : 'badge-g');
+      if (vnd) setBadgeC('badge-usdvnd', `₫${vnd.toLocaleString()} — ${vnd > 26500 ? '동 급락' : vnd > 25500 ? '동 약세' : '안정'}`, vnd > 26500 ? 'badge-r' : vnd > 25500 ? 'badge-y' : 'badge-g');
 
       // 종합신호 초기값
       const scEmoji = document.getElementById('sc-emoji');
