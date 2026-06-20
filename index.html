@@ -434,20 +434,25 @@ function fetchAllLive() {
   return Promise.all(tickers.map(function(t){ return fetchQuote(t).catch(function(){return null;}); })).then(function(results) {
     var vnm=results[0], usdvnd=results[1], usdcny=results[2], dxy=results[3], eem=results[4], vix=results[5], crude=results[6], gold=results[7];
 
-    // 프록시 실패 시 시장데이터.json(서버 수집·안정)으로 보강 → N/A 방지
-    var _need = !vnm||!usdvnd||!usdcny||!dxy||!eem||!vix||!crude||!gold;
-    return (_need
-      ? fetch('시장데이터.json?_='+Date.now()).then(function(r){return r.ok?r.json():null;}).catch(function(){return null;})
-      : Promise.resolve(null)
-    ).then(function(jr) {
+    // ①글로벌 공통지표(EEM·US VIX·DXY)는 미국 레포 JSON 한 곳에서 받아 모든 탭 동일하게 정규화 + ②자기 레포로 N/A 보강
+    var mk=function(p,pc){return (p!=null&&p!==0)?{price:p,pct:pc||0,prev:p,open:p,high:p,low:p}:null;};
+    return fetch('https://raw.githubusercontent.com/bssu3001-oss/us-market-dashboard/main/'+encodeURIComponent('시장데이터.json')).then(function(r){return r.ok?r.json():null;}).catch(function(){return null;})
+    .then(function(gj) {
+      if (gj) {
+        if(gj.eem!=null) eem = mk(gj.eem, gj.eem_pct);
+        if(gj.vix!=null) vix = mk(gj.vix, 0);
+        if(gj.dxy!=null) dxy = mk(gj.dxy, 0);
+      }
+      return fetch('시장데이터.json?_='+Date.now()).then(function(r){return r.ok?r.json():null;}).catch(function(){return null;});
+    })
+    .then(function(jr) {
       if (jr) {
-        var mk=function(p,pc){return (p!=null&&p!==0)?{price:p,pct:pc||0,prev:p,open:p,high:p,low:p}:null;};
+        if(!eem    && jr.eem!=null)    eem   =mk(jr.eem, jr.eem_pct);
+        if(!vix    && jr.us_vix!=null) vix   =mk(jr.us_vix, 0);
+        if(!dxy    && jr.dxy!=null)    dxy   =mk(jr.dxy, 0);
         if(!vnm    && jr.vnm!=null)    vnm   =mk(jr.vnm, jr.vnm_pct);
         if(!usdvnd && jr.vnd!=null)    usdvnd=mk(jr.vnd, 0);
         if(!usdcny && jr.usdcny!=null) usdcny=mk(jr.usdcny, 0);
-        if(!dxy    && jr.dxy!=null)    dxy   =mk(jr.dxy, 0);
-        if(!eem    && jr.eem!=null)    eem   =mk(jr.eem, jr.eem_pct);
-        if(!vix    && jr.us_vix!=null) vix   =mk(jr.us_vix, 0);
         if(!crude  && jr.crude!=null)  crude =mk(jr.crude, 0);
         if(!gold   && jr.gold!=null)   gold  =mk(jr.gold, jr.gold_pct);
       }
@@ -880,6 +885,21 @@ function applyAnalysis(ag) {
       }
     }
   }
+  bumpDangerForRSI();
+}
+
+// RSI 과매수(≥75)는 단기 위험을 올림 → 위험도가 '낮음'이면 '보통'으로 끌어올림
+function bumpDangerForRSI() {
+  var dEl = document.getElementById('sc-danger');
+  var rEl = document.getElementById('badge-rsi');
+  if (!dEl || !rEl) return;
+  var m = (rEl.textContent||'').match(/RSI\s*([\d.]+)/);
+  if (!m) return;
+  var rsi = parseFloat(m[1]);
+  if (rsi >= 75 && /낮음/.test(dEl.textContent)) {
+    dEl.textContent = '위험도 보통';
+    dEl.style.background = '#fdf6e8'; dEl.style.color = '#BA7517';
+  }
 }
 
 function updateAI(liveData) {
@@ -941,6 +961,7 @@ function updateAI(liveData) {
       if (t && ag[k].cls && !_badTxt.test(t)) setBadge(domId, t, ag[k].cls);
     });
     recalcScorecard();
+    bumpDangerForRSI();
   }).catch(function(e) { console.warn('AI error:', e); if(onelinerEl) onelinerEl.textContent=_ruleOneliner; });
 }
 
