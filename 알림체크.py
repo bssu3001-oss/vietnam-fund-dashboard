@@ -179,12 +179,23 @@ def fetch_market_data():
 
     # 보조 지표 (USD/VND, US VIX, 브렌트유)
     us_vix = crude = vnd = None
-    for ticker_sym, var_name in [("^VIX", "us_vix"), ("BZ=F", "crude"), ("VND=X", "vnd")]:
+    vnm = vnm_pct = usdcny = dxy = eem = eem_pct = gold = gold_pct = None
+    for ticker_sym, var_name in [("^VIX", "us_vix"), ("BZ=F", "crude"), ("VND=X", "vnd"),
+                                  ("VNM", "vnm"), ("USDCNY=X", "usdcny"), ("DX-Y.NYB", "dxy"),
+                                  ("EEM", "eem"), ("GC=F", "gold")]:
         try:
-            val = yf.Ticker(ticker_sym).fast_info.last_price
+            t = yf.Ticker(ticker_sym)
+            val = t.fast_info.last_price
+            prev_c = t.fast_info.previous_close
+            chg = round((val - prev_c) / prev_c * 100, 2) if prev_c else 0
             if var_name == "us_vix": us_vix = round(val, 1)
             elif var_name == "crude": crude = round(val, 1)
             elif var_name == "vnd": vnd = round(val, 0)
+            elif var_name == "vnm": vnm = round(val, 2); vnm_pct = chg
+            elif var_name == "usdcny": usdcny = round(val, 4)
+            elif var_name == "dxy": dxy = round(val, 2)
+            elif var_name == "eem": eem = round(val, 2); eem_pct = chg
+            elif var_name == "gold": gold = round(val, 0); gold_pct = chg
         except Exception:
             pass
 
@@ -200,6 +211,11 @@ def fetch_market_data():
         "us_vix": us_vix,
         "crude": crude,
         "vnd": vnd,
+        "vnm": vnm, "vnm_pct": vnm_pct,
+        "usdcny": usdcny,
+        "dxy": dxy,
+        "eem": eem, "eem_pct": eem_pct,
+        "gold": gold, "gold_pct": gold_pct,
         "consec_down": consec_down,
     }
 
@@ -434,6 +450,14 @@ def main():
         "us_vix": data["us_vix"],
         "crude": data["crude"],
         "vnd": data["vnd"],
+        "vnm": data.get("vnm"),
+        "vnm_pct": data.get("vnm_pct"),
+        "usdcny": data.get("usdcny"),
+        "dxy": data.get("dxy"),
+        "eem": data.get("eem"),
+        "eem_pct": data.get("eem_pct"),
+        "gold": data.get("gold"),
+        "gold_pct": data.get("gold_pct"),
         "score_pct": pct_score,
         "score_label": sc_label,
         "score_emoji": sc_emoji,

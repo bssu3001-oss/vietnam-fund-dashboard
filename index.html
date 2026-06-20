@@ -434,6 +434,24 @@ function fetchAllLive() {
   return Promise.all(tickers.map(function(t){ return fetchQuote(t).catch(function(){return null;}); })).then(function(results) {
     var vnm=results[0], usdvnd=results[1], usdcny=results[2], dxy=results[3], eem=results[4], vix=results[5], crude=results[6], gold=results[7];
 
+    // 프록시 실패 시 시장데이터.json(서버 수집·안정)으로 보강 → N/A 방지
+    var _need = !vnm||!usdvnd||!usdcny||!dxy||!eem||!vix||!crude||!gold;
+    return (_need
+      ? fetch('시장데이터.json?_='+Date.now()).then(function(r){return r.ok?r.json():null;}).catch(function(){return null;})
+      : Promise.resolve(null)
+    ).then(function(jr) {
+      if (jr) {
+        var mk=function(p,pc){return (p!=null&&p!==0)?{price:p,pct:pc||0,prev:p,open:p,high:p,low:p}:null;};
+        if(!vnm    && jr.vnm!=null)    vnm   =mk(jr.vnm, jr.vnm_pct);
+        if(!usdvnd && jr.vnd!=null)    usdvnd=mk(jr.vnd, 0);
+        if(!usdcny && jr.usdcny!=null) usdcny=mk(jr.usdcny, 0);
+        if(!dxy    && jr.dxy!=null)    dxy   =mk(jr.dxy, 0);
+        if(!eem    && jr.eem!=null)    eem   =mk(jr.eem, jr.eem_pct);
+        if(!vix    && jr.us_vix!=null) vix   =mk(jr.us_vix, 0);
+        if(!crude  && jr.crude!=null)  crude =mk(jr.crude, 0);
+        if(!gold   && jr.gold!=null)   gold  =mk(jr.gold, jr.gold_pct);
+      }
+
     if (vnm) {
       var vnPrc = vnm.price * _vnmScale;
       var vnPrv = vnm.prev * _vnmScale;
@@ -512,13 +530,17 @@ function fetchAllLive() {
         var mean=rets.reduce(function(a,b){return a+b;})/rets.length;
         vol=Math.sqrt(rets.reduce(function(a,b){return a+(b-mean)*(b-mean);},0)/rets.length);
       }
+      // 이평선 5단계 분류
       var maBadge='badge-y',maText='혼조';
       if (ma5&&ma13&&ma26) {
-        if (cur>ma5&&ma5>ma13&&ma13>ma26){maBadge='badge-g';maText='정배열(상승)';}
-        else if(cur<ma5&&ma5<ma13&&ma13<ma26){maBadge='badge-r';maText='역배열(하락)';}
+        if      (cur>ma5&&ma5>ma13&&ma13>ma26){maBadge='badge-g';maText='정배열(상승)';}
+        else if (cur<ma5&&ma5<ma13&&ma13<ma26){maBadge='badge-r';maText='역배열(하락)';}
+        else if (cur>ma5&&cur>ma13)            {maBadge='badge-y';maText='단기 상승';}
+        else if (cur<ma5&&cur<ma13)            {maBadge='badge-y';maText='단기 하락';}
+        else                                    {maBadge='badge-y';maText='혼조';}
       } else if(ma5&&ma13){
-        if(cur>ma5&&ma5>ma13){maBadge='badge-g';maText='단기 정배열';}
-        else if(cur<ma5&&ma5<ma13){maBadge='badge-r';maText='단기 역배열';}
+        if      (cur>ma5&&ma5>ma13){maBadge='badge-g';maText='단기 정배열';}
+        else if (cur<ma5&&ma5<ma13){maBadge='badge-r';maText='단기 역배열';}
       }
       setBadge('badge-ma',maText,maBadge);
       setBadge('badge-mom',mom4w!=null?(mom4w>=0?'▲':'▼')+' '+Math.abs(mom4w).toFixed(1)+'% (4주 변화)':'N/A',
@@ -562,6 +584,7 @@ function fetchAllLive() {
 
     _liveData = {vnm:vnm, usdvnd:usdvnd, usdcny:usdcny, dxy:dxy, eem:eem, vix:vix, crude:crude, gold:gold};
     return _liveData;
+    });
   });
 }
 
@@ -652,10 +675,13 @@ function recalcScorecard() {
   }
   var techIds  = ['badge-rsi','badge-ma','badge-mom','badge-vol','badge-pos'];
   var macroIds = ['badge-vnm','badge-usdvnd','badge-usdcny','badge-dxy','badge-eem','badge-vix','badge-crude','badge-gold'];
-  var tS = techIds.reduce(function(s,id){return s+bv(id)*1.5;},0);
-  var mS = macroIds.reduce(function(s,id){return s+bv(id)*1.0;},0);
+  // 지표별 가중치 — 베트남 고유 VNM은 높게, 공통 글로벌 지표(VIX/EEM/DXY)는 낮게 → 점수 분산
+  var techW  = {'badge-rsi':2.0,'badge-ma':2.0,'badge-mom':1.5,'badge-vol':1.0,'badge-pos':1.5};
+  var macroW = {'badge-vnm':2.0,'badge-usdvnd':1.5,'badge-usdcny':1.0,'badge-dxy':0.5,'badge-eem':0.5,'badge-vix':0.5,'badge-crude':1.0,'badge-gold':1.0};
+  var tS = techIds.reduce(function(s,id){return s+bv(id)*(techW[id]||1.5);},0);
+  var mS = macroIds.reduce(function(s,id){return s+bv(id)*(macroW[id]||1.0);},0);
   var total = tS+mS;
-  var max = techIds.length*1.5+macroIds.length*1.0;
+  var max = techIds.reduce(function(s,id){return s+(techW[id]||1.5);},0)+macroIds.reduce(function(s,id){return s+(macroW[id]||1.0);},0);
   var pct = Math.max(0,Math.min(100,Math.round((total+max)/(2*max)*100)));
   var label,color,emoji;
   if (total>=max*0.5)       {label='강매수';   color='#2d6a0a';emoji='🔥';}
@@ -663,6 +689,13 @@ function recalcScorecard() {
   else if(total>=-max*0.15) {label='관망';     color='#BA7517';emoji='📌';}
   else if(total>=-max*0.5)  {label='조심';     color='#c0392b';emoji='⚠️';}
   else                       {label='진입 자제';color='#9b2020';emoji='🔴';}
+  // RSI 하드캡 — RSI 75 이상이면 점수와 무관하게 신호를 관망 이하로 강제
+  var _rsiText = (document.getElementById('badge-rsi')||{}).textContent || '';
+  var _rsiM = _rsiText.match(/RSI\s*([\d.]+)/);
+  var _rsiVal = _rsiM ? parseFloat(_rsiM[1]) : 50;
+  if (_rsiVal >= 75 && (label==='강매수' || label==='매수 검토')) {
+    label='관망'; color='#BA7517'; emoji='📌';
+  }
   document.getElementById('sc-emoji').textContent=emoji+' '+label; document.getElementById('sc-emoji').style.color=color;
   document.getElementById('sc-pct').textContent=pct+'점'; document.getElementById('sc-pct').style.color=color;
   document.getElementById('sc-bar').style.width=pct+'%'; document.getElementById('sc-bar').style.background=color;
@@ -857,6 +890,7 @@ function updateAI(liveData) {
   if (!key) return Promise.resolve();
 
   var onelinerEl = document.getElementById('sc-oneliner');
+  var _ruleOneliner = ruleResult.sc_oneliner || (onelinerEl ? onelinerEl.textContent : '');
   if (onelinerEl) onelinerEl.textContent = '🤖 AI 분석 중...';
 
   var vnm = liveData && liveData.vnm;
@@ -866,8 +900,11 @@ function updateAI(liveData) {
   var maText  = (document.getElementById('badge-ma')||{}).textContent  || '';
   var momText = (document.getElementById('badge-mom')||{}).textContent || '';
   var rsiText = (document.getElementById('badge-rsi')||{}).textContent || '';
+  var vnmText = (document.getElementById('badge-vnm')||{}).textContent || '';
+  var vndText = (document.getElementById('badge-usdvnd')||{}).textContent || '';
+  var eemText = (document.getElementById('badge-eem')||{}).textContent || '';
 
-  var ctx = '당신은 베트남 주식시장 전문 애널리스트입니다. 오늘 날짜 기준으로 판단하세요.\n\n[실시간 지표]\nVN-Index: '+(price?fmt(price,0)+' ('+(vnm.pct>=0?'▲':'▼')+Math.abs(vnm.pct).toFixed(2)+'%)':'N/A')+'\n이평선: '+maText+' | 모멘텀: '+momText+' | RSI: '+rsiText+'\nUSD/VND: '+(liveData.usdvnd?'₫'+Math.round(liveData.usdvnd.price).toLocaleString():'N/A')+'\nUS VIX: '+(liveData.vix?liveData.vix.price.toFixed(1):'N/A')+'\nVNM ETF: '+(vnm?'$'+vnm.price.toFixed(2)+' ('+(vnm.pct>=0?'+':'')+vnm.pct.toFixed(2)+'%)':'N/A')+'\nEEM: '+(liveData.eem?'$'+liveData.eem.price.toFixed(2)+' ('+(liveData.eem.pct>=0?'+':'')+liveData.eem.pct.toFixed(2)+'%)':'N/A')+'\n브렌트유: '+(liveData.crude?'$'+liveData.crude.price.toFixed(1):'N/A')+'\n금: '+(liveData.gold?'$'+Math.round(liveData.gold.price):'N/A')+'\n\n[최신 뉴스]\n'+(newsLines||'뉴스 없음');
+  var ctx = '당신은 베트남 주식시장 전문 애널리스트입니다. 오늘 날짜 기준으로 판단하세요.\n\n[실시간 지표 및 배지 상태]\nVN-Index: '+(price?fmt(price,0)+' ('+(vnm.pct>=0?'▲':'▼')+Math.abs(vnm.pct).toFixed(2)+'%)':'N/A')+'\n이평선: '+maText+' | 모멘텀: '+momText+' | RSI: '+rsiText+'\nVNM(베트남ETF): '+vnmText+'\nUSD/VND(동환율): '+vndText+'\nEEM(신흥국ETF): '+eemText+'\nUS VIX: '+(liveData.vix?liveData.vix.price.toFixed(1):'N/A')+'\n브렌트유: '+(liveData.crude?'$'+liveData.crude.price.toFixed(1):'N/A')+'\n금: '+(liveData.gold?'$'+Math.round(liveData.gold.price):'N/A')+'\n\n[주의] sc_appeal·sc_risk·sc_entry는 반드시 위 배지 상태와 일치해야 합니다. 배지에 "하락"·"약세"가 포함된 지표를 강점으로 언급하지 마세요.\n\n[최신 뉴스]\n'+(newsLines||'뉴스 없음');
 
   var jsonPrompt = '위 데이터와 뉴스를 분석해 아래 JSON으로만 답하세요 (다른 텍스트 없이):\n{\n  "sc_oneliner": "한줄 시장 요약 (20자 이내, 뉴스 반영)",\n  "sc_appeal": "핵심 매력 (뉴스+지표 반영, 30자 이내)",\n  "sc_risk": "핵심 리스크 (뉴스+지표 반영, 30자 이내)",\n  "sc_entry": "진입 단서 (30자 이내)",\n  "sc_danger": "위험도 낮음 또는 위험도 보통 또는 위험도 높음",\n  "badge_sbv": {"text": "SBV 정책 요약 (10자 이내)", "cls": "badge-g 또는 badge-y 또는 badge-r"},\n  "badge_cpi": {"text": "물가 요약 (10자 이내)", "cls": "badge-g 또는 badge-y 또는 badge-r"},\n  "badge_gdp": {"text": "GDP 요약 (10자 이내)", "cls": "badge-g 또는 badge-y 또는 badge-r"},\n  "badge_fed": {"text": "연준 정책 요약 (10자 이내)", "cls": "badge-g 또는 badge-y 또는 badge-r"},\n  "badge_trade": {"text": "무역 요약 (10자 이내)", "cls": "badge-g 또는 badge-y 또는 badge-r"},\n  "badge_china": {"text": "중국관계 요약 (10자 이내)", "cls": "badge-g 또는 badge-y 또는 badge-r"}\n}';
 
@@ -876,10 +913,10 @@ function updateAI(liveData) {
     headers: { 'x-api-key': key, 'anthropic-version': '2023-06-01', 'content-type': 'application/json', 'anthropic-dangerous-direct-browser-access': 'true' },
     body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 700, system: ctx, messages: [{ role: 'user', content: jsonPrompt }] })
   }).then(function(r) { return r.json(); }).then(function(d) {
-    if (d.error) { console.warn('AI API 오류:', d.error.message); return; }
+    if (d.error) { console.warn('AI API 오류:', d.error.message); if(onelinerEl) onelinerEl.textContent=_ruleOneliner; return; }
     var text = (d.content && d.content[0] && d.content[0].text) || '';
     var match = text.match(/\{[\s\S]*\}/);
-    if (!match) return;
+    if (!match) { if(onelinerEl) onelinerEl.textContent=_ruleOneliner; return; }
     var ag = JSON.parse(match[0]);
     if (ag.sc_oneliner && onelinerEl) onelinerEl.textContent = ag.sc_oneliner;
     var extra = document.getElementById('sc-extra');
@@ -901,7 +938,7 @@ function updateAI(liveData) {
       if (ag[k] && ag[k].text && ag[k].cls) setBadge(domId, ag[k].text, ag[k].cls);
     });
     recalcScorecard();
-  }).catch(function(e) { console.warn('AI error:', e); });
+  }).catch(function(e) { console.warn('AI error:', e); if(onelinerEl) onelinerEl.textContent=_ruleOneliner; });
 }
 
 function getKey() { return localStorage.getItem('anthropic_api_key')||''; }
