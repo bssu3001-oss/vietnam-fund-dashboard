@@ -820,26 +820,30 @@ function ruleBasedAnalysis(liveData) {
 }
 
 function applyAnalysis(ag) {
-  if (ag.now_title)  { document.getElementById('ag-now-card-title').textContent=ag.now_title; document.getElementById('ag-now-card-desc').textContent=ag.now_desc; }
-  if (ag.buy1_title) { document.getElementById('ag-buy1-card-title').textContent=ag.buy1_title; document.getElementById('ag-buy1-card-desc').textContent=ag.buy1_desc; }
-  if (ag.buy2_title) { document.getElementById('ag-buy2-card-title').textContent=ag.buy2_title; document.getElementById('ag-buy2-card-desc').textContent=ag.buy2_desc; }
-  if (ag.sell_title) { document.getElementById('ag-sell-card-title').textContent=ag.sell_title; document.getElementById('ag-sell-card-desc').textContent=ag.sell_desc; }
-  if (ag.sc_oneliner) { document.getElementById('sc-oneliner').textContent=ag.sc_oneliner; }
-  if (ag.sc_desc)     { document.getElementById('sc-desc').innerHTML=ag.sc_desc; }
-  if (ag.chart_analysis) { document.getElementById('ai-chart-analysis').textContent=ag.chart_analysis; }
+  function setTxt(id, val) { var el = document.getElementById(id); if (el && val != null) el.textContent = val; }
+  function setHtml(id, val) { var el = document.getElementById(id); if (el && val != null) el.innerHTML = val; }
+  if (ag.now_title)  { setTxt('ag-now-card-title', ag.now_title); setTxt('ag-now-card-desc', ag.now_desc); }
+  if (ag.buy1_title) { setTxt('ag-buy1-card-title', ag.buy1_title); setTxt('ag-buy1-card-desc', ag.buy1_desc); }
+  if (ag.buy2_title) { setTxt('ag-buy2-card-title', ag.buy2_title); setTxt('ag-buy2-card-desc', ag.buy2_desc); }
+  if (ag.sell_title) { setTxt('ag-sell-card-title', ag.sell_title); setTxt('ag-sell-card-desc', ag.sell_desc); }
+  if (ag.sc_oneliner) setTxt('sc-oneliner', ag.sc_oneliner);
+  if (ag.sc_desc)     setHtml('sc-desc', ag.sc_desc);
+  if (ag.chart_analysis) setTxt('ai-chart-analysis', ag.chart_analysis);
   if (ag.sc_price_pos || ag.sc_appeal || ag.sc_risk || ag.sc_entry) {
     var extra = document.getElementById('sc-extra');
     if (extra) {
       extra.style.display = 'block';
-      if (ag.sc_price_pos) document.getElementById('sc-price-pos').textContent = ag.sc_price_pos;
-      if (ag.sc_appeal)    document.getElementById('sc-appeal').textContent    = ag.sc_appeal;
-      if (ag.sc_risk)      document.getElementById('sc-risk').textContent      = ag.sc_risk;
-      if (ag.sc_entry)     document.getElementById('sc-entry').textContent     = ag.sc_entry;
+      setTxt('sc-price-pos', ag.sc_price_pos);
+      setTxt('sc-appeal', ag.sc_appeal);
+      setTxt('sc-risk', ag.sc_risk);
+      setTxt('sc-entry', ag.sc_entry);
       if (ag.sc_danger) {
         var badge = document.getElementById('sc-danger');
-        badge.textContent = ag.sc_danger;
-        badge.style.color = ag.sc_danger_color;
-        badge.style.background = ag.sc_danger_bg;
+        if (badge) {
+          badge.textContent = ag.sc_danger;
+          badge.style.color = ag.sc_danger_color;
+          badge.style.background = ag.sc_danger_bg;
+        }
       }
     }
   }
