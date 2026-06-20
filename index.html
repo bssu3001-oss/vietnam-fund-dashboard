@@ -906,7 +906,7 @@ function updateAI(liveData) {
 
   var ctx = '당신은 베트남 주식시장 전문 애널리스트입니다. 오늘 날짜 기준으로 판단하세요.\n\n[실시간 지표 및 배지 상태]\nVN-Index: '+(price?fmt(price,0)+' ('+(vnm.pct>=0?'▲':'▼')+Math.abs(vnm.pct).toFixed(2)+'%)':'N/A')+'\n이평선: '+maText+' | 모멘텀: '+momText+' | RSI: '+rsiText+'\nVNM(베트남ETF): '+vnmText+'\nUSD/VND(동환율): '+vndText+'\nEEM(신흥국ETF): '+eemText+'\nUS VIX: '+(liveData.vix?liveData.vix.price.toFixed(1):'N/A')+'\n브렌트유: '+(liveData.crude?'$'+liveData.crude.price.toFixed(1):'N/A')+'\n금: '+(liveData.gold?'$'+Math.round(liveData.gold.price):'N/A')+'\n\n[주의] sc_appeal·sc_risk·sc_entry는 반드시 위 배지 상태와 일치해야 합니다. 배지에 "하락"·"약세"가 포함된 지표를 강점으로 언급하지 마세요.\n\n[최신 뉴스]\n'+(newsLines||'뉴스 없음');
 
-  var jsonPrompt = '위 데이터와 뉴스를 분석해 아래 JSON으로만 답하세요 (다른 텍스트 없이):\n{\n  "sc_oneliner": "한줄 시장 요약 (20자 이내, 뉴스 반영)",\n  "sc_appeal": "핵심 매력 (뉴스+지표 반영, 30자 이내)",\n  "sc_risk": "핵심 리스크 (뉴스+지표 반영, 30자 이내)",\n  "sc_entry": "진입 단서 (30자 이내)",\n  "sc_danger": "위험도 낮음 또는 위험도 보통 또는 위험도 높음",\n  "badge_sbv": {"text": "SBV 정책 요약 (10자 이내)", "cls": "badge-g 또는 badge-y 또는 badge-r"},\n  "badge_cpi": {"text": "물가 요약 (10자 이내)", "cls": "badge-g 또는 badge-y 또는 badge-r"},\n  "badge_gdp": {"text": "GDP 요약 (10자 이내)", "cls": "badge-g 또는 badge-y 또는 badge-r"},\n  "badge_fed": {"text": "연준 정책 요약 (10자 이내)", "cls": "badge-g 또는 badge-y 또는 badge-r"},\n  "badge_trade": {"text": "무역 요약 (10자 이내)", "cls": "badge-g 또는 badge-y 또는 badge-r"},\n  "badge_china": {"text": "중국관계 요약 (10자 이내)", "cls": "badge-g 또는 badge-y 또는 badge-r"}\n}';
+  var jsonPrompt = '위 데이터와 뉴스를 분석해 아래 JSON으로만 답하세요 (다른 텍스트 없이).\n각 badge는 해당 주제(SBV/물가/GDP/연준/무역/중국)에 대한 짧은 요약이어야 합니다. 관련 정보가 없으면 "관망"·"주시"처럼 중립으로 쓰고, "데이터 부재"나 다른 지표(VIX 등) 값을 넣지 마세요.\n{\n  "sc_oneliner": "한줄 시장 요약 (20자 이내, 뉴스 반영)",\n  "sc_appeal": "핵심 매력 (뉴스+지표 반영, 30자 이내)",\n  "sc_risk": "핵심 리스크 (뉴스+지표 반영, 30자 이내)",\n  "sc_entry": "진입 단서 (30자 이내)",\n  "sc_danger": "위험도 낮음 또는 위험도 보통 또는 위험도 높음",\n  "badge_sbv": {"text": "SBV 정책 요약 (10자 이내)", "cls": "badge-g 또는 badge-y 또는 badge-r"},\n  "badge_cpi": {"text": "물가 요약 (10자 이내)", "cls": "badge-g 또는 badge-y 또는 badge-r"},\n  "badge_gdp": {"text": "GDP 요약 (10자 이내)", "cls": "badge-g 또는 badge-y 또는 badge-r"},\n  "badge_fed": {"text": "연준 정책 요약 (10자 이내)", "cls": "badge-g 또는 badge-y 또는 badge-r"},\n  "badge_trade": {"text": "무역 요약 (10자 이내)", "cls": "badge-g 또는 badge-y 또는 badge-r"},\n  "badge_china": {"text": "중국관계 요약 (10자 이내)", "cls": "badge-g 또는 badge-y 또는 badge-r"}\n}';
 
   return fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
@@ -933,9 +933,12 @@ function updateAI(liveData) {
         badge.style.background = isHigh ? '#fde8e8' : isLow ? '#e8fde8' : '#fdf6e8';
       }
     }
+    // AI가 엉터리 값(데이터 부재/VIX 오기입/빈값)을 주면 무시 → 뉴스 키워드 분류값 유지
+    var _badTxt = /데이터|부재|없음|미정|불명|모름|N\/A|VIX|^-+$/;
     ['badge_sbv','badge_cpi','badge_gdp','badge_fed','badge_trade','badge_china'].forEach(function(k) {
       var domId = k.replace('_', '-');
-      if (ag[k] && ag[k].text && ag[k].cls) setBadge(domId, ag[k].text, ag[k].cls);
+      var t = (ag[k] && ag[k].text) ? String(ag[k].text).trim() : '';
+      if (t && ag[k].cls && !_badTxt.test(t)) setBadge(domId, t, ag[k].cls);
     });
     recalcScorecard();
   }).catch(function(e) { console.warn('AI error:', e); if(onelinerEl) onelinerEl.textContent=_ruleOneliner; });
