@@ -159,13 +159,19 @@
     }).join('');
   }
 
-  // ── 뉴스 배지 자동 분류 (API 키 불필요) ──
-  function updateNewsBadgesFromKorean() {
+  // ── 뉴스 배지 자동 분류 (API 키 없을 때 키워드 기반 / 있을 때 AI 위임) ──
+  async function updateNewsBadgesFromKorean() {
     const items = window.__majorNewsItems || [];
     if (!items.length) return;
+
+    const hasKey = !!localStorage.getItem('anthropic_api_key');
+
+    // API 키 있으면 AI가 sbv/cpi/gdp/fed/trade/china 담당 → 여기서 덮어쓰지 않음
+    // API 키 없으면 키워드 기반으로 모두 분류
     const all = items.map(n => n.ko || n.title || '').join(' ');
 
     function ko(id, gKw, rKw, gT, rT, nT) {
+      if (hasKey) return; // AI가 처리하므로 skip
       const isG = gKw.some(k => all.includes(k));
       const isR = rKw.some(k => all.includes(k));
       let cls, text;
@@ -206,25 +212,43 @@
       ['중국 갈등','중국 리스크','위안 급락','중국 긴장','중-베 마찰'],
       '중국 협력(호재)', '중국 리스크(악재)', '중국 관계 관망');
 
-    ko('badge-fdi',
-      ['FDI 증가','외국인 투자 증가','외자 유입','투자 유치'],
-      ['FDI 감소','외국인 투자 감소','투자 이탈'],
+    // fdi, semi는 AI가 안 다루므로 키워드로 항상 분류
+    function koAlways(id, gKw, rKw, gT, rT, nT) {
+      const isG = gKw.some(k => all.includes(k));
+      const isR = rKw.some(k => all.includes(k));
+      let cls, text;
+      if      (isG && !isR) { cls = 'badge-g'; text = gT; }
+      else if (isR && !isG) { cls = 'badge-r'; text = rT; }
+      else if (isG && isR)  { cls = 'badge-y'; text = nT; }
+      else                   { cls = 'badge-y'; text = nT; }
+      setBadge(id, text, cls);
+    }
+
+    koAlways('badge-fdi',
+      ['FDI 증가','외국인 투자 증가','외자 유입','투자 유치','투자 증가'],
+      ['FDI 감소','외국인 투자 감소','투자 이탈','투자 감소'],
       'FDI 유입(호재)', 'FDI 감소(악재)', 'FDI 관망');
 
-    ko('badge-semi',
-      ['삼성 투자','반도체','제조업 호조','인텔 투자','공장 증설'],
-      ['공장 이전','제조업 감소','생산 감소'],
+    koAlways('badge-semi',
+      ['삼성 투자','반도체','제조업 호조','인텔 투자','공장 증설','제조업 성장'],
+      ['공장 이전','제조업 감소','생산 감소','공장 철수'],
       '제조업 유입(호재)', '제조업 감소(악재)', '제조업 주시');
 
     const note = document.getElementById('news-live-note');
-    if (note) note.textContent = '✓ 최신 뉴스 기반 자동 분류';
+    if (note) note.textContent = hasKey ? '✓ AI 뉴스 분석 중...' : '✓ 최신 뉴스 기반 자동 분류';
+
+    // API 키 있으면 AI 분석 실행 (index.html의 updateAI 재호출)
+    if (hasKey) {
+      try {
+        if (typeof updateAI === 'function' && typeof _liveData !== 'undefined') {
+          await updateAI(_liveData);
+          const noteEl = document.getElementById('news-live-note');
+          if (noteEl) noteEl.textContent = '✓ AI 뉴스 분석 완료';
+        }
+      } catch(e) {}
+    }
 
     try { if (typeof recalcScorecard === 'function') recalcScorecard(); } catch(e) {}
-    try {
-      if (typeof applyAnalysis === 'function' && typeof ruleBasedAnalysis === 'function' && typeof _liveData !== 'undefined') {
-        if (!localStorage.getItem('anthropic_api_key')) applyAnalysis(ruleBasedAnalysis(_liveData));
-      }
-    } catch(e) {}
   }
 
   // ── 시장데이터.json 초기값 설정 (인도와 동일 패턴) ──
