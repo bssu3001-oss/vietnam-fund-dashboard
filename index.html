@@ -910,11 +910,14 @@ function updateAI(liveData) {
 
   var onelinerEl = document.getElementById('sc-oneliner');
   var _ruleOneliner = ruleResult.sc_oneliner || (onelinerEl ? onelinerEl.textContent : '');
-  if (onelinerEl) onelinerEl.textContent = '🤖 AI 분석 중...';
+  // AI 응답을 기다리는 동안에도 항상 의미 있는 한줄평을 보여줌 (멈춤 방지)
+  if (onelinerEl && _ruleOneliner) onelinerEl.textContent = _ruleOneliner;
 
   var vnm = liveData && liveData.vnm;
   var price = vnm ? vnm.price * _vnmScale : 0;
-  var _aiNews = window.__newsForAnalysis || [];
+  // 번역된 실제 뉴스(__majorNewsItems)를 우선 사용, 없으면 헤드라인 목록 폴백
+  var _aiNews = (window.__majorNewsItems || []).map(function(n){return n.ko || n.title;}).filter(Boolean);
+  if (!_aiNews.length) _aiNews = window.__newsForAnalysis || [];
   var newsLines = _aiNews.slice(0, 8).map(function(t){return '- '+t;}).join('\n');
   var maText  = (document.getElementById('badge-ma')||{}).textContent  || '';
   var momText = (document.getElementById('badge-mom')||{}).textContent || '';
@@ -927,11 +930,14 @@ function updateAI(liveData) {
 
   var jsonPrompt = '위 데이터와 뉴스를 분석해 아래 JSON으로만 답하세요 (다른 텍스트 없이).\n각 badge는 해당 주제(SBV/물가/GDP/연준/무역/중국)에 대한 짧은 요약이어야 합니다. 관련 정보가 없으면 "관망"·"주시"처럼 중립으로 쓰고, "데이터 부재"나 다른 지표(VIX 등) 값을 넣지 마세요.\n{\n  "sc_oneliner": "한줄 시장 요약 (20자 이내, 뉴스 반영)",\n  "sc_appeal": "핵심 매력 (뉴스+지표 반영, 30자 이내)",\n  "sc_risk": "핵심 리스크 (뉴스+지표 반영, 30자 이내)",\n  "sc_entry": "진입 단서 (30자 이내)",\n  "sc_danger": "위험도 낮음 또는 위험도 보통 또는 위험도 높음",\n  "badge_sbv": {"text": "SBV 정책 요약 (10자 이내)", "cls": "badge-g 또는 badge-y 또는 badge-r"},\n  "badge_cpi": {"text": "물가 요약 (10자 이내)", "cls": "badge-g 또는 badge-y 또는 badge-r"},\n  "badge_gdp": {"text": "GDP 요약 (10자 이내)", "cls": "badge-g 또는 badge-y 또는 badge-r"},\n  "badge_fed": {"text": "연준 정책 요약 (10자 이내)", "cls": "badge-g 또는 badge-y 또는 badge-r"},\n  "badge_trade": {"text": "무역 요약 (10자 이내)", "cls": "badge-g 또는 badge-y 또는 badge-r"},\n  "badge_china": {"text": "중국관계 요약 (10자 이내)", "cls": "badge-g 또는 badge-y 또는 badge-r"}\n}';
 
+  var _ctrl = new AbortController();
+  var _to = setTimeout(function(){ _ctrl.abort(); }, 15000);
   return fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
+    signal: _ctrl.signal,
     headers: { 'x-api-key': key, 'anthropic-version': '2023-06-01', 'content-type': 'application/json', 'anthropic-dangerous-direct-browser-access': 'true' },
     body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 700, system: ctx, messages: [{ role: 'user', content: jsonPrompt }] })
-  }).then(function(r) { return r.json(); }).then(function(d) {
+  }).then(function(r) { clearTimeout(_to); return r.json(); }).then(function(d) {
     if (d.error) { console.warn('AI API 오류:', d.error.message); if(onelinerEl) onelinerEl.textContent=_ruleOneliner; return; }
     var text = (d.content && d.content[0] && d.content[0].text) || '';
     var match = text.match(/\{[\s\S]*\}/);
@@ -961,7 +967,7 @@ function updateAI(liveData) {
     });
     recalcScorecard();
     bumpDangerForRSI();
-  }).catch(function(e) { console.warn('AI error:', e); if(onelinerEl) onelinerEl.textContent=_ruleOneliner; });
+  }).catch(function(e) { clearTimeout(_to); console.warn('AI error:', e); if(onelinerEl) onelinerEl.textContent=_ruleOneliner; });
 }
 
 function getKey() { return localStorage.getItem('anthropic_api_key')||''; }
