@@ -179,6 +179,8 @@
       else if (isR && !isG) { cls = 'badge-r'; text = rT; }
       else if (isG && isR)  { cls = 'badge-y'; text = nT; }
       else                   { cls = 'badge-y'; text = nT; }
+      const _el = document.getElementById(id);
+      if (_el && _el.dataset.src === 'ai') return;
       setBadge(id, text, cls);
     }
 
@@ -221,6 +223,8 @@
       else if (isR && !isG) { cls = 'badge-r'; text = rT; }
       else if (isG && isR)  { cls = 'badge-y'; text = nT; }
       else                   { cls = 'badge-y'; text = nT; }
+      const _el = document.getElementById(id);
+      if (_el && _el.dataset.src === 'ai') return;
       setBadge(id, text, cls);
     }
 

@@ -684,8 +684,10 @@ function recalcScorecard() {
   var macroW = {'badge-vnm':2.0,'badge-usdvnd':1.5,'badge-usdcny':1.0,'badge-dxy':0.5,'badge-eem':0.5,'badge-vix':0.5,'badge-crude':1.0,'badge-gold':1.0};
   var tS = techIds.reduce(function(s,id){return s+bv(id)*(techW[id]||1.5);},0);
   var mS = macroIds.reduce(function(s,id){return s+bv(id)*(macroW[id]||1.0);},0);
-  var total = tS+mS;
-  var max = techIds.reduce(function(s,id){return s+(techW[id]||1.5);},0)+macroIds.reduce(function(s,id){return s+(macroW[id]||1.0);},0);
+  var newsIds = ['badge-china','badge-cpi','badge-fdi','badge-fed','badge-fii','badge-gdp','badge-sbv','badge-semi','badge-trade'];
+  var nS = newsIds.reduce(function(s,id){return s+bv(id)*0.8;},0);
+  var total = tS+mS+nS;
+  var max = techIds.reduce(function(s,id){return s+(techW[id]||1.5);},0)+macroIds.reduce(function(s,id){return s+(macroW[id]||1.0);},0)+newsIds.length*0.8;
   var pct = Math.max(0,Math.min(100,Math.round((total+max)/(2*max)*100)));
   var label,color,emoji;
   if (total>=max*0.5)       {label='강매수';   color='#2d6a0a';emoji='🔥';}
@@ -705,6 +707,7 @@ function recalcScorecard() {
   document.getElementById('sc-bar').style.width=pct+'%'; document.getElementById('sc-bar').style.background=color;
   document.getElementById('sc-tech').textContent=(tS>=0?'+':'')+tS.toFixed(1); document.getElementById('sc-tech').style.color=color;
   document.getElementById('sc-macro').textContent=(mS>=0?'+':'')+mS.toFixed(1); document.getElementById('sc-macro').style.color=color;
+  document.getElementById('sc-news').textContent=(nS>=0?'+':'')+nS.toFixed(1); document.getElementById('sc-news').style.color=color; document.getElementById('sc-news').style.display='inline';
 }
 
 function ruleBasedAnalysis(liveData) {
@@ -963,7 +966,7 @@ function updateAI(liveData) {
     ['badge_sbv','badge_cpi','badge_gdp','badge_fed','badge_trade','badge_china'].forEach(function(k) {
       var domId = k.replace('_', '-');
       var t = (ag[k] && ag[k].text) ? String(ag[k].text).trim() : '';
-      if (t && ag[k].cls && !_badTxt.test(t)) setBadge(domId, t, ag[k].cls);
+      if (t && ag[k].cls && !_badTxt.test(t)) { setBadge(domId, t, ag[k].cls); var _b=document.getElementById(domId); if(_b) _b.dataset.src='ai'; }
     });
     recalcScorecard();
     bumpDangerForRSI();
@@ -993,11 +996,13 @@ function askAI() {
   var vnm=_liveData && _liveData.vnm;
   var price=vnm?fmt(vnm.price*_vnmScale,0):'N/A';
   var ctx2='당신은 10년차 베트남 주식시장 전문 애널리스트입니다.\n오늘: '+new Date().toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric'})+'\nVN-Index: '+price+' ('+(vnm?(vnm.pct>=0?'+':'')+vnm.pct.toFixed(2)+'%':'N/A')+')\n종합신호: '+sc+'\n3~5문장, 한국어, 마지막에 "이 답변은 참고용입니다" 명시.';
+  var _ctrl=new AbortController(); var _to=setTimeout(function(){_ctrl.abort();},15000);
   fetch('https://api.anthropic.com/v1/messages',{
+    signal:_ctrl.signal,
     method:'POST',
     headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
     body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:600,system:ctx2,messages:[{role:'user',content:q}]})
-  }).then(function(r){return r.json();}).then(function(d){
+  }).then(function(r){clearTimeout(_to);return r.json();}).then(function(d){
     if (d.error) {
       var msg = d.error.message || '';
       if (msg.indexOf('credit') >= 0) box.textContent='⚠️ API 크레딧이 소진됐습니다. console.anthropic.com에서 크레딧을 충전해주세요.';
@@ -1005,7 +1010,7 @@ function askAI() {
       return;
     }
     box.textContent=(d.content&&d.content[0]&&d.content[0].text)||('오류: '+JSON.stringify(d.error||d));
-  }).catch(function(e){ box.textContent='네트워크 오류: '+e.message; });
+  }).catch(function(e){ box.textContent = e.name==='AbortError' ? '응답이 늦어 중단했어요. 다시 시도해주세요.' : '네트워크 오류: '+e.message; });
 }
 
 document.getElementById('ai-q').addEventListener('keydown',function(e){if(e.key==='Enter')askAI();});
