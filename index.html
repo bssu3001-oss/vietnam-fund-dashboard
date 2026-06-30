@@ -187,7 +187,7 @@ body { font-family: -apple-system, 'Apple SD Gothic Neo', sans-serif; background
     </div>
 
     <div class="panel panel-chart">
-      <div class="panel-title">가격 차트</div>
+      <div class="panel-title">가격 차트 · VNM ETF ($)</div>
       <div class="overlay-toggles">
         <button class="tgl on" data-k="ma5" onclick="toggleOverlay('ma5')"><span class="tgl-dot"></span>MA5</button>
         <button class="tgl on" data-k="ma20" onclick="toggleOverlay('ma20')"><span class="tgl-dot"></span>MA20</button>
@@ -215,7 +215,7 @@ body { font-family: -apple-system, 'Apple SD Gothic Neo', sans-serif; background
           <table id="k-pp-ma"></table>
         </div>
       </div>
-      <div style="font-size:11px;color:var(--k-muted);margin-top:6px">* Yahoo Finance 실시간 (VNM ETF) · 캔들/이평/거래량 토글, 길게 눌러(모바일) 시세 확인</div>
+      <div style="font-size:11px;color:var(--k-muted);margin-top:6px">* VN-Index는 차트 데이터 미제공 → 베트남 연동 <b>VNM ETF</b>(미국상장·달러)로 표시 · 지지/저항도 VNM 기준 · Yahoo 실시간 · 길게 눌러(모바일) 시세</div>
     </div>
 
     <div class="panel"><div class="panel-title">추세 분석</div><div id="k-trend-content"></div></div>
@@ -1100,7 +1100,7 @@ setInterval(function(){
   }).catch(function(){});
 },5*60*1000);
 </script>
-<script src="실시간.js?v=20260630"></script>
+<script src="실시간.js?v=20260701"></script>
 <script src="vendor/lightweight-charts.standalone.production.js"></script>
 <script>
 window.KODEX_CFG = { ticker:'VNM', name:'VNM ETF', tz:'America/New_York', openMin:570, closeMin:960, unitPrefix:'$', unitSuffix:'', dec:2 };
