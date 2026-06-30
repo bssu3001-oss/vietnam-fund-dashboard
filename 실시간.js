@@ -37,6 +37,37 @@
     try { return JSON.parse(txt); } catch(e) { return null; }
   }
 
+  // ── jina.ai 리더 폴백 ── 구글뉴스가 공용 프록시 IP를 막을 때 사용.
+  function parseJinaNews(txt, source) {
+    const lines = txt.split('\n').map(s => s.trim()).filter(Boolean);
+    const items = [], seen = new Set();
+    for (let i = 0; i < lines.length; i++) {
+      const m = lines[i].match(/(https:\/\/news\.google\.com\/rss\/articles\/[^\s)]+)/);
+      if (!m) continue;
+      const link = m[1];
+      if (seen.has(link)) continue;
+      let title = (lines[i - 1] || '').replace(/\s+[-–]\s+[^-–]+$/, '').trim();
+      if (!title || title.length < 4) {
+        title = lines[i].split(/https?:\/\//)[0].replace(/\s{2,}[^\s].*$/, '').replace(/\s+[-–]\s+[^-–]+$/, '').trim();
+      }
+      if (!title || title.length < 4) continue;
+      const ts = Date.parse(lines[i + 1] || '') ? Date.parse(lines[i + 1]) / 1000 : 0;
+      seen.add(link);
+      items.push({ title, link, isKo: true, ts });
+    }
+    return items.slice(0, 12);
+  }
+  async function jinaNewsItems(feedUrl, source, timeoutMs) {
+    try {
+      const ctrl = new AbortController();
+      const t = setTimeout(() => ctrl.abort(), timeoutMs || 14000);
+      const r = await fetch('https://r.jina.ai/' + feedUrl, { headers: { 'X-Return-Format': 'text' }, signal: ctrl.signal });
+      clearTimeout(t);
+      if (!r.ok) return [];
+      return parseJinaNews(await r.text(), source);
+    } catch (e) { return []; }
+  }
+
   // ── 배지 헬퍼 ──
   function setBadge(id, text, cls) {
     const el = document.getElementById(id);
@@ -102,18 +133,22 @@
     const sets = await Promise.all(NEWS_FEEDS.map(async f => {
       try {
         const xml = await proxyText(f.url, 10000);
-        if (!xml) return [];
-        const doc = new DOMParser().parseFromString(xml, 'text/xml');
-        return [...doc.querySelectorAll('item')].slice(0, 12).map(item => {
-          const g = tag => item.getElementsByTagName(tag)[0]?.textContent?.trim() || '';
-          const pubDate = g('pubDate');
-          return {
-            title: g('title'),
-            link: g('link') || g('guid'),
-            isKo: !!f.isKo,
-            ts: pubDate ? (new Date(pubDate).getTime() || 0) / 1000 : 0,
-          };
-        }).filter(x => x.title && x.link.startsWith('http'));
+        if (xml) {
+          const doc = new DOMParser().parseFromString(xml, 'text/xml');
+          const items = [...doc.querySelectorAll('item')].slice(0, 12).map(item => {
+            const g = tag => item.getElementsByTagName(tag)[0]?.textContent?.trim() || '';
+            const pubDate = g('pubDate');
+            return {
+              title: g('title'),
+              link: g('link') || g('guid'),
+              isKo: !!f.isKo,
+              ts: pubDate ? (new Date(pubDate).getTime() || 0) / 1000 : 0,
+            };
+          }).filter(x => x.title && x.link.startsWith('http'));
+          if (items.length) return items;
+        }
+        // 프록시 실패/빈 응답 → jina.ai 폴백
+        return await jinaNewsItems(f.url, '구글뉴스', 14000);
       } catch(e) { return []; }
     }));
 
