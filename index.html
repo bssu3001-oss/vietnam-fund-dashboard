@@ -418,8 +418,6 @@ function fetchYahoo(ticker, interval, range) {
   var url = 'https://query2.finance.yahoo.com/v8/finance/chart/' + ticker + '?interval=' + interval + '&range=' + range;
   var proxies = [
     'https://siiiido-proxy.bssu3001.workers.dev/?url=' + encodeURIComponent(url),
-    'https://api.allorigins.win/raw?url=' + encodeURIComponent(url),
-    'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(url),
   ];
   var tryProxy = function(idx) {
     if (idx >= proxies.length) return Promise.resolve(null);
@@ -1114,11 +1112,11 @@ setInterval(function(){
   }).catch(function(){});
 },5*60*1000);
 </script>
-<script src="실시간.js?v=20261001c"></script>
+<script src="실시간.js?v=20261001d"></script>
 <script src="vendor/lightweight-charts.standalone.production.js"></script>
 <script>
 window.KODEX_CFG = { ticker:'VNM', name:'VNM ETF', tz:'America/New_York', openMin:570, closeMin:960, unitPrefix:'$', unitSuffix:'', dec:2 };
 </script>
-<script src="차트분석.js?v=9"></script>
+<script src="차트분석.js?v=10"></script>
 </body>
 </html>
