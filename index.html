@@ -880,7 +880,7 @@ function ruleBasedAnalysis(liveData) {
   var eemColor = eemPctC == null ? 'blue' : eemPctC >= 0.5 ? 'green' : eemPctC <= -0.5 ? 'red' : 'yellow';
   var eemShort = eemPctC != null ? (eemPctC >= 0 ? '▲' : '▼')+Math.abs(eemPctC).toFixed(2)+'%' : '--';
 
-  var sc_desc = '<div style="display:flex;gap:3px;flex-wrap:wrap;">'+mkChip2('이평선',maShort,maColor)+mkChip2('모멘텀',momShort,momColor)+mkChip2('RSI',rsiShort,rsiColor)+mkChip2('VIX',vixShort,vixColor)+mkChip2('VNM',vnmShort,vnmColor)+mkChip2('EEM',eemShort,eemColor)+mkChip2('VND',vndShort,vndColor)+'</div>';
+  var sc_desc = '<div style="display:flex;gap:3px;flex-wrap:wrap;">'+mkChip2('이평(주봉)',maShort,maColor)+mkChip2('모멘텀',momShort,momColor)+mkChip2('RSI(주봉)',rsiShort,rsiColor)+mkChip2('VIX',vixShort,vixColor)+mkChip2('VNM',vnmShort,vnmColor)+mkChip2('EEM',eemShort,eemColor)+mkChip2('VND',vndShort,vndColor)+'</div>';
 
   var trendConclusion = maBadge==='badge-g'
     ? (newsFavorable?'상승 추세 + 우호적 흐름 — 눌림목 매수 적극 검토':'상승 추세 유지 — 눌림목 매수 기회 탐색')
