@@ -417,7 +417,7 @@ function renderChart(labels, prices) {
 function fetchYahoo(ticker, interval, range) {
   var url = 'https://query2.finance.yahoo.com/v8/finance/chart/' + ticker + '?interval=' + interval + '&range=' + range;
   var proxies = [
-    'https://corsproxy.io/?' + encodeURIComponent(url),
+    'https://siiiido-proxy.bssu3001.workers.dev/?url=' + encodeURIComponent(url),
     'https://api.allorigins.win/raw?url=' + encodeURIComponent(url),
     'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(url),
   ];
@@ -669,7 +669,7 @@ function fetchNews() {
   var fetchFeed = function(idx) {
     if (idx >= FEEDS.length) return Promise.resolve();
     var feedUrl = FEEDS[idx];
-    return fetch('https://corsproxy.io/?' + encodeURIComponent(feedUrl))
+    return fetch('https://siiiido-proxy.bssu3001.workers.dev/?url=' + encodeURIComponent(feedUrl))
       .then(function(r) { if (!r.ok) throw new Error(); return r.text(); })
       .then(function(xml) {
         var doc = new DOMParser().parseFromString(xml, 'text/xml');
