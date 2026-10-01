@@ -135,23 +135,27 @@
     try { var _fc = JSON.parse(localStorage.getItem(_NEWS_CACHE) || 'null'); if (_fc && _fc.items && _fc.items.length && Date.now() - _fc.at < 900000) return _fc.items; } catch (e) {}
     const sets = await Promise.all(NEWS_FEEDS.map(async f => {
       try {
-        const xml = await proxyText(f.url, 10000);
-        if (xml) {
+        const parseXml = (xml) => {
           const doc = new DOMParser().parseFromString(xml, 'text/xml');
-          const items = [...doc.querySelectorAll('item')].slice(0, 12).map(item => {
+          return [...doc.querySelectorAll('item')].slice(0, 12).map(item => {
             const g = tag => item.getElementsByTagName(tag)[0]?.textContent?.trim() || '';
             const pubDate = g('pubDate');
-            return {
-              title: g('title'),
-              link: g('link') || g('guid'),
-              isKo: !!f.isKo,
-              ts: pubDate ? (new Date(pubDate).getTime() || 0) / 1000 : 0,
-            };
+            return { title: g('title'), link: g('link') || g('guid'), isKo: !!f.isKo, ts: pubDate ? (new Date(pubDate).getTime() || 0) / 1000 : 0 };
           }).filter(x => x.title && x.link.startsWith('http'));
-          if (items.length) return items;
-        }
-        // 프록시 실패/빈 응답 → jina.ai 폴백
-        return await jinaNewsItems(f.url, '구글뉴스', 14000);
+        };
+        const parseRss = (d) => (d.items || []).slice(0, 12).map(it => ({
+          title: (it.title || '').trim(), link: (it.link || it.guid || '').trim(),
+          isKo: !!f.isKo, ts: it.pubDate ? (new Date(it.pubDate.replace(' ', 'T') + 'Z').getTime() || 0) / 1000 : 0,
+        })).filter(x => x.title && x.link.startsWith('http'));
+        // 프록시 · rss2json · jina 세 경로 동시 시도, 먼저 성공한 것 사용 (다른 대시보드와 동일)
+        return await new Promise(resolve => {
+          let done = false; let pending = 3;
+          const tryResolve = (r) => { if (!done && r.length) { done = true; resolve(r); } if (--pending === 0 && !done) resolve([]); };
+          proxyText(f.url, 10000).then(xml => tryResolve(xml ? parseXml(xml) : [])).catch(() => tryResolve([]));
+          fetch('https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(f.url), { signal: AbortSignal.timeout(10000) })
+            .then(r => r.ok ? r.json() : null).then(d => tryResolve(d ? parseRss(d) : [])).catch(() => tryResolve([]));
+          jinaNewsItems(f.url, '구글뉴스', 14000).then(it => tryResolve(it || [])).catch(() => tryResolve([]));
+        });
       } catch(e) { return []; }
     }));
 
@@ -165,7 +169,7 @@
     }));
     all.sort((a, b) => (b.ts || 0) - (a.ts || 0));
     if (all.length) { try { localStorage.setItem(_NEWS_CACHE, JSON.stringify({ items: all.slice(0, 8), at: Date.now() })); } catch (e) {} return all.slice(0, 8); }
-    try { var _cc = JSON.parse(localStorage.getItem(_NEWS_CACHE) || 'null'); if (_cc && _cc.items && _cc.items.length) return _cc.items; } catch (e) {}
+    try { var _cc = JSON.parse(localStorage.getItem(_NEWS_CACHE) || 'null'); if (_cc && _cc.items && _cc.items.length && Date.now() - _cc.at < 86400000) return _cc.items; } catch (e) {}
     return all.slice(0, 8);
   }
 
