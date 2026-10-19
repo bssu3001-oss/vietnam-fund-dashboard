@@ -324,7 +324,7 @@
         const j = await proxyJSON('https://query2.finance.yahoo.com/v8/finance/chart/VNM?interval=1d&range=1d', 6000);
         if (j && j.chart && j.chart.result) {
           const vnmPrice = j.chart.result[0].meta.regularMarketPrice;
-          if (vnmPrice && _cachedVnindex > 500) {
+          if (vnmPrice && _cachedVnindex > 500 && !window._vnReal) {
             VNM_SCALE = _cachedVnindex / vnmPrice;
             if (typeof window._vnmScale !== 'undefined') window._vnmScale = VNM_SCALE;
           }

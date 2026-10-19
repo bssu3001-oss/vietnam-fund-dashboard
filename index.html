@@ -520,9 +520,9 @@ function fetchQuote(ticker) {
 }
 
 function fetchAllLive() {
-  var tickers = ['VNM','USDVND=X','USDCNY=X','DX-Y.NYB','EEM','^VIX','BZ=F','GC=F'];
+  var tickers = ['VNM','USDVND=X','USDCNY=X','DX-Y.NYB','EEM','^VIX','BZ=F','GC=F','^VNINDEX.VN'];
   return Promise.all(tickers.map(function(t){ return fetchQuote(t).catch(function(){return null;}); })).then(function(results) {
-    var vnm=results[0], usdvnd=results[1], usdcny=results[2], dxy=results[3], eem=results[4], vix=results[5], crude=results[6], gold=results[7];
+    var vnm=results[0], usdvnd=results[1], usdcny=results[2], dxy=results[3], eem=results[4], vix=results[5], crude=results[6], gold=results[7], vnidx=results[8];
 
     // ①글로벌 공통지표(EEM·US VIX·DXY)는 미국 레포 JSON 한 곳에서 받아 모든 탭 동일하게 정규화 + ②자기 레포로 N/A 보강
     var mk=function(p,pc){return (p!=null&&p!==0)?{price:p,pct:pc||0,prev:p,open:p,high:p,low:p}:null;};
@@ -544,20 +544,26 @@ function fetchAllLive() {
         if(!usdcny && jr.usdcny!=null) usdcny=mk(jr.usdcny, 0);
         if(!crude  && jr.crude!=null)  crude =mk(jr.crude, 0);
         if(!gold   && jr.gold!=null)   gold  =mk(jr.gold, jr.gold_pct);
+        if(!vnidx  && jr.vnindex!=null) vnidx = {price:jr.vnindex, prev:jr.vnindex/(1+(jr.pct||0)/100), pct:jr.pct||0, open:jr.vnindex, high:jr.vnindex, low:jr.vnindex};
       }
 
-    if (vnm) {
-      var vnPrc = vnm.price * _vnmScale;
-      var vnPrv = vnm.prev * _vnmScale;
-      var up = vnm.pct >= 0;
-      var chgAbs = vnPrc - vnPrv;
+    // VN-Index 실제값 (야후 ^VNINDEX.VN, 장중 실시간). 야후에 과거 일·주봉이 없어 추세·차트는 VNM으로 보되
+    // VNM→지수 환산 배율을 실제값에 맞춤 (2026-10-19: 예전 고정 배율 99.3은 실제와 4~5% 어긋남)
+    if (vnidx && vnidx.price > 500) {
+      window._vnReal = vnidx;
+      if (vnm && vnm.price > 0) _vnmScale = vnidx.price / vnm.price;
+    }
+    var vq = window._vnReal || (vnm ? {price:vnm.price*_vnmScale, prev:vnm.prev*_vnmScale, pct:vnm.pct, open:vnm.open*_vnmScale, high:vnm.high*_vnmScale, low:vnm.low*_vnmScale} : null);
+    if (vq) {
+      var up = vq.pct >= 0;
+      var chgAbs = vq.price - vq.prev;
       var pEl = document.getElementById('live-vn-price');
       var cEl = document.getElementById('live-vn-change');
-      pEl.textContent = fmt(vnPrc, 0); pEl.className='idx-price '+(up?'up':'down');
-      cEl.textContent = arrow(vnm.pct)+' '+Math.abs(chgAbs).toFixed(0)+'  ('+(up?'+':'')+vnm.pct.toFixed(2)+'%)'; cEl.className='idx-change '+(up?'up':'down');
-      document.getElementById('vn-open').textContent = fmt(vnm.open * _vnmScale, 0);
-      document.getElementById('vn-high').textContent = fmt(vnm.high * _vnmScale, 0);
-      document.getElementById('vn-low').textContent  = fmt(vnm.low  * _vnmScale, 0);
+      pEl.textContent = fmt(vq.price, 0); pEl.className='idx-price '+(up?'up':'down');
+      cEl.textContent = arrow(vq.pct)+' '+Math.abs(chgAbs).toFixed(0)+'  ('+(up?'+':'')+vq.pct.toFixed(2)+'%)'; cEl.className='idx-change '+(up?'up':'down');
+      document.getElementById('vn-open').textContent = fmt(vq.open, 0);
+      document.getElementById('vn-high').textContent = fmt(vq.high, 0);
+      document.getElementById('vn-low').textContent  = fmt(vq.low, 0);
     }
 
     if (vnm) {
@@ -813,8 +819,8 @@ function ruleBasedAnalysis(liveData) {
   var vnm = liveData && liveData.vnm;
   var vix = (liveData && liveData.vix) ? liveData.vix.price : 0;
   var usdvnd = (liveData && liveData.usdvnd) ? liveData.usdvnd.price : 0;
-  var price = vnm ? vnm.price * _vnmScale : 0;
-  var pct = vnm ? vnm.pct : 0;
+  var price = window._vnReal ? window._vnReal.price : (vnm ? vnm.price * _vnmScale : 0);
+  var pct = window._vnReal ? window._vnReal.pct : (vnm ? vnm.pct : 0);
   var pctStr = (pct >= 0 ? '▲+' : '▼') + Math.abs(pct).toFixed(2) + '%';
 
   function badgeClass(id) {
@@ -1016,7 +1022,8 @@ function updateAI(liveData) {
   if (onelinerEl && _ruleOneliner) onelinerEl.textContent = _ruleOneliner;
 
   var vnm = liveData && liveData.vnm;
-  var price = vnm ? vnm.price * _vnmScale : 0;
+  var price = window._vnReal ? window._vnReal.price : (vnm ? vnm.price * _vnmScale : 0);
+  var vnPct = window._vnReal ? window._vnReal.pct : (vnm ? vnm.pct : 0);
   // 번역된 실제 뉴스(__majorNewsItems)를 우선 사용, 없으면 헤드라인 목록 폴백
   var _aiNews = (window.__majorNewsItems || []).map(function(n){return n.ko || n.title;}).filter(Boolean);
   if (!_aiNews.length) _aiNews = window.__newsForAnalysis || [];
@@ -1028,7 +1035,7 @@ function updateAI(liveData) {
   var vndText = (document.getElementById('badge-usdvnd')||{}).textContent || '';
   var eemText = (document.getElementById('badge-eem')||{}).textContent || '';
 
-  var ctx = '당신은 베트남 주식시장 전문 애널리스트입니다. 오늘 날짜 기준으로 판단하세요.\n\n[실시간 지표 및 배지 상태]\nVN-Index: '+(price?fmt(price,0)+' ('+(vnm.pct>=0?'▲':'▼')+Math.abs(vnm.pct).toFixed(2)+'%)':'N/A')+'\n이평선: '+maText+' | 모멘텀: '+momText+' | RSI: '+rsiText+'\nVNM(베트남ETF): '+vnmText+'\nUSD/VND(동환율): '+vndText+'\nEEM(신흥국ETF): '+eemText+'\nUS VIX: '+(liveData.vix?liveData.vix.price.toFixed(1):'N/A')+'\n브렌트유: '+(liveData.crude?'$'+liveData.crude.price.toFixed(1):'N/A')+'\n금: '+(liveData.gold?'$'+Math.round(liveData.gold.price):'N/A')+'\n\n[주의] sc_appeal·sc_risk·sc_entry는 반드시 위 배지 상태와 일치해야 합니다. 배지에 "하락"·"약세"가 포함된 지표를 강점으로 언급하지 마세요.\n\n[최신 뉴스]\n'+(newsLines||'뉴스 없음');
+  var ctx = '당신은 베트남 주식시장 전문 애널리스트입니다. 오늘 날짜 기준으로 판단하세요.\n\n[실시간 지표 및 배지 상태]\nVN-Index: '+(price?fmt(price,0)+' ('+(vnPct>=0?'▲':'▼')+Math.abs(vnPct).toFixed(2)+'%)':'N/A')+'\n이평선: '+maText+' | 모멘텀: '+momText+' | RSI: '+rsiText+'\nVNM(베트남ETF): '+vnmText+'\nUSD/VND(동환율): '+vndText+'\nEEM(신흥국ETF): '+eemText+'\nUS VIX: '+(liveData.vix?liveData.vix.price.toFixed(1):'N/A')+'\n브렌트유: '+(liveData.crude?'$'+liveData.crude.price.toFixed(1):'N/A')+'\n금: '+(liveData.gold?'$'+Math.round(liveData.gold.price):'N/A')+'\n\n[주의] sc_appeal·sc_risk·sc_entry는 반드시 위 배지 상태와 일치해야 합니다. 배지에 "하락"·"약세"가 포함된 지표를 강점으로 언급하지 마세요.\n\n[최신 뉴스]\n'+(newsLines||'뉴스 없음');
 
   var jsonPrompt = '위 데이터와 뉴스를 분석해 아래 JSON으로만 답하세요 (다른 텍스트 없이).\n각 badge는 해당 주제(SBV/물가/GDP/연준/무역/중국)에 대한 짧은 요약이어야 합니다. 관련 정보가 없으면 "관망"·"주시"처럼 중립으로 쓰고, "데이터 부재"나 다른 지표(VIX 등) 값을 넣지 마세요.\n{\n  "sc_oneliner": "한줄 시장 요약 (20자 이내, 뉴스 반영)",\n  "sc_appeal": "핵심 매력 (뉴스+지표 반영, 30자 이내)",\n  "sc_risk": "핵심 리스크 (뉴스+지표 반영, 30자 이내)",\n  "sc_entry": "진입 단서 (30자 이내)",\n  "sc_danger": "위험도 낮음 또는 위험도 보통 또는 위험도 높음",\n  "badge_sbv": {"text": "SBV 정책 요약 (10자 이내)", "cls": "badge-g 또는 badge-y 또는 badge-r"},\n  "badge_cpi": {"text": "물가 요약 (10자 이내)", "cls": "badge-g 또는 badge-y 또는 badge-r"},\n  "badge_gdp": {"text": "GDP 요약 (10자 이내)", "cls": "badge-g 또는 badge-y 또는 badge-r"},\n  "badge_fed": {"text": "연준 정책 요약 (10자 이내)", "cls": "badge-g 또는 badge-y 또는 badge-r"},\n  "badge_trade": {"text": "무역 요약 (10자 이내)", "cls": "badge-g 또는 badge-y 또는 badge-r"},\n  "badge_china": {"text": "중국관계 요약 (10자 이내)", "cls": "badge-g 또는 badge-y 또는 badge-r"}\n}';
 
@@ -1093,8 +1100,9 @@ function askAI() {
   var box=document.getElementById('ai-resp'); box.textContent='분석 중...';
   var sc=(document.getElementById('sc-emoji')||{}).textContent||'';
   var vnm=_liveData && _liveData.vnm;
-  var price=vnm?fmt(vnm.price*_vnmScale,0):'N/A';
-  var ctx2='당신은 10년차 베트남 주식시장 전문 애널리스트입니다.\n오늘: '+new Date().toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric'})+'\nVN-Index: '+price+' ('+(vnm?(vnm.pct>=0?'+':'')+vnm.pct.toFixed(2)+'%':'N/A')+')\n종합신호: '+sc+'\n3~5문장, 한국어, 마지막에 "이 답변은 참고용입니다" 명시.';
+  var vr=window._vnReal;
+  var price=vr?fmt(vr.price,0):(vnm?fmt(vnm.price*_vnmScale,0):'N/A');
+  var ctx2='당신은 10년차 베트남 주식시장 전문 애널리스트입니다.\n오늘: '+new Date().toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric'})+'\nVN-Index: '+price+' ('+(vr?(vr.pct>=0?'+':'')+vr.pct.toFixed(2)+'%':vnm?(vnm.pct>=0?'+':'')+vnm.pct.toFixed(2)+'%':'N/A')+')\n종합신호: '+sc+'\n3~5문장, 한국어, 마지막에 "이 답변은 참고용입니다" 명시.';
   var _ctrl=new AbortController(); var _to=setTimeout(function(){_ctrl.abort();},15000);
   fetch('https://api.anthropic.com/v1/messages',{
     signal:_ctrl.signal,
@@ -1131,7 +1139,7 @@ setInterval(function(){
   }).catch(function(){});
 },5*60*1000);
 </script>
-<script src="실시간.js?v=20261019a"></script>
+<script src="실시간.js?v=20261019b"></script>
 <script src="vendor/lightweight-charts.standalone.production.js"></script>
 <script>
 window.KODEX_CFG = { ticker:'VNM', name:'VNM ETF', tz:'America/New_York', openMin:570, closeMin:960, unitPrefix:'$', unitSuffix:'', dec:2 };
